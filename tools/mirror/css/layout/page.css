@@ -1,0 +1,30 @@
+/* =============================================================================
+   Page shell
+   The sticky-footer column and the centred content measure.
+   ========================================================================== */
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Centred content measure. Shared by header, main and footer so every band of
+   the page lines up on the same left/right edge.
+
+   `width: 100%` is load-bearing. `main.container` is a flex item of the body
+   column, and a flex item with `margin: … auto` on the cross axis is NOT
+   stretched — it falls back to shrink-to-fit. Without an explicit width a
+   sparse page (few words per line) renders in a narrow column while a dense
+   one fills the viewport, so the measure would depend on the content. */
+.container {
+    width: 100%;
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: var(--space-4);
+    flex-grow: 1;
+}
+
+main {
+    padding: var(--space-4) 0;
+}

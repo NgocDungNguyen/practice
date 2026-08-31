@@ -1,0 +1,41 @@
+/* =============================================================================
+   Table
+   Comparison tables inside guide cards.
+   ========================================================================== */
+
+.card table,
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--space-3);
+}
+
+.card th,
+.card td,
+.data-table th,
+.data-table td {
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    text-align: center;
+}
+
+.card th,
+.data-table th {
+    background-color: var(--accent-color);
+    color: var(--on-accent-color);
+}
+
+/* On a phone a comparison table is wider than the screen. Turning it into its
+   own scroll container keeps every column readable without the page itself
+   scrolling sideways. */
+@media (max-width: 700px) {
+
+    .card table,
+    .data-table {
+        display: block;
+        width: max-content;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+}
+

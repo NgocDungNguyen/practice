@@ -1,0 +1,3480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Create and manage Kubernetes workloads in AWS using EKS, eksctl, kubectl, and the course cloud environment.">
+<title>Week 11: Elastic Kubernetes Service (EKS) on AWS - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="week-11" data-stage="orchestration" data-root="../" style="--stage-accent: var(--stage-orchestration)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Operations</span><span class="crumb-sep">/</span><span>Week 11</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Week 11</span><span class="chip">Operations</span><span class="chip">Lab guide</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">☁️</span>Elastic Kubernetes Service (EKS) on AWS</h1>
+<p class="page-hero__intro">Create and manage
+     <code>
+      Kubernetes
+     </code>
+     workloads in
+     <code>
+      AWS
+     </code>
+     using
+     <code>
+      EKS
+     </code>
+     ,
+     <code>
+      eksctl
+     </code>
+     ,
+     <code>
+      kubectl
+     </code>
+     , and the course cloud environment.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>7</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 15.5l-4.2-4.2L7 21"/></svg><strong>106</strong>&nbsp;screenshots</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>53</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>53</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="objective">
+<h2 class="collapsible-header start-open">
+     🎯 Objective
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Week tutorial screenshot from page 1" class="img-large" height="164" loading="lazy" src="../assets/tutorials/week-11/01-objective-001.png" width="431"/>
+</div>
+<p>
+         In this lab, we will learn about the concepts and tools needed for creating and working with an
+         <code>
+          Amazon EKS
+         </code>
+         cluster.
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating EKS cluster." class="img-large" height="707" loading="lazy" src="../assets/tutorials/week-11/01-objective-002.png" width="707"/>
+</div>
+<p>
+         The above diagram provides a conceptual overview of how
+         <code>
+          EKS
+         </code>
+         works. It's crucial to understand the two main parts:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            EKS
+           </strong>
+<strong>
+            Control
+           </strong>
+<strong>
+            Plane
+           </strong>
+<strong>
+            (in
+           </strong>
+<strong>
+            EKS
+           </strong>
+<strong>
+<code>
+             VPC
+            </code>
+            )
+           </strong>
+           : This is the "brain" of your
+           <code>
+            Kubernetes
+           </code>
+           cluster. It's fully managed by
+           <code>
+            AWS
+           </code>
+           in a separate, secure AWS-managed Virtual Private Cloud (VPC). You don't have direct access to these master nodes, but you interact with them via the Kubernetes API. This is the core value of EKS – AWS handles the complexity, availability, and scaling of the
+           <code>
+            control plane
+           </code>
+           for you.
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            Customer
+           </strong>
+<strong>
+            VPC:
+           </strong>
+           This is your VPC where your applications run.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+<code>
+               EC2
+              </code>
+</strong>
+<strong>
+              Worker
+             </strong>
+<strong>
+              Nodes:
+             </strong>
+             These are the EC2 instances that you launch and manage (or have EKS manage for you). Your application containers (
+             <code>
+              pods
+             </code>
+             ) will run on these nodes. They are grouped into an Autoscaling group to automatically scale the number of nodes up or down based on workload.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              ENI
+             </strong>
+<strong>
+              (Elastic
+             </strong>
+<strong>
+              Network
+             </strong>
+<strong>
+              Interface):
+             </strong>
+             The control plane communicates with your worker nodes through these network interfaces that are placed in your VPC's subnets. This is the secure bridge between the AWS-managed VPC and your VPC.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Load
+             </strong>
+<strong>
+              Balancer:
+             </strong>
+             When you want to expose your application to the internet, Kubernetes works with AWS to automatically provision a Load Balancer. This directs external traffic from clients to the correct worker nodes running your application.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+<code>
+               kubectl
+              </code>
+</strong>
+             : This is the command-line tool you will use on your local machine or a bastion host (a dedicated management server) to send commands to the EKS Control Plane's API server.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="eks-lab-overview">
+<h2 class="collapsible-header">
+     ☁️ Amazon EKS lab overview
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Instructions for EKS on AWS" class="img-large" height="517" loading="lazy" src="../assets/tutorials/week-11/02-amazon-eks-lab-overview-001.png" width="517"/>
+</div>
+<p>
+         For this session, we will learn how to set up a basic
+         <code>
+          Elastic Kubernetes Service
+         </code>
+         (
+         <code>
+          EKS
+         </code>
+         ) on
+         <code>
+          AWS
+         </code>
+         . EKS is a managed container
+         <code>
+          service
+         </code>
+         to run and scale
+         <code>
+          Kubernetes
+         </code>
+         applications in the cloud or on-premises.
+        </p>
+<p>
+         Getting started with
+         <code>
+          Amazon EKS
+         </code>
+         is easy:
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Getting started with Amazon EKS is easy:" class="img-large" height="390" loading="lazy" src="../assets/tutorials/week-11/02-amazon-eks-lab-overview-002.png" width="390"/>
+</div>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Create an Amazon EKS cluster in the AWS Management Console.
+          </p>
+</li>
+<li>
+<p>
+           Launch managed or self-managed Amazon
+           <code>
+            EC2
+           </code>
+           nodes.
+          </p>
+</li>
+<li>
+<p>
+           When your cluster is ready, you can configure your favorite Kubernetes tools, such as
+           <code>
+            kubectl
+           </code>
+           , to communicate with your cluster.
+          </p>
+</li>
+<li>
+<p>
+           Deploy and manage workloads on your Amazon EKS cluster the same way that you would with any other Kubernetes environment. You can also view information about your workloads using the AWS Management Console.
+          </p>
+</li>
+</ol>
+<p>
+         Alright! Let's get started!
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="understand-labrole">
+<h2 class="collapsible-header">
+     🔐 1. Understand the LabRole IAM role
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The
+           <code>
+            AWS
+           </code>
+           learner lab does mention that we need to use the
+           <code>
+            IAM
+           </code>
+           role “
+           <code>
+            LabRole
+           </code>
+           ” to manage/control
+           <code>
+            EKS
+           </code>
+           .
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating manage/control EKS." class="img-large" height="414" loading="lazy" src="../assets/tutorials/week-11/03-1-understand-the-labrole-iam-role-001.png" width="904"/>
+</div>
+<p class="callout callout--note">
+<strong>
+          [Explanation]
+         </strong>
+         It suggests that
+         <strong>
+          Amazon
+         </strong>
+<strong>
+          EKS
+         </strong>
+         in this lab environment has the permissions necessary to function via the
+         <strong>
+          LabRole
+         </strong>
+         IAM role. This is the constraint of this specific learner lab environment. Both the EKS
+         <code>
+          control plane
+         </code>
+         and the worker nodes need permissions to interact with other AWS
+         <code>
+          services
+         </code>
+         . For example, the control plane needs to create Load Balancers, and worker nodes need to pull container images from
+         <code>
+          ECR
+         </code>
+         (Elastic Container Registry). The LabRole is an identity with a set of permissions that EKS will "assume" to perform these actions on your behalf. The screenshots confirm that in this specific lab environment, EKS is configured to use this role.
+        </p>
+<p class="callout callout--checkpoint">
+<strong>Least-privilege checkpoint:</strong> Why might the EKS control plane, worker nodes, and management instance need different permissions? What risk is introduced when one broad role is reused everywhere?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's find more information about this special IAM role “LabRole”:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Let's find more information about this special IAM role “LabRole”: (1 of 2)" class="img-large" height="203" loading="lazy" src="../assets/tutorials/week-11/03-1-understand-the-labrole-iam-role-002.png" width="904"/>
+<img alt="Screenshot illustrating Let's find more information about this special IAM role “LabRole”: (2 of 2)" class="img-large" height="506" loading="lazy" src="../assets/tutorials/week-11/03-1-understand-the-labrole-iam-role-003.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           If you look closely at all permissions of LabRole, you can see the permission to access EKS services:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating services:" class="img-large" height="551" loading="lazy" src="../assets/tutorials/week-11/03-1-understand-the-labrole-iam-role-004.png" width="935"/>
+</div>
+<p class="callout callout--note">
+<strong>
+          [Explanation]
+         </strong>
+         The LabRole has AWS-managed policies that grant the permissions needed for operating Amazon
+         <code>
+          Elastic Kubernetes Service
+         </code>
+         (EKS) clusters:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            AmazonEKSClusterPolicy:
+           </strong>
+           This policy is attached to the Cluster IAM role. It grants the EKS control plane permissions to manage AWS resources required by the cluster, such as creating Elastic Load Balancers (ELBs) and managing network interfaces (ENIs).
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            AmazonEKSWorkerNodePolicy:
+           </strong>
+           This policy is attached to the Node IAM role (the role for the
+           <code>
+            EC2
+           </code>
+           worker nodes). It grants the worker nodes the necessary permissions to connect to the EKS control plane and perform actions like fetching container images.
+          </p>
+</li>
+</ul>
+<p>
+         You need two distinct sets of permissions: one for the cluster's brain (control plane) and one for its muscles (worker nodes). In this lab, the LabRole conveniently has both.
+        </p>
+<p>
+         That's good enough for this IAM role “LabRole” to create an EKS cluster now!
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="prepare-eks-management-instance">
+<h2 class="collapsible-header">
+     🖥️ 2. Prepare the EKS management instance
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+         Now, let's create an
+         <code>
+          EKS
+         </code>
+         cluster!
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You can check out the
+           <code>
+            Elastic Kubernetes Service
+           </code>
+           (EKS) dashboard here:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating You can check out the Elastic Kubernetes Service (EKS) dashboard here:" class="img-large" height="204" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-001.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Click “Add cluster” ➜ Create to create a new EKS cluster!
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Click “Add cluster” ➜ Create to create a new EKS cluster!" class="img-large" height="325" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-002.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Create the cluster with the following settings:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Choose Custom configuration:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               Turn off the EKS Auto Mode.
+              </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+             Name cluster:
+             <code>
+              devops-eks
+             </code>
+             -cluster.
+            </p>
+</li>
+<li>
+<p>
+             Cluster
+             <code>
+              service
+             </code>
+             role:
+             <code>
+              LabRole
+             </code>
+             .
+            </p>
+</li>
+<li>
+<p>
+<code>
+              VPC
+             </code>
+             : your default VPC.
+            </p>
+</li>
+<li>
+<p>
+             Subnets:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               us-east-1a
+              </p>
+</li>
+<li>
+<p>
+               us-east-1b
+              </p>
+</li>
+<li>
+<p>
+               us-east-1c
+              </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+             Let’s select our cluster endpoint access to be public!
+            </p>
+</li>
+<li>
+<p>
+             Other settings: leave their default values.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Turn
+           </strong>
+<strong>
+            off
+           </strong>
+<strong>
+            EKS
+           </strong>
+<strong>
+            Auto
+           </strong>
+<strong>
+            Mode:
+           </strong>
+           This is because the LabRole lacks the specific permissions for this feature.
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating feature." class="img-large" height="306" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-003.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Cluster
+           </strong>
+<strong>
+<code>
+             IAM
+            </code>
+</strong>
+<strong>
+            role:
+           </strong>
+           You are selecting the LabRole you investigated earlier. This tells EKS which permissions it can use to manage
+           <code>
+            AWS
+           </code>
+           resources.
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating permissions it can use to manage AWS resources." class="img-large" height="294" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-004.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating permissions it can use to manage AWS resources." class="img-large" height="227" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-005.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Subnets
+           </strong>
+           : Selecting subnets across three different Availability Zones (us-east-1a, us-east-1b, us-east-1c) is a best practice for high availability. If one data center (AZ) has an issue, your cluster's
+           <code>
+            control plane
+           </code>
+           remains operational in the other two:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating cluster's control plane remains operational in the other two:" class="img-large" height="372" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-006.png" width="935"/>
+</div>
+<p class="callout callout--note">
+<strong>
+          [Explanation]
+         </strong>
+         Choosing the right subnets for your
+         <code>
+          Amazon EKS
+         </code>
+         cluster is crucial for security, performance, and cost management. Here are some best practices to consider when selecting subnets for your EKS cluster:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Use Multiple Availability Zones: Deploy your EKS cluster across multiple Availability Zones (AZs) by selecting a subnet in each desired AZ. This ensures high availability and fault tolerance. If one zone goes down, your cluster can continue operating in the other zones.
+          </p>
+</li>
+<li>
+<p>
+           For the purpose of learning: we would like to keep it simple by selecting three zones us-east-1a, us-east-1b, and us-east-1c which are usually available for the AWS Learner Lab.
+          </p>
+</li>
+<li>
+<p>
+           Please create a security group in
+           <code>
+            EC2
+           </code>
+           as following:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Please create a security group in EC2 as following:" class="img-large" height="650" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-007.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Select that security group for our
+           <code>
+            Kubernetes
+           </code>
+           cluster:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Select that security group for our Kubernetes cluster:" class="img-large" height="122" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-008.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Cluster
+           </strong>
+<strong>
+            endpoint
+           </strong>
+<strong>
+            access:
+           </strong>
+           The "Public" option is selected. This means the Kubernetes API server endpoint is accessible from the internet. This is necessary so you can run
+           <code>
+            kubectl
+           </code>
+           commands from your management instance. There are also "Private" options for higher security scenarios where the API is only accessible from within the VPC.
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating where the API is only accessible from within the VPC." class="img-large" height="244" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-009.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Creation
+           </strong>
+<strong>
+            Process:
+           </strong>
+           The note correctly states that cluster creation takes time (around 15-20 minutes). This is because AWS is provisioning a highly available, multi-node control plane in the background.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              This
+             </strong>
+<strong>
+              process
+             </strong>
+<strong>
+              of
+             </strong>
+<strong>
+              creating
+             </strong>
+<strong>
+              an
+             </strong>
+<strong>
+              EKS
+             </strong>
+<strong>
+              cluster
+             </strong>
+<strong>
+              will
+             </strong>
+<strong>
+              take
+             </strong>
+<strong>
+              around
+             </strong>
+<strong>
+              20
+             </strong>
+<strong>
+              minute
+             </strong>
+             s to complete to please wait around for it to finish!
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating please wait around for it to finish!" class="img-large" height="301" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-010.png" width="652"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Meanwhile, you can try to complete other things first by adding the access to the cluster!
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             While the cluster is being created, you can configure who has access to it. This is a great time-saving tip.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating time-saving tip." class="img-large" height="338" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-011.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           This step is about mapping an AWS identity (the LabRole) to a Kubernetes identity.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              IAM
+             </strong>
+<strong>
+              principal
+             </strong>
+<strong>
+<code>
+               ARN
+              </code>
+              :
+             </strong>
+             You are telling EKS, "Any user or process that assumes the LabRole should be allowed to interact with this cluster's API."
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Username
+             </strong>
+<strong>
+              -
+             </strong>
+<strong>
+              Optional:
+             </strong>
+             The note "Leave it be!" is good advice. If you leave this blank, EKS automatically maps the IAM role to a username within Kubernetes. This is the standard and recommended practice.
+            </p>
+</li>
+<li>
+<p>
+             This process is part of EKS's native integration with IAM, which simplifies authentication compared to older methods that required managing a ConfigMap manually.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating compared to older methods that required managing a ConfigMap manually." class="img-large" height="858" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-012.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           After telling EKS who can access the cluster (the LabRole), this step defines what they can do. These are pre-defined EKS access policies that correspond to standard Kubernetes
+           <code>
+            RBAC
+           </code>
+           (
+           <code>
+            Role-Based Access Control
+           </code>
+           ) roles:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              AmazonEKSClusterAdminPolicy
+             </strong>
+             : This is the highest level of permission, equivalent to cluster-admin in Kubernetes. It grants full control over all resources in the cluster.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              AmazonEKSAdminPolicy
+             </strong>
+             ,
+             <strong>
+              AmazonEKSEditPolicy
+             </strong>
+             ,
+             <strong>
+              AmazonEKSViewPolicy
+             </strong>
+             : These provide progressively fewer permissions, useful for assigning roles with the principle of least privilege.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<p>
+         By adding these, you are granting the LabRole the ability to act as a full administrator of the Kubernetes cluster.
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating cluster." class="img-large" height="596" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-013.png" width="564"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           After that, you can confirm these four roles have been associated with our LabRole to be able to manage our EKS cluster properly. When managing an EKS cluster, these roles and policies help delineate responsibility and control access to the cluster's resources:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating delineate responsibility and control access to the cluster's resources:" class="img-large" height="661" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-014.png" width="656"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           This is a verification step. It should show that the LabRole now has an access entry and is associated with the four policies you just added. You can also see other default entries, like the one for the AWSServiceRoleForAmazonEKS, which is used by EKS internally. This confirms that your permissions are set up correctly before you proceed.
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating your permissions are set up correctly before you proceed." class="img-large" height="596" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-015.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            To
+           </strong>
+<strong>
+            be
+           </strong>
+<strong>
+            able
+           </strong>
+<strong>
+            to
+           </strong>
+<strong>
+            proceed
+           </strong>
+<strong>
+            to
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            next
+           </strong>
+<strong>
+            step,
+           </strong>
+<strong>
+            you
+           </strong>
+<strong>
+            need
+           </strong>
+<strong>
+            to
+           </strong>
+<strong>
+            wait
+           </strong>
+<strong>
+            for
+           </strong>
+<strong>
+            this
+           </strong>
+<strong>
+            cluster
+           </strong>
+<strong>
+            to
+           </strong>
+<strong>
+            be
+           </strong>
+<strong>
+            created
+           </strong>
+<strong>
+            first
+           </strong>
+<strong>
+            (it
+           </strong>
+<strong>
+            could
+           </strong>
+<strong>
+            take
+           </strong>
+<strong>
+            up
+           </strong>
+<strong>
+            to
+           </strong>
+<strong>
+            20
+           </strong>
+<strong>
+            minutes)!
+           </strong>
+</p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating could take up to 20 minutes)!" class="img-large" height="108" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-016.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating could take up to 20 minutes)!" class="img-large" height="363" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-017.png" width="452"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Wait until the cluster status is <strong>Active</strong> before creating the node group.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             This is a simple but important milestone. It means the EKS control plane is fully provisioned and ready to accept commands. However, the cluster is not yet useful because it has no worker nodes to run any applications. This page serves as a transition to the next logical step: creating the
+             <code>
+              node group
+             </code>
+             .
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating to the next logical step: creating the node group." class="img-large" height="346" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-018.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Next, create a managed node group so the cluster has compute capacity on which to schedule Pods.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              Compute
+             </strong>
+<strong>
+              Tab
+             </strong>
+             : This is where you manage the compute resources (the worker nodes) for your cluster.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Add
+             </strong>
+<strong>
+              node
+             </strong>
+<strong>
+              group:
+             </strong>
+             This starts the wizard to create a group of EC2 instances that will register themselves with your EKS control plane.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating register themselves with your EKS control plane." class="img-large" height="507" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-019.png" width="720"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Please create a worker node group with configurations as below screenshots:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              Node
+             </strong>
+<strong>
+              group
+             </strong>
+<strong>
+              name:
+             </strong>
+             A descriptive name like
+             <code>
+              devops-workers-group
+             </code>
+             is chosen.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Node
+             </strong>
+<strong>
+              IAM
+             </strong>
+<strong>
+              role
+             </strong>
+             : You are again selecting LabRole. This is the role the EC2 instances themselves will assume to get the permissions defined in the AmazonEKSWorkerNodePolicy (e.g., to communicate with the control plane).
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating AmazonEKSWorkerNodePolicy (e.g., to communicate with the control plane)." class="img-large" height="386" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-020.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           This section defines the properties of the EC2 instances in your node group:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              AMI
+             </strong>
+<strong>
+              type:
+             </strong>
+             Amazon Linux 2023 is selected. This is an EKS-optimized Amazon Machine Image that comes pre-configured with necessary software like the container runtime (containerd) and the kubelet.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Capacity
+             </strong>
+<strong>
+              type
+             </strong>
+             : On-Demand is chosen, which means you pay a fixed hourly rate for the instances. The alternative is Spot, which can be much cheaper but instances can be terminated with short notice.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Instance
+             </strong>
+<strong>
+              types:
+             </strong>
+             t3.medium is selected. This defines the vCPU, memory, and network capacity of your worker nodes.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Disk
+             </strong>
+<strong>
+              size:
+             </strong>
+             20 GiB is allocated for the root volume of each EC2 instance.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Disk size: 20 GiB is allocated for the root volume of each EC2 instance." class="img-large" height="441" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-021.png" width="846"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           These settings below allow you to define the scaling parameters for a group of worker nodes within the cluster:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              Desired
+             </strong>
+<strong>
+              size
+             </strong>
+             : This is the number of worker nodes you want in the node group at the outset. The system will aim to maintain this number of nodes as the desired state. In the screenshot, it's set to 2 nodes.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Minimum
+             </strong>
+<strong>
+              size
+             </strong>
+             : This is the lowest number of nodes that the group can scale down to. This ensures that there is a minimum level of resources available for workloads at all times. Here, it's also set to 2 nodes, meaning scaling down below this number is not allowed.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Maximum
+             </strong>
+<strong>
+              size
+             </strong>
+             : This sets the upper limit of nodes that the group can scale up to. It's a ceiling for the scaling operation to ensure that the cluster doesn't grow beyond a manageable size or incur unexpected costs. The maximum size here is set to 2 nodes, indicating that the group should not scale up beyond this point.
+            </p>
+</li>
+<li>
+<p>
+             The configuration is such that the node group is set to operate with exactly 2 nodes at all times, as the desired, minimum, and maximum sizes are all the same. This kind of configuration might be used in scenarios where predictable performance is needed, and the workload does not have significant fluctuations that would require scaling the number of nodes up or down.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Note
+           </strong>
+           : The most important part is the explanation of the scaling parameters. Here, Desired, Minimum, and Maximum size are all set to 2. This creates a fixed-size node group that will always have exactly two worker nodes. It will not scale up or down. This is simple for a lab but in a production environment, you would typically set min lower and max higher to allow for autoscaling.
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating autoscaling." class="img-large" height="552" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-022.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p class="callout callout--note">
+<strong>
+            [Explanation]
+           </strong>
+           These settings below allow us to manage the node group as a set of EC2 instances that are registered as nodes in a Kubernetes cluster managed by Amazon EKS:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              Subnets:
+             </strong>
+             You are selecting the subnets where the worker nodes will be launched. These should be the same subnets you chose for the cluster control plane ENIs to ensure they can communicate.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Configure
+             </strong>
+<strong>
+              remote
+             </strong>
+<strong>
+              access
+             </strong>
+<strong>
+              to
+             </strong>
+<strong>
+              nodes:
+             </strong>
+             This is enabled to allow SSH access.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              EC2
+             </strong>
+<strong>
+              Key
+             </strong>
+<strong>
+              Pair:
+             </strong>
+             A key pair (
+             <code>
+              devops_key
+             </code>
+             ) is selected. This is essential for being able to SSH into the worker nodes for troubleshooting.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Allow
+             </strong>
+<strong>
+              remote
+             </strong>
+<strong>
+              access
+             </strong>
+<strong>
+              from:
+             </strong>
+             Set to "All". As mentioned before, this is insecure for production but acceptable for a temporary lab.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating production but acceptable for a temporary lab. (1 of 2)" class="img-large" height="296" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-023.png" width="484"/>
+<img alt="Screenshot illustrating production but acceptable for a temporary lab. (2 of 2)" class="img-large" height="291" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-024.png" width="412"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Submit the node-group configuration and wait until its status is <strong>Ready</strong>.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             When you create a node group, EKS uses an Auto Scaling Group to launch the requested number of EC2 instances.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating number of EC2 instances." class="img-large" height="293" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-025.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The cool thing is that you can go to the
+           <strong>
+            EC2
+           </strong>
+<strong>
+            dashboard
+           </strong>
+           and see two EC2 instances are created as worker nodes in our EKS cluster! Nice!
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             The image confirms that the worker nodes have been created, have successfully registered with the EKS control plane, and are ready to accept workloads.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating registered with the EKS control plane, and are ready to accept workloads." class="img-large" height="40" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-026.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           After some time, the worker node group is created with the status “Ready” for all of the worker nodes!
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating nodes!" class="img-large" height="522" loading="lazy" src="../assets/tutorials/week-11/04-2-prepare-the-eks-management-instance-027.png" width="935"/>
+</div>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        ☁️ 2a. Create the EC2 management instance
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's create an
+            <code>
+             EC2
+            </code>
+            instance which contains
+            <strong>
+<code>
+              AWS
+             </code>
+</strong>
+<strong>
+             CLI
+            </strong>
+            (to control AWS
+            <code>
+             services
+            </code>
+            ),
+            <strong>
+<code>
+              eksctl
+             </code>
+</strong>
+            (to create
+            <code>
+             EKS
+            </code>
+            clusters) and
+            <strong>
+<code>
+              kubectl
+             </code>
+</strong>
+            (to control the cluster):
+           </p>
+</li>
+</ul>
+<p>
+<strong>
+           In
+          </strong>
+<strong>
+           this
+          </strong>
+<strong>
+           experiment,
+          </strong>
+<strong>
+           we
+          </strong>
+<strong>
+           only
+          </strong>
+<strong>
+           need
+          </strong>
+<strong>
+           one
+          </strong>
+<strong>
+           single
+          </strong>
+<strong>
+           EC2
+          </strong>
+<strong>
+           instance:
+          </strong>
+</p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating In this experiment, we only need one single EC2 instance:" class="img-large" height="74" loading="lazy" src="../assets/tutorials/week-11/05-2a-create-the-ec2-management-instance-001.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Here are the settings of the EC2:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Name:
+              <code>
+               eksctl_kubectl_server
+              </code>
+</p>
+</li>
+<li>
+<p>
+              OS:
+              <strong>
+               Amazon
+              </strong>
+<strong>
+               Linux
+              </strong>
+<strong>
+               2023
+              </strong>
+<strong>
+               AMI
+              </strong>
+<strong>
+               (Latest
+              </strong>
+<strong>
+               one)
+              </strong>
+</p>
+</li>
+<li>
+<p>
+              Instance Type: t3.micro (Free-tier)
+             </p>
+</li>
+<li>
+<p>
+              Key pair: create a new key or reuse the old key.
+             </p>
+</li>
+<li>
+<p>
+              Storage: Default 8 GB is plenty enough!
+             </p>
+</li>
+<li>
+<p>
+              Security Group:
+             </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                Optional Name:
+                <code>
+                 eksctl_kubectl_server_security_group
+                </code>
+</p>
+</li>
+<li>
+<p>
+                Source Type: Anywhere
+               </p>
+</li>
+<li>
+<p>
+                Open only one port:
+               </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                  22 for SSH
+                 </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🔐 2b. Attach the LabRole IAM role
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s wait for the
+            <code>
+             EC2
+            </code>
+            instance state to be “Running” first. After that, let's attach the
+            <code>
+             IAM
+            </code>
+            role “
+            <code>
+             LabRole
+            </code>
+            " to this EC2 instance so this EC2 can execute commands as “LabRole”:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p class="callout callout--note">
+<strong>
+               Why
+              </strong>
+<strong>
+               attach
+              </strong>
+<strong>
+               a
+              </strong>
+<strong>
+               role?
+              </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p class="callout callout--note">
+                By attaching the LabRole (or in this case, a similar LabInstanceProfile) to the EC2 instance, you grant the
+                <code>
+                 AWS CLI
+                </code>
+                running on that instance the permissions of that role.
+               </p>
+</li>
+<li>
+<p class="callout callout--note">
+                This means you don't need to configure static
+                <code>
+                 AWS
+                </code>
+                access keys (aws configure). The instance automatically retrieves temporary credentials, which is a much more secure practice.
+               </p>
+</li>
+<li>
+<p class="callout callout--note">
+                Now, any aws or
+                <code>
+                 eksctl
+                </code>
+                command you run from this instance will be authenticated as the LabRole, which has the necessary permissions to interact with your
+                <code>
+                 EKS
+                </code>
+                cluster.
+               </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating with your EKS cluster." class="img-large" height="235" loading="lazy" src="../assets/tutorials/week-11/06-2b-attach-the-labrole-iam-role-001.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating with your EKS cluster." class="img-large" height="529" loading="lazy" src="../assets/tutorials/week-11/06-2b-attach-the-labrole-iam-role-002.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating with your EKS cluster." class="img-large" height="57" loading="lazy" src="../assets/tutorials/week-11/06-2b-attach-the-labrole-iam-role-003.png" width="852"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        ☁️ 2c. Set the EC2 hostname
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            After the
+            <code>
+             EC2
+            </code>
+            instance is running, please SSH to that EC2 instance “
+            <code>
+             eksctl_kubectl_server
+            </code>
+            ” you just created:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating just created:" class="img-large" height="219" loading="lazy" src="../assets/tutorials/week-11/07-2c-set-the-ec2-hostname-001.png" width="713"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Also, please change the hostname of this instance to “
+            <code>
+             eksctl
+            </code>
+            -
+            <code>
+             kubectl
+            </code>
+            -server” to keep it organized like so:
+           </p>
+</li>
+</ul>
+<pre><code>sudo nano /etc/hostname</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating sudo nano /etc/hostname" class="img-large" height="131" loading="lazy" src="../assets/tutorials/week-11/07-2c-set-the-ec2-hostname-002.png" width="476"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Reboot the EC2 instance so the new hostname is updated:
+           </p>
+</li>
+</ul>
+<pre><code>sudo reboot</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating sudo reboot" class="img-large" height="354" loading="lazy" src="../assets/tutorials/week-11/07-2c-set-the-ec2-hostname-003.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            To keep things simple without dealing with permission, let’s login as a root user and change our current directory to /root:
+           </p>
+</li>
+</ul>
+<pre><code>sudo su -</code></pre>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        ⌨️ 2d. Verify the AWS CLI
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            We can check the current version of
+            <code>
+             AWS CLI
+            </code>
+            :
+           </p>
+</li>
+</ul>
+<pre><code>aws --version</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating aws --version" class="img-large" height="52" loading="lazy" src="../assets/tutorials/week-11/08-2d-verify-the-aws-cli-001.png" width="935"/>
+</div>
+<p>
+          So the default version of AWS CLI is
+          <code>
+           2.17.18
+          </code>
+          which is good enough to meet the requirement to use
+          <code>
+           eksctl
+          </code>
+          which requires AWS CLI version &gt;=
+          <code>
+           2.2.37
+          </code>
+          . Nice!!!
+         </p>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📦 2e. Install kubectl
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s install
+            <code>
+             kubectl
+            </code>
+            which is the standard, open-source command-line tool for any
+            <code>
+             Kubernetes
+            </code>
+            cluster. It's used for deploying applications, inspecting resources, and managing the cluster's state.
+           </p>
+</li>
+<li>
+<p>
+            Next, let's install kubectl so please refer to this documentation:
+           </p>
+</li>
+<li>
+<p>
+            Install a <code>kubectl</code> version that matches your cluster’s minor version, or differs by no more than one minor version. The command below is an example for a Kubernetes 1.35 cluster; use the current URL listed in the AWS EKS installation guide if your cluster version differs.
+           </p>
+</li>
+<li>
+<p>
+            Download the kubectl binary for your cluster's Kubernetes version from Amazon S3:
+           </p>
+</li>
+</ul>
+<pre><code>curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.35.3/2026-04-08/bin/linux/amd64/kubectl</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Apply execute permissions to the binary:
+           </p>
+</li>
+</ul>
+<pre><code>chmod +x ./kubectl</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Copy the binary to a folder in your PATH.
+           </p>
+</li>
+</ul>
+<pre><code>mkdir -p $HOME/bin &amp;&amp; cp ./kubectl $HOME/bin/kubectl &amp;&amp; export PATH=$PATH:$HOME/bin</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Add the $HOME/bin path to your shell initialization file so that it is configured when you open a shell.
+           </p>
+</li>
+</ul>
+<pre><code>echo 'export PATH=$PATH:$HOME/bin' &gt;&gt; ~/.bashrc</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            After you install kubectl, you can verify its version with the following command:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl version --client</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl version --client" class="img-large" height="84" loading="lazy" src="../assets/tutorials/week-11/09-2e-install-kubectl-001.png" width="670"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📦 2f. Install eksctl
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s install
+            <strong>
+<code>
+              eksctl
+             </code>
+</strong>
+            which is a popular open-source tool sponsored by
+            <code>
+             AWS
+            </code>
+            that simplifies many
+            <code>
+             EKS
+            </code>
+            -specific tasks. While you created the cluster through the console, eksctl is excellent for creating clusters,
+            <code>
+             node groups
+            </code>
+            , and other resources from the command line.
+           </p>
+</li>
+<li>
+<p>
+            Next, let's install eksctl so please refer to this documentation:
+           </p>
+</li>
+<li>
+<p>
+            Download and extract the latest release of eksctl with the following command.
+           </p>
+</li>
+</ul>
+<pre><code>curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Move the extracted binary to
+            <code>
+             /usr/local/bin
+            </code>
+            .
+           </p>
+</li>
+</ul>
+<pre><code>sudo mv /tmp/eksctl /usr/local/bin</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Test that your installation was successful with the following command.
+           </p>
+</li>
+</ul>
+<pre><code>eksctl version</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating eksctl version" class="img-large" height="51" loading="lazy" src="../assets/tutorials/week-11/10-2f-install-eksctl-001.png" width="500"/>
+</div>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="connect-to-eks">
+<h2 class="collapsible-header">
+     🔗 3. Connect kubectl to the EKS cluster
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Alright, now we are ready to connect an
+           <code>
+            EKS
+           </code>
+           cluster!
+          </p>
+</li>
+<li>
+<p>
+           But first, we need to figure out what is our current Availability Zone of our
+           <code>
+            EC2
+           </code>
+           instance:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating First, confirm the AWS Region in which the management instance and EKS cluster are running:" class="img-large" height="49" loading="lazy" src="../assets/tutorials/week-11/11-3-connect-kubectl-to-the-eks-cluster-001.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating First, confirm the AWS Region in which the management instance and EKS cluster are running:" class="img-large" height="354" loading="lazy" src="../assets/tutorials/week-11/11-3-connect-kubectl-to-the-eks-cluster-002.png" width="329"/>
+</div>
+<p>
+         This example uses the <code>us-east-1</code> Region (US East, N. Virginia).
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The template command to connect an existing EKS cluster is:
+          </p>
+</li>
+</ul>
+<pre><code>aws eks update-kubeconfig --name &lt;cluster-name&gt; --region &lt;zone-name&gt;</code></pre>
+<p>
+         We need to change “cluster-name” to be the name of our cluster created before, “region-name” to be the name of the region we want to create our cluster.
+        </p>
+<p class="callout callout--checkpoint">
+<strong>Context checkpoint:</strong> What local configuration does <code>aws eks update-kubeconfig</code> change, and why should you verify the active context before running a destructive <code>kubectl</code> command?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's run this aws eks update-
+           <code>
+            kubeconfig
+           </code>
+           command to connect an EKS cluster:
+          </p>
+</li>
+</ul>
+<pre><code>aws eks update-kubeconfig --name devops-eks-cluster --region us-east-1</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating aws eks update-kubeconfig --name devops-eks-cluster --region us-east-1" class="img-large" height="42" loading="lazy" src="../assets/tutorials/week-11/11-3-connect-kubectl-to-the-eks-cluster-003.png" width="850"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The file “
+           <code>
+            /root/.kube/config
+           </code>
+           ” is very important. Whoever got that file will have the permission to control our EKS cluster! Let's check out the config file of our EKS cluster to learn more about this file:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             The screenshot shows that the server URL and the certificate-authority-data in the file are the same as what's displayed in the
+             <code>
+              AWS
+             </code>
+             EKS console.
+            </p>
+</li>
+<li>
+<p>
+             This confirms that your management instance is now fully configured to communicate with your EKS cluster.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>cat /root/.kube/config</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating cat /root/.kube/config" class="img-large" height="617" loading="lazy" src="../assets/tutorials/week-11/11-3-connect-kubectl-to-the-eks-cluster-004.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating cat /root/.kube/config" class="img-large" height="490" loading="lazy" src="../assets/tutorials/week-11/11-3-connect-kubectl-to-the-eks-cluster-005.png" width="935"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="manage-eks-workloads">
+<h2 class="collapsible-header">
+     🚀 4. Deploy and manage workloads on EKS
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<h4 class="collapsible-header collapsible-header--chip">
+        🔍 4a. Inspect the EKS cluster
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's display info of nodes in our cluster:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              The
+              <strong>
+<code>
+                kubectl
+               </code>
+</strong>
+<strong>
+               get
+              </strong>
+<strong>
+               nodes
+              </strong>
+              command is the "hello world" of cluster management. Seeing your two nodes with a Ready status is the final confirmation that your cluster is fully operational.
+             </p>
+<p class="callout callout--checkpoint">
+<strong>Reachability checkpoint:</strong> Ready worker nodes do not prove that users can reach the application. Which layers would you verify next, such as Pods, Service endpoints, the load balancer, and security-group rules, and in what order?
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>kubectl get nodes</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get nodes" class="img-large" height="104" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-001.png" width="935"/>
+</div>
+<p>
+          Both
+          <code>
+           EC2
+          </code>
+          worker nodes report <code>Ready</code> and can accept workloads.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Use <code>kubectl get all</code> to list the main workload resources, including
+            <code>
+             pods
+            </code>
+            ,
+            <code>
+             services
+            </code>
+            :
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get all</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get all" class="img-large" height="82" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-002.png" width="935"/>
+</div>
+<p>
+          Initially, there is no other
+          <code>
+           service
+          </code>
+          yet!
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Install git and clone the GitHub voting application repo:
+           </p>
+</li>
+</ul>
+<pre><code>yum install git -y
+git clone https://github.com/TomHuynhSG/Simple-Voting-Application-Docker</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating yum install git -y git clone https://github.com/TomHuynhSG/Simple-Voting-Application-Docker" class="img-large" height="148" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-003.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Change the current directory to be inside k8s-specifications folder where all of our k8s yaml files are located:
+           </p>
+</li>
+</ul>
+<pre><code>cd Simple-Voting-Application-Docker/aws-eks-example/k8s-specifications/</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating cd Simple-Voting-Application-Docker/aws-eks-example/k8s-specifications/" class="img-large" height="96" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-004.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Run these K8s yaml files to create
+            <code>
+             deployments
+            </code>
+            and services to launch the voting application:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              The series of
+              <strong>
+               kubectl
+              </strong>
+<strong>
+               create
+              </strong>
+<strong>
+<code>
+                -f
+               </code>
+</strong>
+<strong>
+<code>
+                &lt;filename&gt;
+               </code>
+<code>
+                .yaml
+               </code>
+</strong>
+              commands is the core of deploying an application. Each command reads a
+              <code>
+               YAML
+              </code>
+              file and tells the
+              <code>
+               Kubernetes
+              </code>
+              API to create the resources defined within it (Deployments, Services, etc.). The explanation correctly breaks down the purpose of each component: a frontend (
+              <code>
+               voting-app
+              </code>
+              ), a backend database (postgres), a cache (redis), a processor (
+              <code>
+               worker-app
+              </code>
+              ), and a results viewer (
+              <code>
+               result-app
+              </code>
+              ).
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>kubectl create -f voting-app-deploy.yaml
+kubectl create -f voting-app-service.yaml
+kubectl create -f redis-deploy.yaml
+kubectl create -f redis-service.yaml
+kubectl create -f postgres-deploy.yaml
+kubectl create -f postgres-service.yaml
+kubectl create -f worker-app-deploy.yaml
+kubectl create -f result-app-deploy.yaml
+kubectl create -f result-app-service.yaml</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl create -f voting-app-deploy.yaml kubectl create -f voting-app-service.yaml kubectl create -f redis-deploy.yaml kubectl create -f redis-service.yaml kubectl create" class="img-large" height="354" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-005.png" width="935"/>
+</div>
+<p>
+<strong>
+           [Alternative]
+          </strong>
+          Instead of running each yaml file, you can also keep it simple by running “kubectl create
+          <code>
+           -f
+          </code>
+          .”
+         </p>
+<p class="callout callout--note">
+<strong>
+           [Explanation]
+          </strong>
+          Each command uses a
+          <code>
+           .yaml
+          </code>
+          file to create different resources within the Kubernetes cluster:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             kubectl
+            </strong>
+<strong>
+             create
+            </strong>
+<strong>
+<code>
+              -f
+             </code>
+</strong>
+<strong>
+<code>
+              voting-app-service.yaml
+             </code>
+</strong>
+            &amp;
+            <strong>
+             kubectl
+            </strong>
+<strong>
+             create
+            </strong>
+<strong>
+<code>
+              -f
+             </code>
+</strong>
+<strong>
+<code>
+              voting-app-deploy.yaml
+             </code>
+</strong>
+            : These commands launch the front-end part of the voting application. The
+            <code>
+             voting-app-service.yaml
+            </code>
+            defines the service that exposes the voting app to the users through a web interface. The
+            <code>
+             voting-app-deploy.yaml
+            </code>
+            defines a
+            <code>
+             deployment
+            </code>
+            , which manages the creation and scaling of the voting app pods.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             kubectl
+            </strong>
+<strong>
+             create
+            </strong>
+<strong>
+<code>
+              -f
+             </code>
+</strong>
+<strong>
+<code>
+              redis-deploy.yaml
+             </code>
+</strong>
+            &amp;
+            <strong>
+             kubectl
+            </strong>
+<strong>
+             create
+            </strong>
+<strong>
+<code>
+              -f
+             </code>
+</strong>
+<strong>
+<code>
+              redis-service.yaml
+             </code>
+</strong>
+            : These commands are for deploying Redis, an in-memory data store used as a database, cache, and message broker. The
+            <code>
+             redis-deploy.yaml
+            </code>
+            creates the deployment for the Redis containers, while
+            <code>
+             redis-service.yaml
+            </code>
+            exposes Redis to the other components of the application that require it.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             kubectl
+            </strong>
+<strong>
+             create
+            </strong>
+<strong>
+<code>
+              -f
+             </code>
+</strong>
+<strong>
+<code>
+              postgres-deploy.yaml
+             </code>
+</strong>
+            &amp;
+            <strong>
+             kubectl
+            </strong>
+<strong>
+             create
+            </strong>
+<strong>
+<code>
+              -f
+             </code>
+</strong>
+<strong>
+<code>
+              postgres-service.yaml
+             </code>
+</strong>
+            : These commands deploy a PostgreSQL database, which is a relational database used to persist data. The
+            <code>
+             postgres-deploy.yaml
+            </code>
+            handles the deployment of the PostgreSQL containers, and
+            <code>
+             postgres-service.yaml
+            </code>
+            makes the database accessible to other parts of the application that need to store or retrieve data.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             kubectl
+            </strong>
+<strong>
+             create
+            </strong>
+<strong>
+<code>
+              -f
+             </code>
+</strong>
+<strong>
+<code>
+              worker-app-deploy.yaml
+             </code>
+</strong>
+            : This command launches a background worker that processes tasks in the voting application, such as compiling and updating vote counts. The
+            <code>
+             worker-app-deploy.yaml
+            </code>
+            defines how this worker operates and scales within the Kubernetes environment.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             kubectl
+            </strong>
+<strong>
+             create
+            </strong>
+<strong>
+<code>
+              -f
+             </code>
+</strong>
+<strong>
+<code>
+              result-app-deploy.yaml
+             </code>
+</strong>
+            &amp;
+            <strong>
+             kubectl
+            </strong>
+<strong>
+             create
+            </strong>
+<strong>
+<code>
+              -f
+             </code>
+</strong>
+<strong>
+<code>
+              result-app-service.yaml
+             </code>
+</strong>
+            : These commands are for the component that displays the results of the voting. The
+            <code>
+             result-app-deploy.yaml
+            </code>
+            sets up the deployment for the results application, and
+            <code>
+             result-app-service.yaml
+            </code>
+            defines the service to expose the results to users or other applications.
+           </p>
+</li>
+</ul>
+<p>
+          Each
+          <code>
+           .yaml
+          </code>
+          file contains the configuration for a specific part of the application and its related Kubernetes resources. Together, they work to create a distributed, scalable voting application.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            List out the deployment and services (svc) resources in the Kubernetes cluster:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              The
+              <strong>
+               kubectl
+              </strong>
+<strong>
+               get
+              </strong>
+<strong>
+               deployments,svc
+              </strong>
+<strong>
+               command
+              </strong>
+              is used to check the status of the deployment. The key thing to look for is the
+              <strong>
+<code>
+                EXTERNAL-IP
+               </code>
+</strong>
+              for the services of type:
+              <strong>
+<code>
+                LoadBalancer
+               </code>
+</strong>
+              . This is the public DNS name of the
+              <code>
+               AWS
+              </code>
+<code>
+               Elastic Load Balancer
+              </code>
+              that
+              <code>
+               EKS
+              </code>
+              automatically created for you. This is the URL you will use to access the application.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>kubectl get deployments,svc</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get deployments,svc" class="img-large" height="191" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-006.png" width="935"/>
+</div>
+<p>
+<strong>
+           These
+          </strong>
+<strong>
+           above
+          </strong>
+<strong>
+           screenshots
+          </strong>
+<strong>
+           are
+          </strong>
+<strong>
+           the
+          </strong>
+<strong>
+           payoff!
+          </strong>
+          They show the voting and result websites being accessed via the Load Balancer URLs. The bottom image connects the abstract DNS name to a concrete "Load Balancer" resource in the EC2 dashboard, reinforcing the link between Kubernetes and the underlying AWS services.
+         </p>
+<p class="callout callout--note">
+<strong>
+           [Explanation]
+          </strong>
+          The following output connects the application URLs to the Kubernetes resources running behind them:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             The
+            </strong>
+<strong>
+             first
+            </strong>
+<strong>
+             table
+            </strong>
+<strong>
+             of
+            </strong>
+<strong>
+             deployment
+            </strong>
+<strong>
+             shows
+            </strong>
+<strong>
+             the
+            </strong>
+<strong>
+             list
+            </strong>
+<strong>
+             of
+            </strong>
+<strong>
+             deployment
+            </strong>
+<strong>
+             resources
+            </strong>
+<strong>
+             in
+            </strong>
+<strong>
+             the
+            </strong>
+<strong>
+             Kubernetes
+            </strong>
+<strong>
+             cluster.
+            </strong>
+            Deployments are responsible for creating and updating instances of your application. We can see four deployments with names such as
+            <code>
+             postgres-deploy
+            </code>
+            ,
+            <code>
+             redis-deploy
+            </code>
+            , etc.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             The
+            </strong>
+<strong>
+             second
+            </strong>
+<strong>
+             table
+            </strong>
+<strong>
+             of
+            </strong>
+<strong>
+             deployment
+            </strong>
+<strong>
+             shows
+            </strong>
+<strong>
+             the
+            </strong>
+<strong>
+             services
+            </strong>
+<strong>
+             in
+            </strong>
+<strong>
+             the
+            </strong>
+<strong>
+             Kubernetes
+            </strong>
+<strong>
+             cluster.
+            </strong>
+            Services in Kubernetes are an abstraction that defines a logical set of pods and a policy by which to access them, often via a network. The TYPE column indicates the kind of service, for example, ClusterIP which is a default type providing a service inside a cluster that other apps inside your cluster can access, and LoadBalancer which exposes the service externally to the cluster by using a cloud provider's load balancer. The
+            <code>
+             EXTERNAL-IP
+            </code>
+            for result-service and voting-service shows that these services are exposed outside of the cluster, likely allowing web traffic to reach the application. The red boxes highlight that the applications are accessible via the load balancers with external IP addresses and ports specified, suggesting that these services are reachable from outside the Kubernetes cluster. This is a common setup for web applications that need to be accessible to users or external systems.
+           </p>
+</li>
+<li>
+<p>
+            You can copy and paste the URL of these load balancers to access the voting website and the result website like below here:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+               Note:
+              </strong>
+              make sure your url has the http protocol like http:// … Otherwise the websites won’t be loaded without the correct URLs.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating won’t be loaded without the correct URLs." class="img-large" height="473" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-007.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating won’t be loaded without the correct URLs." class="img-large" height="473" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-008.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Also, you can investigate further in the load balancer by going to the
+            <strong>
+             load
+            </strong>
+<strong>
+             balancer
+            </strong>
+<strong>
+             dashboard
+            </strong>
+            to look for the right balancer with the same DNS name like so:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating look for the right balancer with the same DNS name like so:" class="img-large" height="182" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-009.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating look for the right balancer with the same DNS name like so:" class="img-large" height="566" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-010.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            This screenshot below shows the details of the AWS Load Balancer. The key takeaway is the "Listeners" section. It shows that the load balancer is listening for traffic on
+            <code>
+             port 80
+            </code>
+            (standard HTTP) and forwarding it to a TCP port on the worker nodes (in this case, 30790). Kubernetes manages this port mapping automatically.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating manages this port mapping automatically." class="img-large" height="273" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-011.png" width="527"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            List the Pods, Services, Deployments, and ReplicaSets for further investigation:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              The
+              <strong>
+               kubectl
+              </strong>
+<strong>
+               get
+              </strong>
+<strong>
+               all
+              </strong>
+<strong>
+               c
+              </strong>
+              ommand provides a comprehensive view of all the resources created. The explanation correctly identifies the four main types of objects:
+             </p>
+</li>
+<li>
+<p>
+<strong>
+               Pods:
+              </strong>
+              The actual running instances of your application containers.
+             </p>
+</li>
+<li>
+<p>
+<strong>
+               Services:
+              </strong>
+              The networking layer that exposes your pods.
+             </p>
+</li>
+<li>
+<p>
+<strong>
+               Deployments:
+              </strong>
+              The controller that manages the Pods and ensures the desired number of replicas are running.
+             </p>
+</li>
+<li>
+<p>
+<strong>
+               ReplicaSets
+              </strong>
+              : A lower-level controller managed by the Deployment, responsible for maintaining a stable set of replica Pods.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>kubectl get all</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get all" class="img-large" height="384" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-012.png" width="935"/>
+</div>
+<p class="callout callout--note">
+<strong>
+           [Explanation]
+          </strong>
+          The command groups the cluster's main workload and networking resources into four sections:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Pods
+            </strong>
+            : The first section lists the pods, which are the smallest deployable units that can be created and managed in Kubernetes. Each
+            <code>
+             pod
+            </code>
+            represents a running process on your cluster. In this case, there are pods for PostgreSQL, Redis, a result app, and a worker app, each of which is running (1/1 READY) and has not been restarted since they were deployed (0 RESTARTS).
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             Services
+            </strong>
+            : The second section lists the services, which provide stable endpoints for connecting to the pods. The services shown are for the database (db), Kubernetes itself (kubernetes), Redis, and two services related to the voting application (result-service and voting-service). The result-service and voting-service are exposed externally (LoadBalancer), which means they can be accessed from outside the Kubernetes cluster. External IP addresses are provided for these services, indicating where the services can be accessed.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             Deployments
+            </strong>
+            : The third section shows the deployments, which provide declarative updates to applications. A deployment allows you to describe an application’s life cycle, such as which images to use for the app, the number of pods, and the way to update them, among other aspects. There are deployments for PostgreSQL, Redis, the result app, and the worker app, all up-to-date and available.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             ReplicaSets
+            </strong>
+            : The last section lists the replica sets, which ensure that a specified number of pod replicas are running at any given time. This is useful for scaling and self-healing of the application. Each of the replica sets corresponds to one of the deployments and shows the desired count of replicas, which is 1 in this case, and the current count, which matches the desired count.
+           </p>
+</li>
+<li>
+<p>
+            The nice thing about EKS is to allow you to use EKS cluster dashboard with the “Resources” tab to monitor and check the components inside your cluster:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              These below screenshots show the graphical equivalent of the kubectl commands. The AWS EKS console provides a user-friendly way to view the status of your
+              <strong>
+               Pods
+              </strong>
+              ,
+              <strong>
+               Deployments
+              </strong>
+              ,
+              <strong>
+               Services
+              </strong>
+              , and other Kubernetes resources. This can be very helpful for quick visual checks and for users who are less comfortable with the command line.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating quick visual checks and for users who are less comfortable with the command line." class="img-large" height="460" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-013.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating quick visual checks and for users who are less comfortable with the command line." class="img-large" height="427" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-014.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating quick visual checks and for users who are less comfortable with the command line." class="img-large" height="266" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-015.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating quick visual checks and for users who are less comfortable with the command line." class="img-large" height="484" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-016.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating quick visual checks and for users who are less comfortable with the command line." class="img-large" height="412" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-017.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s clean up everything by deleting all resources in this kubernetes!
+           </p>
+</li>
+<li>
+<p>
+            Before deleting, you might want to list all the resources in the default namespace to review what will be deleted.
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get all --namespace=default</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get all --namespace=default" class="img-large" height="347" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-018.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You can delete all resources in the default namespace using the following command. This command deletes pods, services, deployments, replicasets, etc.
+           </p>
+</li>
+</ul>
+<pre><code>kubectl delete all --all --namespace=default</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl delete all --all --namespace=default" class="img-large" height="324" loading="lazy" src="../assets/tutorials/week-11/12-4a-inspect-the-eks-cluster-019.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             [Optional]
+            </strong>
+            If you want to delete specific types of resources only (like pods or services), you can specify the resource type.
+           </p>
+</li>
+</ul>
+<pre><code>kubectl delete pods,services --all --namespace=default</code></pre>
+</div>
+</div></div>
+<h4 class="tutorial-static-heading">
+        🎁 Bonus activity: Practise with Nginx pods
+       </h4>
+<div class="tutorial-flow">
+<p>
+         Maybe the above voting application is a good way to show off what
+         <code>
+          Kubernetes
+         </code>
+         can do! However, if you find the above voting application is a bit too complex for you to understand then please continue these bonus activities which provides a simpler, hands-on, step-by-step example to create yaml files as well. Hopefully, these bonus activities below are more friendly and suitable for beginners!
+        </p>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🧪 4b. Create one test pod
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's create a
+            <code>
+             pod
+            </code>
+            in our cluster using the httpd image from Docker Hub:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+<code>
+                kubectl
+               </code>
+</strong>
+<strong>
+               run
+              </strong>
+              is a simple, imperative way to create a single pod. It's great for quick tests.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>kubectl run webapp --image=httpd</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl run webapp --image=httpd" class="img-large" height="66" loading="lazy" src="../assets/tutorials/week-11/13-4b-create-one-test-pod-001.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's check out if our pod is running:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get pods</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get pods" class="img-large" height="104" loading="lazy" src="../assets/tutorials/week-11/13-4b-create-one-test-pod-002.png" width="793"/>
+</div>
+<p>
+          As you can see, the pod name “webapp" is running!
+         </p>
+<p>
+          Awesome! Let's move on to the next section so we need to clean up this pod by deleting it!
+         </p>
+<pre><code>kubectl delete pod webapp</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl delete pod webapp" class="img-large" height="57" loading="lazy" src="../assets/tutorials/week-11/13-4b-create-one-test-pod-003.png" width="766"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's check out if our pod is deleted:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get pods</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get pods" class="img-large" height="78" loading="lazy" src="../assets/tutorials/week-11/13-4b-create-one-test-pod-004.png" width="876"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🧬 4c. Create multiple pods with a deployment
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Deploying two
+            <code>
+             pods
+            </code>
+            contains Nginx container and expose these two pods at
+            <code>
+             port 80
+            </code>
+            :
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              This is a more robust imperative command that creates a
+              <code>
+               Deployment
+              </code>
+              , which in turn creates a ReplicaSet and the desired number of Pods (in this case, 2). This is the preferred imperative method for creating workloads.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>kubectl create deployment demo-nginx --image=nginx --replicas=2 --port=80</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl create deployment demo-nginx --image=nginx --replicas=2 --port=80" class="img-large" height="42" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-001.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            List all
+            <code>
+             deployments
+            </code>
+            of the cluster:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get deployment</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get deployment" class="img-large" height="114" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-002.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            List all replicasets of the cluster:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get replicaset</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get replicaset" class="img-large" height="107" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-003.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            List all pods of the cluster:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get pods</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get pods" class="img-large" height="90" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-004.png" width="669"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            List all resources in one go:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get all</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get all" class="img-large" height="335" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-005.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            So far, these two pods are only accessible within the internal IP addresses so we need to expose them.
+           </p>
+</li>
+<li>
+<p>
+            Expose the deployment as a
+            <code>
+             service
+            </code>
+            . This will create an
+            <code>
+             ELB
+            </code>
+            in front of those 2 containers and allow us to publicly access them.
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              This is a key command. It creates a Service that "exposes" the pods managed by the deployment. By specifying
+              <code>
+               --type=LoadBalancer
+              </code>
+              , you are telling
+              <code>
+               Kubernetes
+              </code>
+              to provision an external
+              <code>
+               AWS
+              </code>
+              Load Balancer and configure it to send traffic to the Nginx pods. The diagram perfectly illustrates this relationship.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>kubectl expose deployment demo-nginx --port=80 --type=LoadBalancer</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl expose deployment demo-nginx --port=80 --type=LoadBalancer (1 of 2)" class="img-large" height="42" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-006.png" width="935"/>
+<img alt="Screenshot illustrating kubectl expose deployment demo-nginx --port=80 --type=LoadBalancer (2 of 2)" class="img-large" height="286" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-007.png" width="935"/>
+</div>
+<p>
+          Here is the explanation:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            When you deploy, you set the replicas to be 2 so the replica set will create two pods.
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              When you run the “expose" command, then you will attach a load balancer (SVC) to access these two pods and allow the browser to open the content inside those pods via the public DNS of your load balancer.
+             </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+            This is how you can verify the result of the expose command. You find the
+            <code>
+             EXTERNAL-IP
+            </code>
+            from
+            <code>
+             kubectl
+            </code>
+            get service, see the corresponding Load Balancer in the AWS console, and then access the Nginx welcome page using its DNS name. The kubectl describe service command provides detailed information, including the Events section which shows the progress of the load balancer creation.
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get service</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get service" class="img-large" height="56" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-008.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            That created a load balancer in AWS to expose these two pods for us! Let’s check out the information in the AWS Load Balancer dashboard!
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating information in the AWS Load Balancer dashboard!" class="img-large" height="719" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-009.png" width="935"/>
+</div>
+<p>
+          The DNS name of the load balancer matches the External IP of our service in the cluster!
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You can list out
+            <strong>
+             all
+            </strong>
+<strong>
+             events
+            </strong>
+<strong>
+             happening
+            </strong>
+            in the K8s cluster to see if the load balancer is ready:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get events --sort-by=.metadata.creationTimestamp</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get events --sort-by=.metadata.creationTimestamp" class="img-large" height="162" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-010.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Or you can list out only events happening in
+            <strong>
+             a
+            </strong>
+<strong>
+             specific
+            </strong>
+<strong>
+             service
+            </strong>
+            to see if the load balancer is ready:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl describe service demo-nginx</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl describe service demo-nginx" class="img-large" height="350" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-011.png" width="690"/>
+</div>
+<p>
+          These events show that our load balancer is ready!
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s open the browser and enter that DNS name / IP address:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Let’s open the browser and enter that DNS name / IP address:" class="img-large" height="307" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-012.png" width="799"/>
+</div>
+<p>
+          You should see the welcome page of nginx which is served by our load balancer!
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You can check out about the port forwarding of the load balancer:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating You can check out about the port forwarding of the load balancer:" class="img-large" height="464" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-013.png" width="707"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s list out all the resources of our cluster again!
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get all</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get all" class="img-large" height="188" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-014.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's clean up everything to move on to the next section!
+           </p>
+</li>
+</ul>
+<pre><code>kubectl delete deployment demo-nginx</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl delete deployment demo-nginx" class="img-large" height="65" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-015.png" width="935"/>
+</div>
+<pre><code>kubectl delete service/demo-nginx</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl delete service/demo-nginx" class="img-large" height="62" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-016.png" width="935"/>
+</div>
+<p>
+          This takes some time to delete service as it will clean up resources and delete the load balancer also!
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s list out all the resources of our cluster again!
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get all</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get all" class="img-large" height="83" loading="lazy" src="../assets/tutorials/week-11/14-4c-create-multiple-pods-with-a-deployment-017.png" width="934"/>
+</div>
+<p>
+          All is gone! Nice!
+         </p>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📄 4d. Create deployment and service manifests
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s create a “
+            <code>
+             pod.yml
+            </code>
+            ” manifest file to create a
+            <code>
+             pod
+            </code>
+</p>
+</li>
+</ul>
+<pre><code>nano pod.yml</code></pre>
+<div class="code-legend">
+<span class="legend-item"><span class="legend-swatch hl-new"></span> Resource definition</span>
+<span class="legend-item"><span class="legend-swatch hl-focus"></span> Identity or connection</span>
+</div>
+<pre><code class="language-kubernetes"><span class="hl-new">apiVersion: v1</span>
+<span class="hl-new">kind: Pod</span>
+<span class="hl-new">metadata:</span>
+<span class="hl-new">  name: nginx-pod</span>
+<span class="hl-focus">  labels:</span>
+<span class="hl-focus">    app: demo-app</span>
+<span class="hl-new">spec:</span>
+<span class="hl-new">  containers:</span>
+<span class="hl-new">    - name: nginx-container</span>
+<span class="hl-new">      image: nginx</span>
+<span class="hl-new">      ports:</span>
+<span class="hl-focus">        - name: http</span>
+<span class="hl-focus">          containerPort: 80</span></code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Create a pod by running that manifest yaml file:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl apply -f pod.yml</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl apply -f pod.yml" class="img-large" height="72" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-001.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s list out all the resources of our cluster!
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get all</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get all" class="img-large" height="161" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-002.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Next, let’s create a manifest yaml file “
+            <code>
+             service.yml
+            </code>
+            ” to create a
+            <code>
+             service
+            </code>
+            :
+           </p>
+</li>
+</ul>
+<pre><code>nano service.yml</code></pre>
+<pre><code class="language-kubernetes"><span class="hl-new">apiVersion: v1</span>
+<span class="hl-new">kind: Service</span>
+<span class="hl-new">metadata:</span>
+<span class="hl-new">  name: demo-service</span>
+<span class="hl-new">spec:</span>
+<span class="hl-focus">  type: LoadBalancer</span>
+<span class="hl-new">  ports:</span>
+<span class="hl-new">    - name: http</span>
+<span class="hl-new">      port: 80</span>
+<span class="hl-focus">      targetPort: 80</span>
+<span class="hl-focus">  selector:</span>
+<span class="hl-focus">    app: demo-app</span></code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Create a service by running that manifest yaml file:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl apply -f service.yml</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl apply -f service.yml" class="img-large" height="60" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-003.png" width="837"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s list out all the resources of our cluster!
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get all</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get all" class="img-large" height="90" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-004.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            We can get more information of that service:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl describe service/demo-service</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl describe service/demo-service" class="img-large" height="443" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-005.png" width="935"/>
+</div>
+<p class="callout callout--note">
+<strong>
+           Note:
+          </strong>
+          Did you realize we need to match the name “demo-app” for the selector of our balancer and the labels of our pod so that every traffic coming to the balancer will be redirected to the
+          <code>
+           pods
+          </code>
+          .
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You can check out the details of our load balancer in the
+            <code>
+             AWS
+            </code>
+            dashboard:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating You can check out the details of our load balancer in the AWS dashboard:" class="img-large" height="746" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-006.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s open the browser and enter that DNS name / IP address:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Let’s open the browser and enter that DNS name / IP address:" class="img-large" height="324" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-007.png" width="934"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Display more information of the pod:
+           </p>
+</li>
+</ul>
+<pre><code>kubectl get pod -o wide</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl get pod -o wide" class="img-large" height="47" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-008.png" width="935"/>
+</div>
+<p>
+          You can even see the private ip address and the name of the
+          <code>
+           EC2
+          </code>
+          instance running that pod!
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Nice, now, let’s clean up everything!
+           </p>
+</li>
+</ul>
+<pre><code>kubectl delete service/demo-service
+kubectl delete pod/nginx-pod</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating kubectl delete service/demo-service kubectl delete pod/nginx-pod" class="img-large" height="80" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-009.png" width="934"/>
+</div>
+<p>
+          After cleaning up, only the default kubernetes service is running!
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            To totally clean up everything, you should delete the worker
+            <code>
+             node group
+            </code>
+            and the
+            <code>
+             EKS
+            </code>
+            cluster as well like below!
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Deleting the managed node group from the EKS console will trigger the termination of the associated EC2 worker nodes.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating the associated EC2 worker nodes." class="img-large" height="119" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-010.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating the associated EC2 worker nodes." class="img-large" height="101" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-011.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating the associated EC2 worker nodes." class="img-large" height="412" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-012.png" width="935"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating the associated EC2 worker nodes." class="img-large" height="210" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-013.png" width="935"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Once the node group is gone, you can delete the cluster itself. This de-provisions the entire EKS
+            <code>
+             control plane
+            </code>
+            .
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating control plane." class="img-large" height="174" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-014.png" width="934"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating control plane." class="img-large" height="218" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-015.png" width="513"/>
+</div>
+<p>
+          It will take some time to clean up everything in the cluster! So wait for it!
+         </p>
+<p>
+          That's it! Great job! What a great success to wrap things up!
+         </p>
+<p>
+          Congratulations on completing the final AWS EKS lab! This is an amazing journey of conquering DevOps together! Thank you for your hard work and patience to reach the finish line of this journey!
+         </p>
+<p class="callout callout--warning">
+<strong>
+           Cost and cleanup warning
+          </strong>
+          : EKS can consume Learner Lab credit quickly because
+          <code>
+           Amazon EKS
+          </code>
+          requires running multiple underlying resources like EC2 worker nodes, load balancers, and networking components, even for small clusters, so you end up paying for all those supporting
+          <code>
+           services
+          </code>
+          in addition to the EKS control plane fee, which makes even short learning experiments costly. Delete the application Services first so Kubernetes can remove their AWS load balancers; then delete the node group and cluster. Finally, verify in the AWS consoles that load balancers, EC2 instances, and attached volumes created by the lab are gone.
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating EKS. Otherwise it will burn all of your AWS Learner Lab credits." class="img-large" height="558" loading="lazy" src="../assets/tutorials/week-11/15-4d-create-deployment-and-service-manifests-016.png" width="729"/>
+</div>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="whats-next">
+<h2 class="collapsible-header start-open">
+     📚 Continue the course
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--home">
+<a class="card" href="week-10-kubernetes-lab.html">
+<h3>
+        ☸️ Week 10: Kubernetes
+       </h3>
+<p>
+        Continue through the COSC2767 learning path.
+       </p>
+<span class="go-to-link">
+        Previous lab
+       </span>
+</a>
+<a class="card" href="../index.html">
+<h3>
+        🗓️ All weekly labs
+       </h3>
+<p>
+        Return to the course map and review every weekly tutorial.
+       </p>
+<span class="go-to-link">
+        Course home
+       </span>
+</a>
+</div>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-orchestration)" href="../sub_pages/week-10-kubernetes-lab.html"><span class="pager__dir">← Previous</span><span class="pager__title">Kubernetes</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-resources)" href="../sub_pages/devops-cheatsheet.html"><span class="pager__dir">Next →</span><span class="pager__title">DevOps Cheatsheet</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="objective"><a class="toc__link" href="#objective"><span>Objective</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="eks-lab-overview"><a class="toc__link" href="#eks-lab-overview"><span>Amazon EKS lab overview</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="understand-labrole"><a class="toc__link" href="#understand-labrole"><span>1. Understand the LabRole IAM role</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="prepare-eks-management-instance"><a class="toc__link" href="#prepare-eks-management-instance"><span>2. Prepare the EKS management instance</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="connect-to-eks"><a class="toc__link" href="#connect-to-eks"><span>3. Connect kubectl to the EKS cluster</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="manage-eks-workloads"><a class="toc__link" href="#manage-eks-workloads"><span>4. Deploy and manage workloads on EKS</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="whats-next"><a class="toc__link" href="#whats-next"><span>Continue the course</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 7 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

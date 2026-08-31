@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Debug log: a Jenkins build died in the SSH Agent plugin before reaching any build step. The full investigation — from wrong first hypothesis to the one-line root cause in config.xml — and the lessons it teaches.">
+<title>Debug Log: Jenkins SSH Agent - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="sshagent-debug" data-stage="resources" data-root="../" style="--stage-accent: var(--stage-resources)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Reference</span><span class="crumb-sep">/</span><span>Debug Log: Jenkins SSH Agent</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Reference</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">🧯</span>Debug Log: Jenkins SSH Agent Failure</h1>
+<p class="page-hero__intro">A real debugging session: the <code>DockerTest</code> job died with <code>[ssh-agent] Unable to start agent</code> before reaching any build step. How the investigation went from a wrong first hypothesis to a one-line root cause in <code>config.xml</code> — and what it teaches about debugging services.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>4</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>10</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>8</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="dbg-failure">
+<h2 class="collapsible-header start-open">💥 The failure<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>What broke</h3>
+<p>The Week 6 pipeline job (Jenkins builds the WAR, then <code>scp</code>s it to the Docker EC2 as <code>dockeradmin</code>) failed instantly — before checkout, before any shell step ran.</p>
+<pre><code class="language-bash">FATAL: [ssh-agent] Unable to start agent
+java.lang.IllegalArgumentException:
+  Not an ssh-agent executable path
+  (filename must be ssh-agent(.exe))
+    at ...ExecRemoteAgent.toSSHAgentPath</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> the stack trace names the exact class and method that threw — that is a map, not noise. <code>toSSHAgentPath</code> only validates a path string.</p>
+</div>
+<div class="card">
+<h3>Why it fails this early</h3>
+<p>The job had <em>Build Environment → SSH Agent</em> ticked, so Jenkins tries to launch a real <code>ssh-agent</code> process on the controller before anything else. If that wrapper throws, nothing after it — checkout, build, deploy — ever runs.</p>
+<pre><code class="language-bash">Build Environment wrappers   → run FIRST
+SCM checkout                 → never reached
+Build / post-build (scp)     → never reached</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> a build dies with zero build output — check the wrappers before suspecting your own script, key, or network.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Note:</strong> at this point nothing about the SSH key, the Docker host's IP, or <code>StrictHostKeyChecking</code> had been reached — chasing those first would have been wasted time.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="dbg-investigation">
+<h2 class="collapsible-header">🔍 The investigation, step by step<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Hypothesis 1: the binary is missing — wrong</h3>
+<p>"Not an ssh-agent executable path" reads like <code>openssh-clients</code> was never installed. Checking as root found the binary just fine — which disproves nothing, because root's login shell is not the Jenkins process.</p>
+<pre><code class="language-bash">which ssh-agent
+# /usr/bin/ssh-agent   ← exists, but this is ROOT's PATH</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> a service resolves commands from the environment of its own process, not from whatever shell you happen to be debugging in.</p>
+</div>
+<div class="card">
+<h3>Hypothesis 2: Jenkins has a broken PATH — also wrong</h3>
+<p>So check the environment the Jenkins JVM <em>actually</em> sees: once as the <code>jenkins</code> user, and once by reading the live process's environment straight from <code>/proc</code>.</p>
+<pre><code class="language-bash">sudo -u jenkins -s /bin/bash -c 'echo $PATH; which ssh-agent'
+# /usr/bin/ssh-agent  ✓
+
+sudo tr '\0' '\n' &lt; /proc/$(pgrep -f jenkins.war | head -1)/environ \
+    | grep '^PATH='
+# PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin  ✓</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> any "command not found"-shaped error from a systemd service — <code>/proc/&lt;pid&gt;/environ</code> is the ground truth for what a running process inherited.</p>
+</div>
+<div class="card">
+<h3>Step 3: stop guessing, read the configuration</h3>
+<p>PATH was fine and the binary existed, so the plugin had to be rejecting something it was <em>given</em>. Two greps: the plugin version, and what the job actually stored for the wrapper.</p>
+<pre><code class="language-bash">grep -i '^Plugin-Version' \
+  /var/lib/jenkins/plugins/ssh-agent/META-INF/MANIFEST.MF
+# Plugin-Version: 416.v4d76015a_5d68
+
+grep -i -A8 sshagent /var/lib/jenkins/jobs/DockerTest/config.xml</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> every Jenkins job is a readable XML file under <code>/var/lib/jenkins/jobs/&lt;name&gt;/config.xml</code> — what the UI saved is often more honest than what the UI shows.</p>
+</div>
+<div class="card">
+<h3>The smoking gun</h3>
+<p>The job's wrapper config contained one suspicious line: an executable field that was present but empty.</p>
+<pre><code class="language-xml">&lt;com...sshagent.SSHAgentBuildWrapper plugin="ssh-agent@416..."&gt;
+  &lt;credentialIds&gt;
+    &lt;string&gt;dockeradmin-key&lt;/string&gt;
+  &lt;/credentialIds&gt;
+  &lt;ignoreMissing&gt;false&lt;/ignoreMissing&gt;
+  &lt;timeout&gt;1&lt;/timeout&gt;
+  &lt;executable&gt;&lt;/executable&gt;   &lt;!-- ← the bug --&gt;
+&lt;/com...sshagent.SSHAgentBuildWrapper&gt;</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> "present but empty" and "absent" are different states to a program — <code>&lt;executable&gt;&lt;/executable&gt;</code> deserializes to <code>""</code>, not to "unset".</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="dbg-root-cause">
+<h2 class="collapsible-header">🎯 Root cause and fix<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Root cause</h3>
+<p>SSH Agent plugin 416 added an optional "Executable" override. Saving the job with the field blank serialized <code>&lt;executable&gt;&lt;/executable&gt;</code>, and the plugin treats the empty string as a <em>configured path</em> rather than "use the PATH". An empty string has no filename, so the <code>ssh-agent(.exe)</code> filename check throws.</p>
+<pre><code class="language-bash">""  →  toSSHAgentPath("")  →  no filename
+    →  IllegalArgumentException
+# PATH, binary, credentials: all irrelevant</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> the error message pointed at the executable <em>path</em> all along — the misleading part was assuming the path came from PATH lookup instead of configuration.</p>
+</div>
+<div class="card">
+<h3>The durable fix</h3>
+<p>Set the field explicitly so there is nothing ambiguous left to deserialize: job → <em>Configure → Build Environment → SSH Agent → Advanced → Executable</em>.</p>
+<pre><code class="language-bash">/usr/bin/ssh-agent</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> fixing it for good. Deleting the empty element from <code>config.xml</code> and reloading also works, but re-saving the job in the UI with a blank field brings the bug straight back.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> after setting the executable and re-running, the wrapper starts the agent, checkout proceeds, and the post-build <code>scp</code> is finally reached.</p>
+<p class="callout callout--warning"><strong>Important:</strong> spotted during the session — the job targeted <code>dockeradmin@172.31.26.68</code> while an earlier screenshot used <code>...17.236</code>. Make sure the address is your Docker EC2's <em>current private IP</em>, and use the same one in any manual <code>ssh</code> test.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="dbg-lessons">
+<h2 class="collapsible-header">🧠 Lessons worth keeping<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>The plugin was optional all along</h3>
+<p>The lab's deploy step is a plain <code>scp</code> in an Execute-shell block. That needs no wrapper — only a key pair owned by the <code>jenkins</code> user, trusted by <code>dockeradmin</code> on the Docker host, verified by hand <em>before</em> touching Jenkins.</p>
+<pre><code class="language-bash">sudo -u jenkins -s /bin/bash
+ssh-keygen -t rsa -b 2048 -N '' -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub   # → append to dockeradmin's authorized_keys
+
+sudo -u jenkins ssh -o StrictHostKeyChecking=no \
+  dockeradmin@&lt;docker-private-ip&gt; hostname   # must print the host</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> a plugin is fighting you and the underlying task is one command — removing the moving part is a legitimate fix.</p>
+</div>
+<div class="card">
+<h3>Debugging habits this session proves</h3>
+<p>Each step of the investigation is a reusable move — the same sequence applies to almost any "service can't find X" failure.</p>
+<pre><code class="language-bash">1. Read the stack trace: WHICH class/method threw?
+2. Wrappers run first — zero build output means
+   the failure is before your code
+3. root's shell ≠ the service's environment
+4. /proc/&lt;pid&gt;/environ = what the process REALLY sees
+5. When env checks out, read the stored CONFIG
+6. "Empty" and "unset" are not the same value</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> two hypotheses were tested and <em>disproven</em> with evidence before the config was read — cheap checks first, but never stop at "looks fine".</p>
+</div>
+</div>
+<p class="callout callout--warning"><strong>Security:</strong> never load root's private key into Jenkins credentials because it was the one lying around — generate a dedicated key pair for the <code>jenkins</code> user so it can be rotated or revoked without touching root.</p>
+<p class="callout callout--task"><strong>Question:</strong> your Jenkins build fails with "docker: command not found", yet <code>docker</code> works fine when you SSH in. Using this page's sequence, list the three things you would check, in order, before reinstalling anything.</p>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-resources)" href="../sub_pages/challenge-6-setup-script.html"><span class="pager__dir">← Previous</span><span class="pager__title">Challenge 6 Setup Script</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-resources)" href="../sub_pages/ssh-keys-github.html"><span class="pager__dir">Next →</span><span class="pager__title">SSH Keys & GitHub Access</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="dbg-failure"><a class="toc__link" href="#dbg-failure"><span>The failure</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="dbg-investigation"><a class="toc__link" href="#dbg-investigation"><span>The investigation, step by step</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="dbg-root-cause"><a class="toc__link" href="#dbg-root-cause"><span>Root cause and fix</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="dbg-lessons"><a class="toc__link" href="#dbg-lessons"><span>Lessons worth keeping</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 4 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

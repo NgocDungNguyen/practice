@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Official tools, documentation, downloads, and practice environments supporting the COSC2767 Systems Deployment and Operations labs.">
+    <title>Useful DevOps Resources - COSC2767</title>
+    <link rel="icon" href="../assets/images/rmit-logo.png" type="image/png">
+    <link rel="stylesheet" href="../css/main.css">
+    <script type="module" src="../js/main.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="back-to-home-container">
+                <a href="../index.html" class="back-to-home-button">&larr; Back to Home</a>
+            </div>
+            <div class="university-branding">
+                <img src="../assets/images/rmit-logo.png" alt="RMIT University Logo" class="logo">
+                <span class="university-name">RMIT University</span>
+            </div>
+            <p class="course-kicker">COSC2767 · Systems Deployment and Operations</p>
+            <h1>Useful DevOps <span>Resources</span></h1>
+            <p class="intro">A course-aligned collection of downloads, official documentation, command references, and interactive practice environments. Use these resources when setting up a lab, checking command syntax, or extending an exercise beyond the weekly walkthrough.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="cheatsheet-section" id="environments-cloud-access">
+            <h2 class="collapsible-header start-open">
+                🖥️ Environments and cloud access
+                <span class="collapse-icon"></span>
+            </h2>
+            <div class="collapsible-content">
+                <div class="grid-container grid-container--compact">
+                    <div class="card">
+                        <h3>VirtualBox</h3>
+                        <p>Download the hypervisor used in Week 1 to create Ubuntu and Fedora virtual machines on supported host systems.</p>
+                        <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank" rel="noopener noreferrer" class="button">Open VirtualBox downloads</a>
+                    </div>
+                    <div class="card">
+                        <h3>Ubuntu Server</h3>
+                        <p>Download Ubuntu Server images and access Canonical's installation and administration guidance.</p>
+                        <a href="https://ubuntu.com/server" target="_blank" rel="noopener noreferrer" class="button">Open Ubuntu Server</a>
+                    </div>
+                    <div class="card">
+                        <h3>Fedora Server</h3>
+                        <p>Download Fedora Server for x86_64 or ARM and review the current release, checksum, and installation options.</p>
+                        <a href="https://fedoraproject.org/en/server/download/" target="_blank" rel="noopener noreferrer" class="button">Open Fedora Server</a>
+                    </div>
+                    <div class="card">
+                        <h3>AWS Academy</h3>
+                        <p>Sign in to the AWS Academy learning portal and launch the Learner Lab environment used throughout the course.</p>
+                        <a href="https://www.awsacademy.com/LMS_Login" target="_blank" rel="noopener noreferrer" class="button">Open AWS Academy</a>
+                    </div>
+                    <div class="card">
+                        <h3>Amazon EC2 getting started</h3>
+                        <p>Review the official workflow for launching, connecting to, and cleaning up an EC2 instance.</p>
+                        <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html" target="_blank" rel="noopener noreferrer" class="button">Open EC2 guide</a>
+                    </div>
+                    <div class="card">
+                        <h3>AWS CLI installation</h3>
+                        <p>Install or update the AWS command-line client used to inspect credentials and connect local tools to AWS services.</p>
+                        <a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html" target="_blank" rel="noopener noreferrer" class="button">Open AWS CLI guide</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cheatsheet-section" id="linux-shell">
+            <h2 class="collapsible-header">
+                🐧 Linux, Bash, and command-line references
+                <span class="collapse-icon"></span>
+            </h2>
+            <div class="collapsible-content">
+                <div class="grid-container grid-container--compact">
+                    <div class="card">
+                        <h3>GNU Bash manual</h3>
+                        <p>The authoritative reference for shell syntax, variables, redirection, pipelines, conditionals, loops, and scripts.</p>
+                        <a href="https://www.gnu.org/software/bash/manual/" target="_blank" rel="noopener noreferrer" class="button">Open Bash manual</a>
+                    </div>
+                    <div class="card">
+                        <h3>Linux manual pages</h3>
+                        <p>Search Linux system-call, command, configuration, and administration manual pages online.</p>
+                        <a href="https://man7.org/linux/man-pages/" target="_blank" rel="noopener noreferrer" class="button">Open Linux man-pages</a>
+                    </div>
+                    <div class="card">
+                        <h3>GNU Coreutils</h3>
+                        <p>Detailed documentation for core commands such as <code>cat</code>, <code>cp</code>, <code>ls</code>, <code>mkdir</code>, <code>mv</code>, <code>rm</code>, and <code>wc</code>.</p>
+                        <a href="https://www.gnu.org/software/coreutils/manual/coreutils.html" target="_blank" rel="noopener noreferrer" class="button">Open Coreutils manual</a>
+                    </div>
+                    <div class="card">
+                        <h3>ShellCheck</h3>
+                        <p>Analyse Bash scripts for common quoting, portability, control-flow, and syntax problems before running them on a server.</p>
+                        <a href="https://www.shellcheck.net/" target="_blank" rel="noopener noreferrer" class="button">Open ShellCheck</a>
+                    </div>
+                    <div class="card">
+                        <h3>curl documentation</h3>
+                        <p>Reference options for downloading files, following redirects, sending requests, and troubleshooting HTTP transfers.</p>
+                        <a href="https://curl.se/docs/" target="_blank" rel="noopener noreferrer" class="button">Open curl docs</a>
+                    </div>
+                    <div class="card">
+                        <h3>jq manual</h3>
+                        <p>Learn how to inspect, filter, and transform JSON output from command-line tools and cloud APIs.</p>
+                        <a href="https://jqlang.org/manual/" target="_blank" rel="noopener noreferrer" class="button">Open jq manual</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cheatsheet-section" id="version-control-delivery">
+            <h2 class="collapsible-header">
+                🌿 Version control, builds, and continuous delivery
+                <span class="collapse-icon"></span>
+            </h2>
+            <div class="collapsible-content">
+                <div class="grid-container grid-container--compact">
+                    <div class="card">
+                        <h3>Git command reference</h3>
+                        <p>Official documentation for repository setup, commits, branches, merges, remotes, inspection, and recovery commands.</p>
+                        <a href="https://git-scm.com/docs" target="_blank" rel="noopener noreferrer" class="button">Open Git reference</a>
+                    </div>
+                    <div class="card">
+                        <h3>GitHub SSH authentication</h3>
+                        <p>Generate an SSH key, add it to the agent and GitHub account, and test authenticated repository access.</p>
+                        <a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh" target="_blank" rel="noopener noreferrer" class="button">Open GitHub SSH guide</a>
+                    </div>
+                    <div class="card">
+                        <h3>Learn Git Branching</h3>
+                        <p>Practise commits, branches, merges, rebases, and remote operations in an interactive visual environment.</p>
+                        <a href="https://learngitbranching.js.org/" target="_blank" rel="noopener noreferrer" class="button">Start interactive practice</a>
+                    </div>
+                    <div class="card">
+                        <h3>Oh My Git!</h3>
+                        <p>A game-based Git learning environment included as a bonus activity in the Week 3 tutorial.</p>
+                        <a href="https://blinry.itch.io/oh-my-git" target="_blank" rel="noopener noreferrer" class="button">Open Oh My Git!</a>
+                    </div>
+                    <div class="card">
+                        <h3>Apache Maven guides</h3>
+                        <p>Learn Maven's project structure, POM, dependencies, archetypes, build lifecycle, and packaging goals.</p>
+                        <a href="https://maven.apache.org/guides/index.html" target="_blank" rel="noopener noreferrer" class="button">Open Maven guides</a>
+                    </div>
+                    <div class="card">
+                        <h3>Apache Tomcat 9</h3>
+                        <p>Reference Tomcat setup, configuration, deployment, Manager application, logging, security, and service operation.</p>
+                        <a href="https://tomcat.apache.org/tomcat-9.0-doc/" target="_blank" rel="noopener noreferrer" class="button">Open Tomcat documentation</a>
+                    </div>
+                    <div class="card">
+                        <h3>Jenkins user documentation</h3>
+                        <p>Follow Jenkins installation, administration, credentials, jobs, agents, and continuous-delivery guidance.</p>
+                        <a href="https://www.jenkins.io/doc/" target="_blank" rel="noopener noreferrer" class="button">Open Jenkins docs</a>
+                    </div>
+                    <div class="card">
+                        <h3>Jenkins Pipeline</h3>
+                        <p>Understand stages, steps, agents, Declarative syntax, Jenkinsfiles, and pipeline-as-code practices.</p>
+                        <a href="https://www.jenkins.io/doc/book/pipeline/" target="_blank" rel="noopener noreferrer" class="button">Open Pipeline handbook</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cheatsheet-section" id="containers-automation">
+            <h2 class="collapsible-header">
+                📦 Containers and configuration automation
+                <span class="collapse-icon"></span>
+            </h2>
+            <div class="collapsible-content">
+                <div class="grid-container grid-container--compact">
+                    <div class="card">
+                        <h3>Docker documentation</h3>
+                        <p>Start with container fundamentals, then move into Dockerfiles, images, registries, networking, storage, and CLI reference.</p>
+                        <a href="https://docs.docker.com/" target="_blank" rel="noopener noreferrer" class="button">Open Docker docs</a>
+                    </div>
+                    <div class="card">
+                        <h3>Docker Hub</h3>
+                        <p>Find trusted images, inspect tags, create repositories, and publish the custom images built in Weeks 6 and 7.</p>
+                        <a href="https://hub.docker.com/" target="_blank" rel="noopener noreferrer" class="button">Open Docker Hub</a>
+                    </div>
+                    <div class="card">
+                        <h3>Docker Compose</h3>
+                        <p>Learn the Compose application model and manage multi-container services, networks, volumes, and lifecycle commands.</p>
+                        <a href="https://docs.docker.com/compose/" target="_blank" rel="noopener noreferrer" class="button">Open Compose docs</a>
+                    </div>
+                    <div class="card">
+                        <h3>Compose file reference</h3>
+                        <p>Check valid keys and structures for services, images, builds, ports, dependencies, networks, and volumes.</p>
+                        <a href="https://docs.docker.com/reference/compose-file/" target="_blank" rel="noopener noreferrer" class="button">Open Compose reference</a>
+                    </div>
+                    <div class="card">
+                        <h3>Ansible getting started</h3>
+                        <p>Review control nodes, inventories, managed hosts, ad-hoc commands, playbooks, tasks, and repeatable automation.</p>
+                        <a href="https://docs.ansible.com/projects/ansible/latest/getting_started/index.html" target="_blank" rel="noopener noreferrer" class="button">Open Ansible guide</a>
+                    </div>
+                    <div class="card">
+                        <h3>Docker Swarm workshop</h3>
+                        <p>Use Docker's interactive lab to practise managers, workers, services, replicas, overlay networking, and scaling.</p>
+                        <a href="https://training.play-with-docker.com/ops-s1-swarm-intro/" target="_blank" rel="noopener noreferrer" class="button">Start Swarm workshop</a>
+                    </div>
+                    <div class="card">
+                        <h3>Application Load Balancers</h3>
+                        <p>Understand listeners, rules, target groups, health checks, and multi-instance traffic distribution used in Week 9.</p>
+                        <a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html" target="_blank" rel="noopener noreferrer" class="button">Open ALB documentation</a>
+                    </div>
+                    <div class="card">
+                        <h3>Prometheus overview</h3>
+                        <p>Extend the Compose monitoring challenge with metric collection concepts, exporters, targets, and PromQL.</p>
+                        <a href="https://prometheus.io/docs/introduction/overview/" target="_blank" rel="noopener noreferrer" class="button">Open Prometheus docs</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cheatsheet-section" id="kubernetes-eks">
+            <h2 class="collapsible-header">
+                ☸️ Kubernetes and Amazon EKS
+                <span class="collapse-icon"></span>
+            </h2>
+            <div class="collapsible-content">
+                <div class="grid-container grid-container--compact">
+                    <div class="card">
+                        <h3>Kubernetes Basics</h3>
+                        <p>Work through the official modules for creating a cluster, deploying, exploring, exposing, scaling, and updating an application.</p>
+                        <a href="https://kubernetes.io/docs/tutorials/kubernetes-basics/" target="_blank" rel="noopener noreferrer" class="button">Open Kubernetes Basics</a>
+                    </div>
+                    <div class="card">
+                        <h3>kubectl quick reference</h3>
+                        <p>Find concise examples for contexts, resources, manifests, inspection, logs, updates, services, and cleanup.</p>
+                        <a href="https://kubernetes.io/docs/reference/kubectl/quick-reference/" target="_blank" rel="noopener noreferrer" class="button">Open kubectl reference</a>
+                    </div>
+                    <div class="card">
+                        <h3>Minikube start guide</h3>
+                        <p>Create a local learning cluster and review drivers, status checks, services, dashboards, add-ons, and teardown.</p>
+                        <a href="https://minikube.sigs.k8s.io/docs/start/" target="_blank" rel="noopener noreferrer" class="button">Open Minikube guide</a>
+                    </div>
+                    <div class="card">
+                        <h3>Play with Kubernetes</h3>
+                        <p>Launch temporary browser-based Kubernetes nodes for hands-on practice without preparing your own server.</p>
+                        <a href="https://labs.play-with-k8s.com/" target="_blank" rel="noopener noreferrer" class="button">Open Play with Kubernetes</a>
+                    </div>
+                    <div class="card">
+                        <h3>Kubernetes workshop</h3>
+                        <p>Follow the interactive Kubernetes workshop linked from Week 10 for additional cluster and workload practice.</p>
+                        <a href="https://training.play-with-kubernetes.com/kubernetes-workshop/" target="_blank" rel="noopener noreferrer" class="button">Start Kubernetes workshop</a>
+                    </div>
+                    <div class="card">
+                        <h3>Amazon EKS setup</h3>
+                        <p>Install the AWS CLI, <code>kubectl</code>, and <code>eksctl</code>, then review permissions and version compatibility.</p>
+                        <a href="https://docs.aws.amazon.com/eks/latest/userguide/setting-up.html" target="_blank" rel="noopener noreferrer" class="button">Open EKS setup</a>
+                    </div>
+                    <div class="card">
+                        <h3>EKS with eksctl</h3>
+                        <p>Follow AWS's cluster lifecycle guide for provisioning nodes, viewing resources, and deleting chargeable infrastructure.</p>
+                        <a href="https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html" target="_blank" rel="noopener noreferrer" class="button">Open eksctl quickstart</a>
+                    </div>
+                    <div class="card">
+                        <h3>Install kubectl and eksctl</h3>
+                        <p>Use the version-aware Amazon EKS installation instructions for both command-line clients.</p>
+                        <a href="https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html" target="_blank" rel="noopener noreferrer" class="button">Open tool setup guide</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© Created by Tom Huynh with love ❤️</p>
+    </footer>
+</body>
+</html>

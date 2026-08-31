@@ -1,0 +1,76 @@
+/* =============================================================================
+   Site header
+   University branding, page title, intro copy and the back-to-home control.
+   Every page uses the same markup; only the <h1> and .intro text change.
+   ========================================================================== */
+
+header {
+    text-align: center;
+    padding: var(--space-6) var(--space-4);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: var(--space-6);
+}
+
+header h1 {
+    font-size: 2.5rem;
+    color: var(--heading-color);
+    font-weight: 300;
+}
+
+/* The <span> inside the title carries the emphasised half of the heading. */
+header h1 span {
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+header .intro {
+    max-width: var(--intro-max-width);
+    margin: 1rem auto 0;
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+
+header .intro + .intro {
+    margin-top: 1rem;
+}
+
+/* --- University branding ------------------------------------------------- */
+.university-branding {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.logo {
+    height: var(--logo-height);
+}
+
+.university-name {
+    font-size: var(--university-name-size);
+    font-weight: 500;
+    color: var(--heading-color);
+}
+
+/* --- Back-to-home row ----------------------------------------------------- */
+.back-to-home-container {
+    padding: var(--space-2) 0;
+    margin-bottom: var(--space-3);
+    text-align: left;
+}
+
+@media (max-width: 640px) {
+    :root {
+        --logo-height: 56px;
+        --university-name-size: 1.5rem;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+
+    .university-branding {
+        gap: var(--space-2);
+    }
+}

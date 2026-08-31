@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Everything SSH keys in one place: how key-pair auth works, generating and protecting keys, GitHub over SSH, private repos with a PAT or SSH in Jenkins, server-to-server keys, and a troubleshooting checklist.">
+<title>SSH Keys &amp; GitHub Private Repos - COSC2767</title>
+</head>
+<body>
+<header>
+<div class="container">
+<h1>🔑 SSH Keys &amp; GitHub Private Repos</h1>
+<p class="intro">Everything key-related in one place: how key-pair auth actually works, generating and protecting keys, connecting to <code>GitHub</code> over SSH, getting <code>Jenkins</code> into private repos with a <code>PAT</code> or an SSH key, server-to-server access, and what to check when it all says <em>Permission denied</em>.</p>
+</div>
+</header>
+<main class="container">
+
+<section class="cheatsheet-section" id="ssh-model">
+<h2 class="collapsible-header start-open">🧠 How key-pair auth works<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Two files, one rule</h3>
+<p>A key pair is two matching files. The private key proves who you are and <em>never leaves the machine it was made on</em>; the public key is safe to hand out and gets copied to whatever you want to log in to.</p>
+<pre><code class="language-bash">~/.ssh/id_rsa       # PRIVATE — stays put, never shared
+~/.ssh/id_rsa.pub   # PUBLIC  — copy to GitHub / servers
+
+# who holds what:
+GitHub account      ← your public key
+remote server       ← your public key (in authorized_keys)
+Jenkins credential  ← a private key (its own, dedicated)</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> if you are ever pasting a <em>private</em> key somewhere, stop and ask why — the only legitimate case in this course is the Jenkins credential store.</p>
+</div>
+<div class="card">
+<h3>Who is authenticating to whom</h3>
+<p>Every SSH problem gets easier once you name the two ends. The course uses three distinct pairs — do not reuse one key for everything.</p>
+<pre><code class="language-bash">you        → EC2        : AWS .pem key (downloaded once)
+you        → GitHub     : your laptop's key pair
+jenkins    → GitHub     : the jenkins user's key pair
+jenkins    → docker EC2 : the jenkins user's key pair
+                          (public half in dockeradmin's
+                           authorized_keys)</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> the identity that runs the command owns the key. Jenkins jobs run as the <code>jenkins</code> user — your keys and root's keys are invisible to it.</p>
+</div>
+</div>
+<p class="callout"><strong>Security:</strong> a leaked private key is a leaked identity. Never commit one to a repository, never paste one into chat or a wiki, and give each machine/service its own pair so any single key can be revoked without breaking everything else.</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="ssh-generate">
+<h2 class="collapsible-header">🧰 Generate and protect keys<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Generate a pair (the Week 3 way)</h3>
+<p>One command, two Enters (default location, no passphrase for lab use). The comment just labels the key so you can recognise it later on GitHub.</p>
+<pre><code class="language-bash">ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+ls -l ~/.ssh/          # id_rsa + id_rsa.pub
+cat ~/.ssh/id_rsa.pub  # the shareable half</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> any machine or service user needs its own identity — run it <em>as</em> that user, on that machine.</p>
+</div>
+<div class="card">
+<h3>Permissions: SSH refuses sloppy keys</h3>
+<p>SSH will silently ignore (or loudly reject) keys other users can read. These are the numbers that matter, including the AWS <code>.pem</code> rule from Week 3.</p>
+<pre><code class="language-bash">chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_rsa ~/.ssh/authorized_keys
+chmod 400 devops_project_key.pem   # AWS key, read-only
+# symptom of getting this wrong:
+# "WARNING: UNPROTECTED PRIVATE KEY FILE!"</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> 7-0-0 on the directory, 6-0-0 (or 400) on the files. "Permissions are too open" is a refusal, not a warning.</p>
+</div>
+<div class="card">
+<h3>ssh-agent: type the passphrase once</h3>
+<p>If a key has a passphrase, the agent holds it unlocked for your session. (This is the same <code>ssh-agent</code> the Jenkins plugin from the <a href="debug-jenkins-ssh-agent.html">debug log</a> tries to launch.)</p>
+<pre><code class="language-bash">eval "$(ssh-agent -s)"   # start the agent
+ssh-add ~/.ssh/id_rsa    # load the key
+ssh-add -l               # list what is loaded</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> Git keeps prompting for a passphrase, or a tool needs key auth without interactive prompts.</p>
+</div>
+</div>
+<p class="callout"><strong>Note:</strong> lab keys skip the passphrase for convenience. On anything real, set one — it is the difference between "stolen file" and "stolen identity".</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="ssh-github">
+<h2 class="collapsible-header">🐙 GitHub over SSH from your machine<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Register the key, then prove it</h3>
+<p>GitHub gets your <em>public</em> key: <em>Settings → SSH and GPG keys → New SSH key</em>, paste, save. Then test before touching any repo.</p>
+<pre><code class="language-bash">cat ~/.ssh/id_rsa.pub    # copy this to GitHub
+ssh -T git@github.com
+# "Hi <username>! You've successfully authenticated,
+#  but GitHub does not provide shell access."</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> that greeting is the checkpoint — if <code>ssh -T</code> fails, no <code>git clone</code> will succeed either, so always test here first.</p>
+</div>
+<div class="card">
+<h3>SSH remotes vs HTTPS remotes</h3>
+<p>The URL scheme decides the auth method. HTTPS URLs ask for username + token; SSH URLs use your key silently. Switching an existing clone is one command.</p>
+<pre><code class="language-bash">git clone git@github.com:&lt;user&gt;/&lt;repo&gt;.git   # SSH form
+
+git remote -v                                # what am I using?
+git remote set-url origin git@github.com:&lt;user&gt;/&lt;repo&gt;.git
+</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> <code>git@github.com:</code> (colon) = SSH; <code>https://github.com/</code> = HTTPS. Half of all "it keeps asking for a password" problems are just the wrong remote form.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> <code>ssh -T git@github.com</code> greets you by username, and <code>git clone</code> of your private repo works with the <code>git@github.com:</code> URL and no password prompt.</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="ssh-pat">
+<h2 class="collapsible-header">🎫 Private repos over HTTPS: the PAT<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Generate the token (Week 5, Challenge 2)</h3>
+<p>A classic Personal Access Token stands in for your password over HTTPS. GitHub: <em>Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token</em>, with the scopes the lab lists.</p>
+<pre><code class="language-bash">repo             # full control of private repositories
+admin:repo_hook  # read repo webhooks (Challenge 1 tie-in)
+delete_repo      # delete repositories</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> the token is shown once — copy it immediately. Treat it exactly like a password, because to Git it <em>is</em> one.</p>
+</div>
+<div class="card">
+<h3>Give the PAT to Jenkins</h3>
+<p><em>Manage Jenkins → Credentials → System → Global credentials → Add Credentials</em>. Then any job whose Git URL is the HTTPS form can select this credential.</p>
+<pre><code class="language-bash">Kind     : Username with password
+Username : your GitHub username
+Password : the PAT (not your real password)
+ID       : github-pat        # recognisable name
+
+Job → SCM → Repository URL:
+https://github.com/&lt;user&gt;/&lt;private-repo&gt;.git
+Credentials: github-pat</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> the job clones over HTTPS. If the repo URL starts with <code>git@</code>, this credential type is the wrong one — that is the SSH section below.</p>
+</div>
+</div>
+<p class="callout"><strong>Security:</strong> never bake a PAT into a repo URL, a script, or a Dockerfile — anyone who can read the job config or build log can read the token. The Jenkins credential store exists precisely so the token appears nowhere in plain text.</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="ssh-jenkins">
+<h2 class="collapsible-header">🤵 Private repos in Jenkins over SSH<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>1 · A key pair for the Jenkins server (Challenge 3)</h3>
+<p>SSH into the Jenkins EC2 and generate the pair there — this key belongs to the Jenkins box, not to you. Public half goes to GitHub like before.</p>
+<pre><code class="language-bash">ssh-keygen -t rsa -b 4096 -C "jenkins@your-company.com"
+# Enter, Enter (default path ~/.ssh/id_rsa, no passphrase)
+cat ~/.ssh/id_rsa.pub    # → GitHub → Settings → SSH keys</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> for a course lab this works from your login user's home; the strictest version generates it as the <code>jenkins</code> service user (<code>sudo -u jenkins ssh-keygen ...</code>) so ownership matches the process that will use it.</p>
+</div>
+<div class="card">
+<h3>2 · The private key becomes a Jenkins credential</h3>
+<p><em>Manage Jenkins → Credentials → Global → Add Credentials</em>, and this time the kind is the SSH one.</p>
+<pre><code class="language-bash">Kind        : SSH Username with Private Key
+Username    : git                # GitHub's SSH user is always "git"
+Private Key : Enter directly → paste output of: cat ~/.ssh/id_rsa
+ID          : ssh-key-github
+Description : SSH key for GitHub</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> username <code>git</code>, not your GitHub name — the SSH URL is <code>git@github.com:...</code>, so the SSH user is <code>git</code> and the key itself identifies your account.</p>
+</div>
+<div class="card">
+<h3>3 · Host key verification + the job</h3>
+<p>First connections to a brand-new host trigger the authenticity prompt; a headless Jenkins cannot answer it. Tell Jenkins how to handle GitHub's host key, then point the job at the SSH URL.</p>
+<pre><code class="language-bash">Manage Jenkins → Security →
+  Git Host Key Verification Configuration
+  → "Accept first connection"
+
+Job → SCM → Repository URL:
+git@github.com:&lt;user&gt;/&lt;private-repo&gt;.git
+Credentials: ssh-key-github</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> the build fails with "Host key verification failed" even though the credential is correct — this setting, not the key, is the fix.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> a job pointed at <code>git@github.com:&lt;user&gt;/&lt;private-repo&gt;.git</code> with the <code>ssh-key-github</code> credential clones successfully — check the build's console output for the checkout step.</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="ssh-servers">
+<h2 class="collapsible-header">🖥️ Server-to-server: Jenkins → another EC2<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>The authorized_keys pattern</h3>
+<p>Same idea, no GitHub in the middle: the <em>calling</em> machine's public key goes into the <em>receiving</em> user's <code>~/.ssh/authorized_keys</code>. This is how the Week 6 job <code>scp</code>s the WAR to the Docker host as <code>dockeradmin</code>.</p>
+<pre><code class="language-bash"># on the Jenkins EC2, as the user that will connect:
+sudo -u jenkins -s /bin/bash
+ssh-keygen -t rsa -b 2048 -N '' -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub
+
+# on the Docker EC2, as dockeradmin:
+echo "&lt;that public key&gt;" &gt;&gt; ~/.ssh/authorized_keys
+chmod 700 ~/.ssh &amp;&amp; chmod 600 ~/.ssh/authorized_keys</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> generate as <code>jenkins</code>, authorize on <code>dockeradmin</code> — caller's public key, receiver's authorized_keys. Getting the direction backwards is the classic mistake.</p>
+</div>
+<div class="card">
+<h3>Prove it by hand before wiring Jenkins</h3>
+<p>One manual command as the service user settles whether the key setup works — before any plugin, wrapper, or job config can confuse the picture.</p>
+<pre><code class="language-bash">sudo -u jenkins ssh -o StrictHostKeyChecking=no \
+    dockeradmin@&lt;docker-private-ip&gt; hostname
+# prints the Docker host's name → keys are correct
+# now a post-build "Execute shell" scp will work too</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> always — if this works and the Jenkins job still fails, the problem is job configuration, not SSH (see the <a href="debug-jenkins-ssh-agent.html">SSH Agent debug log</a> for exactly that situation).</p>
+</div>
+</div>
+<p class="callout"><strong>Note:</strong> use the Docker EC2's <em>private</em> IP when both instances share a VPC — it survives stop/start, and the traffic never leaves the network.</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="ssh-troubleshoot">
+<h2 class="collapsible-header">🚑 When it breaks: the checklist<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>"Permission denied (publickey)"</h3>
+<p>The server never saw an acceptable key. Work the list in order — it is almost always one of these four.</p>
+<pre><code class="language-bash">1. right key?   ssh -i ~/.ssh/id_rsa user@host
+2. right USER?  ec2-user vs root vs dockeradmin
+3. permissions? chmod 700 ~/.ssh; chmod 600 keys
+4. is the pub key actually in the server's
+   ~/.ssh/authorized_keys — of THAT user?
+# see everything SSH tried:
+ssh -vT git@github.com</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> any publickey rejection — <code>-v</code> shows which keys were offered and which were refused, turning guesswork into reading.</p>
+</div>
+<div class="card">
+<h3>Other classics, fast</h3>
+<p>Each of these has one specific cause — recognising the message is most of the fix.</p>
+<pre><code class="language-bash">"Host key verification failed"
+  → first contact prompt unanswered; in Jenkins set
+    Git Host Key Verification → Accept first connection
+
+"UNPROTECTED PRIVATE KEY FILE"
+  → chmod 400 the .pem / 600 the id_rsa
+
+asks for a password on git push
+  → remote is the HTTPS URL; set-url to git@github.com:
+
+"Not an ssh-agent executable path"
+  → the plugin's empty Executable field, not your key</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> the last one has its own full write-up — the <a href="debug-jenkins-ssh-agent.html">Jenkins SSH Agent debug log</a> on this shelf.</p>
+</div>
+</div>
+<p class="callout"><strong>Question:</strong> <code>ssh -T git@github.com</code> greets you fine, but the Jenkins job cloning the same repo fails with publickey denied. Whose key did you test, and whose key does the job use? That distinction is the whole answer — explain it before peeking at the "who is authenticating to whom" card above.</p>
+</div>
+</section>
+
+</main>
+</body>
+</html>

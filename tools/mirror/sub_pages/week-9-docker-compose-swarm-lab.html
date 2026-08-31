@@ -1,0 +1,5297 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="Define multi-container applications with Compose and orchestrate replicated services with Docker Swarm." name="description"/>
+  <title>
+   Week 9: Docker Compose and Docker Swarm - COSC2767
+  </title>
+  <link href="../assets/images/rmit-logo.png" rel="icon" type="image/png"/>
+  <link href="../css/main.css" rel="stylesheet"/>
+  <script src="../js/main.js" type="module">
+  </script>
+ </head>
+ <body>
+  <header>
+   <div class="container">
+    <div class="back-to-home-container">
+     <a class="back-to-home-button" href="../index.html">
+      ← Back to Home
+     </a>
+    </div>
+    <div class="university-branding">
+     <img alt="RMIT University Logo" class="logo" src="../assets/images/rmit-logo.png"/>
+     <span class="university-name">
+      RMIT University
+     </span>
+    </div>
+    <p class="course-kicker">
+     COSC2767 · Systems Deployment and Operations
+    </p>
+    <h1>
+     🧩 Week 9: Docker Compose and Docker Swarm
+     <span>
+      Lab Guide
+     </span>
+    </h1>
+    <p class="intro">
+     Define multi-container applications with Compose and orchestrate replicated services with
+     <code>
+      Docker Swarm
+     </code>
+     .
+    </p>
+   </div>
+  </header>
+  <main class="container">
+   <section class="cheatsheet-section" id="objective">
+    <h2 class="collapsible-header start-open">
+     🎯 Objective
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Week tutorial screenshot from page 1" class="img-large" loading="lazy" src="../assets/tutorials/week-9/01-objective-001.png"/>
+        </div>
+        <p>
+         In this lab, you will learn the concepts and basic commands for the following topics, then apply them to a working application:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <code>
+            Docker Compose
+           </code>
+           : an excellent tool for development, testing, CI workflows, and staging environments.
+          </p>
+         </li>
+         <li>
+          <p>
+           <code>
+            Docker Swarm
+           </code>
+           : a tool allows you to manage
+           <code>
+            Docker
+           </code>
+           engine clusters locally within the Docker platform. You can use the Docker CLI to create a cluster, deploy application services to the cluster, and manage cluster behavior.
+          </p>
+         </li>
+        </ul>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="docker-compose">
+    <h2 class="collapsible-header">
+     🧩 1. Docker Compose
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating 1. Docker Compose" class="img-large" loading="lazy" src="../assets/tutorials/week-9/02-1-docker-compose-001.png"/>
+        </div>
+        <p>
+         In this section, we will learn how to use
+         <strong>
+          <code>
+           Docker
+          </code>
+         </strong>
+         <strong>
+          Compose
+         </strong>
+         to deploy a
+         <strong>
+          simple
+         </strong>
+         <strong>
+          voting
+         </strong>
+         <strong>
+          application
+         </strong>
+         .
+        </p>
+        <p>
+         A great sample application for docker &amp; docker compose demonstration!
+        </p>
+        <p>
+         The voting application source files are available on GitHub:
+        </p>
+        <p>
+         <a href="https://github.com/TomHuynhSG/simple-voting-application" rel="noopener" target="_blank">
+          https://github.com/TomHuynhSG/simple-voting-application
+         </a>
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating https://github.com/TomHuynhSG/simple-voting-application" class="img-large" loading="lazy" src="../assets/tutorials/week-9/02-1-docker-compose-002.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating https://github.com/TomHuynhSG/simple-voting-application" class="img-large" loading="lazy" src="../assets/tutorials/week-9/02-1-docker-compose-003.png"/>
+        </div>
+        <p>
+         Indeed, this is a distributed application running across five Docker containers.
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Indeed, this is a distributed application running across five Docker containers." class="img-large" loading="lazy" src="../assets/tutorials/week-9/02-1-docker-compose-004.png"/>
+        </div>
+        <p>
+         The Simple Voting Application Docker project consists of five Docker containers connected as follows:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Vote
+           </strong>
+           : A
+           <code>
+            Flask
+           </code>
+           front-end app that allows users to vote between two options.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            <code>
+             Redis
+            </code>
+           </strong>
+           : A Redis queue that collects new votes.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Worker
+           </strong>
+           : A
+           <code>
+            .NET
+           </code>
+           Core and Java application that processes votes and stores them in a
+           <code>
+            PostgreSQL
+           </code>
+           database.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Database
+           </strong>
+           <strong>
+            (db)
+           </strong>
+           : A PostgreSQL database container.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Result
+           </strong>
+           : A
+           <code>
+            Node.js
+           </code>
+           app that displays the voting results in real time.
+          </p>
+         </li>
+        </ul>
+        <p>
+         <code>
+          Docker Compose
+         </code>
+         is used to define and run these multi-container Docker applications. The
+         <strong>
+          <code>
+           docker-compose.yml
+          </code>
+         </strong>
+         file specifies the configuration of each service and their interconnections.
+        </p>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        ☁️ 1a. Create the Docker Compose EC2 server
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          <strong>
+           In
+          </strong>
+          <strong>
+           this
+          </strong>
+          <strong>
+           experiment,
+          </strong>
+          <strong>
+           we
+          </strong>
+          <strong>
+           only
+          </strong>
+          <strong>
+           need
+          </strong>
+          <strong>
+           one
+          </strong>
+          <strong>
+           single
+          </strong>
+          <strong>
+           EC2
+          </strong>
+          <strong>
+           instance
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           learn
+          </strong>
+          <strong>
+           <code>
+            docker-compose
+           </code>
+           :
+          </strong>
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating This Docker Compose exercise requires one EC2 instance:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/03-1a-create-the-docker-compose-ec2-server-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Here are the settings of the EC2:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <strong>
+               Name
+              </strong>
+              : up to you! You can choose the name “
+              <code>
+               voting-server
+              </code>
+              ”.
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               OS
+              </strong>
+              : default Amazon Linux 2023 AMI (Free-tier)
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               Instance
+              </strong>
+              <strong>
+               Type
+              </strong>
+              : t3.micro (Free-tier)
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               Key
+              </strong>
+              <strong>
+               pair
+              </strong>
+              : select and reuse your old key in other labs (
+              <code>
+               devops_project_key
+              </code>
+              )
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               Storage
+              </strong>
+              : Default 8 GB is plenty enough!
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               Security
+              </strong>
+              <strong>
+               Group:
+              </strong>
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                Optional Name:
+                <code>
+                 voting-app-security-group
+                </code>
+               </p>
+              </li>
+              <li>
+               <p>
+                Source Type: Anywhere
+               </p>
+              </li>
+              <li>
+               <p>
+                Open these ports:
+               </p>
+               <ul class="tutorial-list tutorial-list--level-4">
+                <li>
+                 <p>
+                  22 for SSH
+                 </p>
+                </li>
+                <li>
+                 <p>
+                  8080-8081 (only two ports 8080 and 8081)
+                 </p>
+                </li>
+               </ul>
+              </li>
+             </ul>
+            </li>
+           </ul>
+          </li>
+         </ul>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        📦 1b. Install the required tools
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            After that, let’s SSH to the EC2 server.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating After that, let’s SSH to the EC2 server." class="img-large" loading="lazy" src="../assets/tutorials/week-9/04-1b-install-the-required-tools-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            To keep things simple without dealing with permission, let’s login as a root user and change our current directory to /root:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo su -</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating sudo su -" class="img-large" loading="lazy" src="../assets/tutorials/week-9/04-1b-install-the-required-tools-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let's change each EC2 server's hostname so that the next time we log in, it is immediately clear which server we are using.
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              It is recommended to change the name of the hostname to be the same as your ec2 server name. In my case, it is “
+              <code>
+               voting-server
+              </code>
+              ”.
+             </p>
+            </li>
+           </ul>
+          </li>
+          <li>
+           <p>
+            Reboot the server and login with SSH again.
+           </p>
+          </li>
+          <li>
+           <p>
+            Don’t forget to login as the root user:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo su -</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Install Git:
+           </p>
+          </li>
+         </ul>
+         <pre><code>yum install -y git</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Install
+            <code>
+             Docker
+            </code>
+            :
+           </p>
+          </li>
+         </ul>
+         <pre><code>yum install -y docker</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Start Docker:
+           </p>
+          </li>
+         </ul>
+         <pre><code>service docker start</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check Docker’s service status:
+           </p>
+          </li>
+         </ul>
+         <pre><code>service docker status</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating service docker status" class="img-large" loading="lazy" src="../assets/tutorials/week-9/04-1b-install-the-required-tools-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Git clone this repository:
+           </p>
+          </li>
+         </ul>
+         <pre><code>git clone https://github.com/TomHuynhSG/simple-voting-application.git</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Change current directory inside it:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cd simple-voting-application</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s list all files and directories inside our voting project:
+           </p>
+          </li>
+         </ul>
+         <pre><code>ls -la</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating ls -la" class="img-large" loading="lazy" src="../assets/tutorials/week-9/04-1b-install-the-required-tools-004.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🛠️ 1c. Deploy the application without Docker Compose
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Change current directory to vote directory which contains the voting website:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cd vote</code></pre>
+         <p>
+          Please feel free to explore this folder to understand how the vote website works.
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Please feel free to explore this folder to understand how the vote website works." class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Checkout the
+            <code>
+             Dockerfile
+            </code>
+            of that voting website:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cat Dockerfile</code></pre>
+         <p>
+          Can you figure out line by line what it does?
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Build a
+            <code>
+             Docker
+            </code>
+            image of voting application with that Dockerfile:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker build . -t voting-app</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check if the new
+            <code>
+             voting-app
+            </code>
+            image is there:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker images</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker images" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-002.png"/>
+         </div>
+         <p>
+          Aha, the
+          <code>
+           voting-app
+          </code>
+          image is here!
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Aha, the voting-app image is here!" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Run a Docker container from the voting app image ➜ The voting website is now live via
+            <code>
+             port 8080
+            </code>
+            :
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker run --name voting-container -p 8080:80 voting-app</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker run --name voting-container -p 8080:80 voting-app" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-004.png"/>
+         </div>
+         <p>
+          Remember, we run the container without the “
+          <code>
+           -d
+          </code>
+          ” detach mode so we can see what is happening inside the container when we send the requests via the browser.
+         </p>
+         <p>
+          Let’s open the website via the
+          <code>
+           port 8080
+          </code>
+          on your browser:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let’s open the website via the port 8080 on your browser:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-005.png"/>
+         </div>
+         <p>
+          Very nice! However, when you interact with the website by voting for either cats or dogs, we receive an internal server error:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating an internal server error:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-006.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           [Question]
+          </strong>
+          <strong>
+           Why
+          </strong>
+          <strong>
+           is
+          </strong>
+          <strong>
+           that?
+          </strong>
+         </p>
+         <p>
+          If you check your terminal, you will see an error message inside our
+          <code>
+           voting-app
+          </code>
+          container:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating If you check your terminal, you will see an error message inside our voting-app container:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-007.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           [Explanation]
+          </strong>
+          In the
+          <code>
+           app.py
+          </code>
+          , the Python Flask application looks for the “redis” (in-memory data structure store) to store the new voting. Since there is no redis container running, that’s why we got the error.
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating got the error." class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-008.png"/>
+         </div>
+         <p>
+          That’s why we need to run the redis container first!
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can stop the running
+            <code>
+             voting-app
+            </code>
+            container by pressing the keys combination “Ctrl+C”
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating You can stop the running voting-app container by pressing the keys combination “Ctrl+C”" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-009.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s remove the
+            <code>
+             voting-app
+            </code>
+            container so we can start from scratch but correctly this time:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker ps -a</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps -a" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-010.png"/>
+         </div>
+         <pre><code>docker rm &lt;container_id or container_name&gt;</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker rm &lt;container_id or container_name&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-011.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker rm &lt;container_id or container_name&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-012.png"/>
+         </div>
+         <p>
+          Good! Let’s start from scratch again!
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Good! Let’s start from scratch again!" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-013.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Run a Docker container from the
+            <code>
+             Redis
+            </code>
+            image of
+            <code>
+             Docker Hub
+            </code>
+            :
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker run -d --name=redis redis</code></pre>
+         <p>
+          <strong>
+           [Info]
+          </strong>
+          You can learn more about the redis image on
+          <code>
+           Docker Hub
+          </code>
+          here:
+          <a href="https://hub.docker.com/_/redis" rel="noopener" target="_blank">
+           https://hub.docker.com/_/redis
+          </a>
+          . Keep in mind that in a voting application (like polls, upvotes, likes),
+          <strong>
+           Redis
+          </strong>
+          is often used as a message queue or in-memory store to handle a high volume of votes quickly.
+          <strong>
+           Redis
+          </strong>
+          is an in-memory database, so
+          <strong>
+           it
+          </strong>
+          <strong>
+           can
+          </strong>
+          <strong>
+           handle
+          </strong>
+          <strong>
+           thousands
+          </strong>
+          <strong>
+           or
+          </strong>
+          <strong>
+           millions
+          </strong>
+          <strong>
+           of
+          </strong>
+          <strong>
+           vote
+          </strong>
+          <strong>
+           operations
+          </strong>
+          <strong>
+           per
+          </strong>
+          <strong>
+           second
+          </strong>
+          <strong>
+           with
+          </strong>
+          <strong>
+           very
+          </strong>
+          <strong>
+           low
+          </strong>
+          <strong>
+           latency.
+          </strong>
+          The purpose of a Redis container in a voting queue system is to act as a
+          <strong>
+           fast,
+          </strong>
+          <strong>
+           reliable
+          </strong>
+          <strong>
+           middle
+          </strong>
+          <strong>
+           layer
+          </strong>
+          <strong>
+           that
+          </strong>
+          <strong>
+           collects
+          </strong>
+          <strong>
+           votes
+          </strong>
+          <strong>
+           instantly
+          </strong>
+          , ensures they are processed safely, and
+          <strong>
+           relieves
+          </strong>
+          <strong>
+           pressure
+          </strong>
+          <strong>
+           on
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           backend
+          </strong>
+          <strong>
+           database.
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check if the new redis container is there and running:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker ps</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-014.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Run a Docker container from the voting app image ➜ The voting website is now live via
+            <code>
+             port 8080
+            </code>
+            :
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker run -d --name voting-container -p 8080:80 --link redis:redis voting-app</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker run -d --name voting-container -p 8080:80 --link redis:redis voting-app" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-015.png"/>
+         </div>
+         <p>
+          <strong>
+           Notice
+          </strong>
+          <strong>
+           that,
+          </strong>
+          <strong>
+           we
+          </strong>
+          <strong>
+           use
+          </strong>
+          <strong>
+           “
+           <code>
+            -d
+           </code>
+           ”
+          </strong>
+          <strong>
+           detach
+          </strong>
+          <strong>
+           mode
+          </strong>
+          <strong>
+           so
+          </strong>
+          <strong>
+           a
+          </strong>
+          <strong>
+           Docker
+          </strong>
+          <strong>
+           container
+          </strong>
+          <strong>
+           runs
+          </strong>
+          <strong>
+           in
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           background
+          </strong>
+          <strong>
+           of
+          </strong>
+          <strong>
+           your
+          </strong>
+          <strong>
+           terminal.
+          </strong>
+          <strong>
+           It
+          </strong>
+          <strong>
+           does
+          </strong>
+          <strong>
+           not
+          </strong>
+          <strong>
+           receive
+          </strong>
+          <strong>
+           input
+          </strong>
+          <strong>
+           or
+          </strong>
+          <strong>
+           display
+          </strong>
+          <strong>
+           output.
+          </strong>
+          <strong>
+           Also,
+          </strong>
+          <strong>
+           we
+          </strong>
+          <strong>
+           use
+          </strong>
+          <strong>
+           “
+           <code>
+            --link
+           </code>
+           ”
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           add
+          </strong>
+          <strong>
+           links
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           another
+          </strong>
+          <strong>
+           container
+          </strong>
+          <strong>
+           so
+          </strong>
+          <strong>
+           they
+          </strong>
+          <strong>
+           can
+          </strong>
+          <strong>
+           connect
+          </strong>
+          <strong>
+           together
+          </strong>
+          <strong>
+           (allow
+          </strong>
+          <strong>
+           containers
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           discover
+          </strong>
+          <strong>
+           each
+          </strong>
+          <strong>
+           other
+          </strong>
+          <strong>
+           and
+          </strong>
+          <strong>
+           securely
+          </strong>
+          <strong>
+           transfer
+          </strong>
+          <strong>
+           information
+          </strong>
+          <strong>
+           about
+          </strong>
+          <strong>
+           one
+          </strong>
+          <strong>
+           container
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           another
+          </strong>
+          <strong>
+           container).
+          </strong>
+         </p>
+         <p>
+          <strong>
+           So
+          </strong>
+          <strong>
+           far,
+          </strong>
+          <strong>
+           we
+          </strong>
+          <strong>
+           have
+          </strong>
+          <strong>
+           two
+          </strong>
+          <strong>
+           containers
+          </strong>
+          <strong>
+           running:
+          </strong>
+          <strong>
+           <code>
+            voting-container
+           </code>
+          </strong>
+          <strong>
+           and
+          </strong>
+          <strong>
+           redis
+          </strong>
+          <strong>
+           like
+          </strong>
+          <strong>
+           below
+          </strong>
+          <strong>
+           diagram:
+          </strong>
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating So far, we have two containers running: voting-container and redis like below diagram:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-016.png"/>
+         </div>
+         <p>
+          Let’s open the website via the
+          <code>
+           port 8080
+          </code>
+          on your browser:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let’s open the website via the port 8080 on your browser:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-017.png"/>
+         </div>
+         <p>
+          Very nice! Now you can interact with the website by voting for either cats or dogs.
+         </p>
+         <p>
+          However, we need to complete other containers, so we can have a result page to show the voting result so far.
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating result so far." class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-018.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Run a Docker container from the
+            <code>
+             Postgres
+            </code>
+            image of Docker Hub:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker run -d --name=db -e POSTGRES_PASSWORD=postgres postgres:9.4</code></pre>
+         <p>
+          <strong>
+           For
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           Postgres
+          </strong>
+          <strong>
+           container,
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           only
+          </strong>
+          <strong>
+           variable
+          </strong>
+          <strong>
+           required
+          </strong>
+          <strong>
+           is
+          </strong>
+          <strong>
+           <code>
+            POSTGRES_PASSWORD
+           </code>
+           .
+          </strong>
+          <strong>
+           The
+          </strong>
+          <strong>
+           only
+          </strong>
+          <strong>
+           variable
+          </strong>
+          <strong>
+           required
+          </strong>
+          <strong>
+           is
+          </strong>
+          <strong>
+           <code>
+            POSTGRES_PASSWORDThis
+           </code>
+          </strong>
+          <strong>
+           environment
+          </strong>
+          <strong>
+           variable
+          </strong>
+          <strong>
+           sets
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           superuser
+          </strong>
+          <strong>
+           password
+          </strong>
+          <strong>
+           for
+          </strong>
+          <strong>
+           <code>
+            PostgreSQL
+           </code>
+           .
+          </strong>
+          The default superuser is defined by the
+          <code>
+           POSTGRES_USER
+          </code>
+          environment variable. You can read it more here:
+          <a href="https://hub.docker.com/_/postgres" rel="noopener" target="_blank">
+           https://hub.docker.com/_/postgres
+          </a>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check if the new postgres container is there and running:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker ps</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-019.png"/>
+         </div>
+         <p>
+          <strong>
+           So
+          </strong>
+          <strong>
+           far,
+          </strong>
+          <strong>
+           we
+          </strong>
+          <strong>
+           have
+          </strong>
+          <strong>
+           three
+          </strong>
+          <strong>
+           containers
+          </strong>
+          <strong>
+           running:
+          </strong>
+          <strong>
+           <code>
+            voting-container
+           </code>
+           ,
+          </strong>
+          <strong>
+           db
+          </strong>
+          <strong>
+           and
+          </strong>
+          <strong>
+           redis
+          </strong>
+          <strong>
+           like
+          </strong>
+          <strong>
+           below
+          </strong>
+          <strong>
+           diagram:
+          </strong>
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating So far, we have three containers running: voting-container, db and redis like below diagram:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-020.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Change current directory to
+            <code>
+             worker-app
+            </code>
+            directory:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cd ../worker</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Inspect the Dockerfile of that voting website:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cat Dockerfile</code></pre>
+         <p>
+          Can you figure out line by line what it does?
+          <strong>
+           Note
+          </strong>
+          : this Dockerfile is building and packaging a
+          <code>
+           .NET
+          </code>
+          Core Worker service to read from the Redis votes list, aggregates votes, and writes results eventually in PostgreSQL containers.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Build a Docker image of worker app with that Dockerfile:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker build . -t worker-app</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check if the new work image is there:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker images</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker images" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-021.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            If you look inside “
+            <code>
+             Worker.java
+            </code>
+            ” in “
+            <code>
+             src/main/java/worker
+            </code>
+            ” directory, you should see that the Worker application depends on redis and db services:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Worker application depends on redis and db services:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-022.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Worker application depends on redis and db services:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-023.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Run a Docker container from the worker app image. Note, do you notice we have “
+            <code>
+             --link
+            </code>
+            redis:redis
+            <code>
+             --link
+            </code>
+            db:db” to link connections between different containers?:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker run -d --name worker-container --link redis:redis --link db:db worker-app</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check if the new worker container is there and running:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker ps</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-024.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Change current directory to result directory which contains the result website:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cd ../result</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Inspect the Dockerfile of that result website:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cat Dockerfile</code></pre>
+         <p>
+          Can you figure out line by line what it does?
+         </p>
+         <p class="callout">
+          <strong>
+           Note
+          </strong>
+          : this Dockerfile is building the Result website of the voting app with
+          <code>
+           Node.js
+          </code>
+          . This Result app reads the votes from PostgresSQL container and serves a web page with current vote counts.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Build a Docker image of result app with that Dockerfile:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker build . -t result-app</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check if the new
+            <code>
+             result-app
+            </code>
+            image is there:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker images</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker images" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-025.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Run a Docker container from the result app image ➜ The result website is now live via
+            <code>
+             port 8081
+            </code>
+            :
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker run -d --name result-container -p 8081:80 --link db:db result-app</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker run -d --name result-container -p 8081:80 --link db:db result-app" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-026.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check if all five containers are running:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker ps</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-027.png"/>
+         </div>
+         <p>
+          Now, you can open the browser to check the result website via the
+          <code>
+           port 8081
+          </code>
+          :
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Now, you can open the browser to check the result website via the port 8081:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-028.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can send the voting website (
+            <code>
+             port 8080
+            </code>
+            -
+            <a href="http://public-ip-address-ec2:8080/" rel="noopener" target="_blank">
+             http://public-ip-address-ec2:8080/
+            </a>
+            ) to your friends and ask them to vote, and check the result website (
+            <code>
+             port 8081
+            </code>
+            -
+            <a href="http://public-ip-address-ec2:8081/" rel="noopener" target="_blank">
+             http://public-ip-address-ec2:8081/
+            </a>
+            ):
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating http://public-ip-address-ec2:8081/):" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-029.png"/>
+         </div>
+         <p>
+          <strong>
+           [Tips
+          </strong>
+          <strong>
+           for
+          </strong>
+          <strong>
+           testing]
+          </strong>
+          you can test the app by opening the 8080 in incognito mode in the browser to be able vote multiple times and the result website should show the result updated in real time!
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating able vote multiple times and the result website should show the result updated in real time!" class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-030.png"/>
+         </div>
+         <p>
+          In conclusion, you have successfully deployed the voting application by running and connecting 5 different containers.
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating different containers." class="img-large" loading="lazy" src="../assets/tutorials/week-9/05-1c-deploy-the-application-without-docker-compose-031.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🚀 1d. Deploy the application with Docker Compose
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          It took some time to deploy this application by running line by line commands.
+         </p>
+         <p>
+          <strong>
+           A
+          </strong>
+          <strong>
+           better
+          </strong>
+          <strong>
+           way
+          </strong>
+          is to use
+          <strong>
+           <code>
+            Docker
+           </code>
+          </strong>
+          <strong>
+           Compose
+          </strong>
+          by defining a
+          <strong>
+           <code>
+            YAML
+           </code>
+          </strong>
+          <strong>
+           file
+          </strong>
+          to configure your Docker application's services. Let’s get started!!!
+         </p>
+         <p class="callout">
+          <strong>Compose checkpoint:</strong> Which details from the manual <code>docker run</code> commands must the Compose file capture, such as images, ports, environment variables, volumes, dependencies, or networking?
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s install
+            <strong>
+             Docker
+            </strong>
+            <strong>
+             Compose
+            </strong>
+            :
+           </p>
+          </li>
+         </ul>
+         <pre><code class="language-yaml">sudo curl -L
+https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname
+-s)-$(uname -m) -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose</code></pre>
+         <p>
+          You can check out more about the installation of
+          <code>
+           Docker Compose
+          </code>
+          here:
+          <a href="https://docs.docker.com/compose/install/linux/" rel="noopener" target="_blank">
+           https://docs.docker.com/compose/install/linux/
+          </a>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s check the version of Docker Compose:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker-compose version</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker-compose version" class="img-large" loading="lazy" src="../assets/tutorials/week-9/06-1d-deploy-the-application-with-docker-compose-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s start from scratch so we need to stop all running containers and remove all containers:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker kill $(docker ps -q)
+docker rm $(docker ps -a -q)</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker kill $(docker ps -q) docker rm $(docker ps -a -q)" class="img-large" loading="lazy" src="../assets/tutorials/week-9/06-1d-deploy-the-application-with-docker-compose-002.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker kill $(docker ps -q) docker rm $(docker ps -a -q)" class="img-large" loading="lazy" src="../assets/tutorials/week-9/06-1d-deploy-the-application-with-docker-compose-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s list all containers again to make sure all have been stopped and removed:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker ps -a</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps -a" class="img-large" loading="lazy" src="../assets/tutorials/week-9/06-1d-deploy-the-application-with-docker-compose-004.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           Note:
+          </strong>
+          please don’t delete any docker images as we still need to use them for our docker compose exercises.
+         </p>
+         <p>
+          Nice, now we just need to create a file
+          <strong>
+           “
+           <code>
+            docker-compose
+           </code>
+           ”
+           <code>
+            .yml
+           </code>
+           .
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Before that, let’s get back to the home directory of root user:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cd ~</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Create a file
+            <strong>
+             “
+             <code>
+              docker-compose
+             </code>
+             ”
+             <code>
+              .yml
+             </code>
+            </strong>
+           </p>
+          </li>
+         </ul>
+         <pre><code>nano docker-compose.yml</code></pre>
+         <p>
+          Historically, Docker Compose configuration files evolved from version 1 through 3. However, the
+          <strong>
+           Compose
+          </strong>
+          <strong>
+           Specification
+          </strong>
+          (found at
+          <a href="https://github.com/compose-spec/compose-spec" rel="noopener" target="_blank">
+           https://github.com/compose-spec/compose-spec
+          </a>
+          ) has become the standard. Instead of requiring a specific version number, Docker Compose (v2 and later) interprets the file using the latest specification.
+         </p>
+         <p>
+          <a href="https://docs.docker.com/compose/compose-file/compose-file-v3/" rel="noopener" target="_blank">
+           https://docs.docker.com/compose/compose-file/compose-file-v3/
+          </a>
+         </p>
+         <p class="callout">
+          Here is the content of our
+          <code>
+           docker-compose.yml
+          </code>
+          . Can you make sense of this file based on the documentation?
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Note: By default, Docker Compose creates a network for these services. Each service can be reached by its service name (e.g., "vote", "redis", "db").
+           </p>
+          </li>
+         </ul>
+         <div class="code-legend">
+          <span class="legend-item"><span class="legend-swatch hl-new"></span> Service definition</span>
+          <span class="legend-item"><span class="legend-swatch hl-focus"></span> Connection or published port</span>
+         </div>
+         <pre><code class="language-compose"><span class="hl-new">services:</span>
+<span class="hl-new">  redis:</span>
+<span class="hl-new">    image: redis</span>
+<span class="hl-new">  db:</span>
+<span class="hl-new">    image: postgres:9.4</span>
+<span class="hl-new">    environment:</span>
+<span class="hl-focus">      POSTGRES_PASSWORD: "postgres"</span>
+<span class="hl-new">  vote:</span>
+<span class="hl-new">    image: voting-app</span>
+<span class="hl-focus">    ports:</span>
+<span class="hl-focus">      - "8080:80"</span>
+<span class="hl-focus">    depends_on:</span>
+<span class="hl-focus">      - redis</span>
+<span class="hl-new">  worker:</span>
+<span class="hl-new">    image: worker-app</span>
+<span class="hl-focus">    depends_on:</span>
+<span class="hl-focus">      - db</span>
+<span class="hl-focus">      - redis</span>
+<span class="hl-new">  result:</span>
+<span class="hl-new">    image: result-app</span>
+<span class="hl-focus">    ports:</span>
+<span class="hl-focus">      - "8081:80"</span>
+<span class="hl-focus">    depends_on:</span>
+<span class="hl-focus">      - db</span></code></pre>
+         <div class="text-note"><strong>Lab note:</strong> The hard-coded database password keeps this exercise reproducible. Use secrets or environment-specific configuration in a real deployment.</div>
+         <p class="callout">
+          <strong>
+           [Explanation]
+          </strong>
+          This Compose file sets up a group of connected services. Each service runs in its own container:
+          <strong>
+           <code>
+            Redis
+           </code>
+          </strong>
+          provides a database cache,
+          <strong>
+           <code>
+            Postgres
+           </code>
+          </strong>
+          is a database storing data, a "
+          <strong>
+           vote
+          </strong>
+          " web app is accessible on
+          <code>
+           port 8080
+          </code>
+          , a "
+          <strong>
+           worker
+          </strong>
+          " service processes background jobs using both Redis and Postgres, and a "
+          <strong>
+           result
+          </strong>
+          " web app shows the results on
+          <code>
+           port 8081
+          </code>
+          . The
+          <strong>
+           <code>
+            depends_on
+           </code>
+          </strong>
+          lines control startup order, but they do not wait for a dependency to become healthy. All services can communicate by service name on the shared network.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            To run the
+            <code>
+             docker-compose.yml
+            </code>
+            , we just need to run the command:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker-compose up</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker-compose up" class="img-large" loading="lazy" src="../assets/tutorials/week-9/06-1d-deploy-the-application-with-docker-compose-005.png"/>
+         </div>
+         <p>
+          Let’s check the website via port
+          <strong>
+           8080
+          </strong>
+          and
+          <strong>
+           8081
+          </strong>
+          ! Everything should work like before! Yayyyyy!
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            To stop our Docker Compose from running then you can press Ctrl + C:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating To stop our Docker Compose from running then you can press Ctrl + C:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/06-1d-deploy-the-application-with-docker-compose-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            In case, you are interested in running this docker compose in the “detached” mode (With
+            <code>
+             -d
+            </code>
+            , you immediately get back your shell prompt, and the containers keep running in the background), you can try:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker-compose up -d</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker-compose up -d" class="img-large" loading="lazy" src="../assets/tutorials/week-9/06-1d-deploy-the-application-with-docker-compose-007.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can try to inspect the running containers due to that Docker compose:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker ps</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-9/06-1d-deploy-the-application-with-docker-compose-008.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            When you run with
+            <code>
+             -d
+            </code>
+            (detached mode), the process is no longer tied to your terminal, so you can’t just stop it with Ctrl+C. Instead, you manage it through Docker Compose commands:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker-compose down</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker-compose down" class="img-large" loading="lazy" src="../assets/tutorials/week-9/06-1d-deploy-the-application-with-docker-compose-009.png"/>
+         </div>
+         <p>
+          Congratulations on successfully deploying the voting application using Docker Compose! Amazing skills!
+         </p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="docker-swarm">
+    <h2 class="collapsible-header">
+     🐝 2. Docker Swarm
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         In this section, we will learn how to create a swarm cluster (master and workers)
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating In this section, we will learn how to create a swarm cluster (master and workers)" class="img-large" loading="lazy" src="../assets/tutorials/week-9/07-2-docker-swarm-001.png"/>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🖥️ 2a. Create the Swarm manager and worker servers
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          <strong>
+           In
+          </strong>
+          <strong>
+           this
+          </strong>
+          <strong>
+           experiment,
+          </strong>
+          <strong>
+           we
+          </strong>
+          <strong>
+           only
+          </strong>
+          <strong>
+           need
+          </strong>
+          <strong>
+           three
+          </strong>
+          <strong>
+           EC2
+          </strong>
+          <strong>
+           instance
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           learn
+          </strong>
+          <strong>
+           docker
+          </strong>
+          <strong>
+           swarm:
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Here are the settings of these three EC2 instances:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <strong>
+               Name
+              </strong>
+              : “
+              <code>
+               docker-master
+              </code>
+              ”, “
+              <code>
+               docker-worker-1
+              </code>
+              ” or “
+              <code>
+               docker-worker-2
+              </code>
+              ”
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               OS
+              </strong>
+              : default Amazon Linux 2023 AMI (Free-tier)
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               Instance
+              </strong>
+              <strong>
+               Type
+              </strong>
+              : t3.micro (Free-tier)
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               Key
+              </strong>
+              <strong>
+               pair
+              </strong>
+              : select and reuse your old key in other labs (
+              <code>
+               devops_project_key
+              </code>
+              )
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               Storage
+              </strong>
+              : Default 8 GB is plenty enough!
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               Security
+              </strong>
+              <strong>
+               Group:
+              </strong>
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                Optional Name:
+                <code>
+                 docker-swarm-security-group
+                </code>
+               </p>
+              </li>
+              <li>
+               <p>
+                Source Type: Anywhere
+               </p>
+              </li>
+              <li>
+               <p>
+                Open these ports:
+               </p>
+               <ul class="tutorial-list tutorial-list--level-4">
+                <li>
+                 <p>
+                  <strong>
+                   22
+                  </strong>
+                  for SSH
+                 </p>
+                </li>
+                <li>
+                 <p>
+                  <strong>
+                   2376
+                  </strong>
+                  : used for secure
+                  <code>
+                   Docker
+                  </code>
+                  client communication. This port is required for Docker Machine to work. Docker Machine is used to orchestrate Docker hosts.
+                 </p>
+                </li>
+                <li>
+                 <p>
+                  <strong>
+                   2377
+                  </strong>
+                  : used for communication between the nodes of a
+                  <code>
+                   Docker Swarm
+                  </code>
+                  or cluster. It only needs to be opened on manager nodes.
+                 </p>
+                </li>
+                <li>
+                 <p>
+                  <strong>
+                   7946
+                  </strong>
+                  : Used for communication among nodes (container network discovery).
+                 </p>
+                </li>
+                <li>
+                 <p>
+                  <strong>
+                   4789
+                  </strong>
+                  : overlay network traffic (container ingress networking).
+                 </p>
+                </li>
+                <li>
+                 <p>
+                  <strong>
+                   8080-8090
+                  </strong>
+                  for web application
+                 </p>
+                </li>
+               </ul>
+              </li>
+             </ul>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <p>
+          Please create the security group “
+          <strong>
+           <code>
+            docker-swarm-security-group
+           </code>
+          </strong>
+          ” once and let other instances reuse the existing security group.
+         </p>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        📦 2b. Install and configure Docker
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          <strong>
+           Please
+          </strong>
+          <strong>
+           choose
+          </strong>
+          <strong>
+           either
+          </strong>
+          <strong>
+           Option
+          </strong>
+          <strong>
+           A
+          </strong>
+          <strong>
+           -
+          </strong>
+          <strong>
+           Manual
+          </strong>
+          <strong>
+           Setup
+          </strong>
+          <strong>
+           or
+          </strong>
+          <strong>
+           Option
+          </strong>
+          <strong>
+           B
+          </strong>
+          <strong>
+           -
+          </strong>
+          <strong>
+           Auto
+          </strong>
+          <strong>
+           Setup
+          </strong>
+          <strong>
+           with
+          </strong>
+          <strong>
+           User
+          </strong>
+          <strong>
+           Data
+          </strong>
+          <strong>
+           Script:
+          </strong>
+         </p>
+         <p>
+          <strong>
+           Option
+          </strong>
+          <strong>
+           A
+          </strong>
+          <strong>
+           -
+          </strong>
+          <strong>
+           Manual
+          </strong>
+          <strong>
+           Setup:
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Please log in to all EC2 instances over SSH.
+           </p>
+          </li>
+          <li>
+           <p>
+            Please change the host name for all EC2 instances accordingly so we can easily manage them like so:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/08-2b-install-and-configure-docker-001.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/08-2b-install-and-configure-docker-002.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/08-2b-install-and-configure-docker-003.png"/>
+         </div>
+         <p>
+          <strong>
+           Hint
+          </strong>
+          : for a reminder, you can use this command to change the hostname:
+         </p>
+         <pre><code>sudo su -
+echo "new-host-name" &gt; /etc/hostname
+reboot</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Don’t forget to login as the root user:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo su -</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Install docker on all EC2 instances:
+           </p>
+          </li>
+         </ul>
+         <pre><code>yum install -y docker</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Start docker service on all EC2 instances:
+           </p>
+          </li>
+         </ul>
+         <pre><code>service docker start</code></pre>
+         <p>
+          <strong>
+           Option
+          </strong>
+          <strong>
+           B
+          </strong>
+          <strong>
+           -
+          </strong>
+          <strong>
+           User
+          </strong>
+          <strong>
+           Data
+          </strong>
+          <strong>
+           Script:
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Click on Advanced details
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Click on Advanced details" class="img-large" loading="lazy" src="../assets/tutorials/week-9/08-2b-install-and-configure-docker-004.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Upload or paste in the User data:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Upload or paste in the User data:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/08-2b-install-and-configure-docker-005.png"/>
+         </div>
+         <p>
+          When you configure the EC2 instances above, please paste in this example EC2 User Data script when launching each EC2 instance. With this script, you can automate setting the hostname, installing
+          <code>
+           Docker
+          </code>
+          , and starting the Docker service. You will need to tailor the variable
+          <code>
+           HOSTNAME
+          </code>
+          to match each instance’s intended hostname (e.g.,
+          <strong>
+           <code>
+            docker-master
+           </code>
+          </strong>
+          ,
+          <strong>
+           <code>
+            docker-worker-1
+           </code>
+          </strong>
+          ,
+          <strong>
+           <code>
+            docker-worker-2
+           </code>
+          </strong>
+          ).
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            To use different hostnames for each instance:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              For the master: Replace
+              <code>
+               HOSTNAME
+              </code>
+              ="
+              <code>
+               docker-master
+              </code>
+              "
+             </p>
+            </li>
+            <li>
+             <p>
+              For worker 1: Replace
+              <code>
+               HOSTNAME
+              </code>
+              ="
+              <code>
+               docker-worker-1
+              </code>
+              "
+             </p>
+            </li>
+            <li>
+             <p>
+              For worker 2: Replace
+              <code>
+               HOSTNAME
+              </code>
+              ="
+              <code>
+               docker-worker-2
+              </code>
+              "
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>#!/bin/bash
+# Set a variable for the hostname. Modify this value as needed.
+HOSTNAME="docker-master"
+# Set the hostname using the variable
+hostnamectl set-hostname "$HOSTNAME"
+# Update packages
+yum update -y
+# Install Docker
+yum install -y docker
+# Start Docker service
+service docker start</code></pre>
+         <pre><code># Enable Docker to start on boot
+systemctl enable docker</code></pre>
+         <p>
+          <strong>
+           After
+          </strong>
+          <strong>
+           Option
+          </strong>
+          <strong>
+           A
+          </strong>
+          <strong>
+           and
+          </strong>
+          <strong>
+           Option
+          </strong>
+          <strong>
+           B,
+          </strong>
+          <strong>
+           continue
+          </strong>
+          <strong>
+           below
+          </strong>
+          <strong>
+           here:
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check the status of docker service on all EC2 instances to make sure it is active (running):
+           </p>
+          </li>
+         </ul>
+         <pre><code>service docker status</code></pre>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        ⌨️ 2c. Practise Docker Swarm commands
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             On
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             master
+            </strong>
+            <strong>
+             node
+            </strong>
+            , please start the swarm (by selecting it to be swarm master/manager):
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker swarm init</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker swarm init" class="img-large" loading="lazy" src="../assets/tutorials/week-9/09-2c-practise-docker-swarm-commands-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             On
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             slave/worker
+            </strong>
+            <strong>
+             node
+            </strong>
+            , please join the swarm by copying and pasting the above suggested command:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker swarm join --token &lt;long-token-string&gt;</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker swarm join --token &lt;long-token-string&gt; (1 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-9/09-2c-practise-docker-swarm-commands-002.png"/>
+          <img alt="Screenshot illustrating docker swarm join --token &lt;long-token-string&gt; (2 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-9/09-2c-practise-docker-swarm-commands-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             On
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             master
+            </strong>
+            <strong>
+             node
+            </strong>
+            , you can list all nodes in the swarm.
+           </p>
+           <p class="callout">
+            <strong>Swarm checkpoint:</strong> How does losing a worker differ from losing the manager? Which node role maintains desired state, and which nodes are eligible to run service tasks?
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker node ls</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker node ls" class="img-large" loading="lazy" src="../assets/tutorials/week-9/09-2c-practise-docker-swarm-commands-004.png"/>
+         </div>
+         <p>
+          * means the current server that you are on.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            A node can leave the swarm by running the command so please switch to one of the workers and make it leave the swarm:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker swarm leave</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker swarm leave" class="img-large" loading="lazy" src="../assets/tutorials/week-9/09-2c-practise-docker-swarm-commands-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            On the master node, you can list all nodes in the swarm again.
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker node ls</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker node ls" class="img-large" loading="lazy" src="../assets/tutorials/week-9/09-2c-practise-docker-swarm-commands-006.png"/>
+         </div>
+         <p>
+          As you can see the
+          <code>
+           docker-worker-1
+          </code>
+          is down and left the swarm already!
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s add the
+            <code>
+             docker-worker-1
+            </code>
+            back to the swarm again!
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let’s add the docker-worker-1 back to the swarm again!" class="img-large" loading="lazy" src="../assets/tutorials/week-9/09-2c-practise-docker-swarm-commands-007.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            On the master node, you can list all nodes in the swarm again. Note, you can see that the same node joining again will have a new ID instead of the old one.
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker node ls</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker node ls" class="img-large" loading="lazy" src="../assets/tutorials/week-9/09-2c-practise-docker-swarm-commands-008.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let's remove the node which is already down so our node list can be more organised:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker node rm &lt;node_id or node_hostname&gt;</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker node rm &lt;node_id or node_hostname&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-9/09-2c-practise-docker-swarm-commands-009.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🚀 2d. Deploy services on the Swarm
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             On
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             master
+            </strong>
+            <strong>
+             node
+            </strong>
+            , let's list all service commands of docker:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker service --help</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service --help" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-001.png"/>
+         </div>
+         <p>
+          <strong>
+           Let’s
+          </strong>
+          <strong>
+           see
+          </strong>
+          <strong>
+           <code>
+            Docker
+           </code>
+          </strong>
+          <strong>
+           <code>
+            Swarm
+           </code>
+          </strong>
+          <strong>
+           in
+          </strong>
+          <strong>
+           action!
+          </strong>
+          An
+          <strong>
+           <code>
+            NGINX
+           </code>
+          </strong>
+          container is a Docker container that runs the NGINX high-performance web server. It is often used as a “hello world” example container because it’s simple, fast, and demonstrates many important container concepts without complexity. Read more here:
+          <a href="https://hub.docker.com/_/nginx" rel="noopener" target="_blank">
+           https://hub.docker.com/_/nginx
+          </a>
+         </p>
+         <p>
+          In
+          <code>
+           Docker Swarm
+          </code>
+          , a
+          <strong>
+           service
+          </strong>
+          is the fundamental unit of deployment and scaling. It’s essentially a definition that tells the swarm what container image to run, how many replicas of it to maintain, and how to distribute them across the cluster.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             On
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             master
+            </strong>
+            <strong>
+             node
+            </strong>
+            , create a service of nginx web server:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker service create nginx</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service create nginx" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             On
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             master
+            </strong>
+            <strong>
+             node
+            </strong>
+            , we can list services:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker service ls</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service ls" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             On
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             master
+            </strong>
+            <strong>
+             node
+            </strong>
+            , we can list the task of that service by its id:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker service ps &lt;service-id&gt;</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service ps &lt;service-id&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-004.png"/>
+         </div>
+         <p>
+          Note that: the task is running on the “
+          <code>
+           docker-master
+          </code>
+          " node.
+         </p>
+         <p>
+          In Docker Swarm, a
+          <strong>
+           task
+          </strong>
+          is the atomic unit of scheduling in Docker Swarm. Each replica of a service corresponds to one task, and that task runs exactly one container.
+         </p>
+         <p>
+          👉 So in short:
+         </p>
+         <p>
+          <strong>
+           Service
+          </strong>
+          = the definition and desired state (e.g., “run 3 replicas of nginx”).
+         </p>
+         <p>
+          <strong>
+           Task
+          </strong>
+          = one running instance of that definition (e.g., one container, on one node).
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            However, we forgot to define which port number to expose for our nginx server, so let's update the service accordingly:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker service update &lt;service-id&gt; --publish-add 8080:80</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service update &lt;service-id&gt; --publish-add 8080:80" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            On the master node, we can list services:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <strong>
+               Note:
+              </strong>
+              after updating the port number, the old container on
+              <code>
+               docker-master
+              </code>
+              is shutdown, the updated container is now running on
+              <code>
+               docker-worker-2
+              </code>
+              in the screenshot (in your case, it could pick any random node in the cluster to run the container).
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker service ps &lt;service-id&gt;</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service ps &lt;service-id&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-006.png"/>
+         </div>
+         <p>
+          Open the public ip address of the ec2 instance
+          <strong>
+           where
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           updated
+          </strong>
+          <strong>
+           container
+          </strong>
+          <strong>
+           is
+          </strong>
+          <strong>
+           on
+          </strong>
+          (in our screenshot, it shows it runs on
+          <code>
+           docker-worker-2
+          </code>
+          ) and you can check the website on the browser via the
+          <code>
+           port 8080
+          </code>
+          as below:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating the port 8080 as below:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-007.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            On the master node, let's remove that service:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker service rm &lt;service-id&gt;</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service rm &lt;service-id&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-008.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            No services remain, so their containers have been stopped and removed.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating No services remain, so their containers have been stopped and removed." class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-009.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             On
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             master
+            </strong>
+            <strong>
+             node
+            </strong>
+            , let's create a new service with
+            <strong>
+             replicas
+            </strong>
+            <strong>
+             parameters
+            </strong>
+            :
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <strong>
+               Replicas
+              </strong>
+              in Docker ensure
+              <strong>
+               high
+              </strong>
+              <strong>
+               availability
+              </strong>
+              and
+              <strong>
+               scalability
+              </strong>
+              by
+              <strong>
+               running
+              </strong>
+              <strong>
+               multiple
+              </strong>
+              <strong>
+               instances
+              </strong>
+              of a service, as seen in this command, which creates an
+              <strong>
+               Nginx
+              </strong>
+              <strong>
+               service
+              </strong>
+              <strong>
+               with
+              </strong>
+              <strong>
+               2
+              </strong>
+              <strong>
+               replicas
+              </strong>
+              , exposing port
+              <strong>
+               8080
+              </strong>
+              to the target port
+              <strong>
+               80
+              </strong>
+              on each instance.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker service create --name nginx –=--publish published=8080,target=80 nginx</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service create --name nginx –=--publish published=8080,target=80 nginx" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-010.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s check the information of our new service:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker service ls</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service ls" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-011.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           Note
+          </strong>
+          : The above screenshot shows that Docker confirms the nginx service with 2 replicas has been created and both containers are running successfully. With the
+          <code>
+           --publish
+          </code>
+          flag you mentioned, the service would also be accessible on
+          <code>
+           port 8080
+          </code>
+          of the swarm nodes, routing traffic into container port 80.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s inspect inside the tasks in our service:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              You don’t have to use the raw service ID like docker service ps
+              <code>
+               &lt;service-id&gt;
+              </code>
+              . You can also use the service name.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker service ps &lt;service-name&gt;</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service ps &lt;service-name&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-012.png"/>
+         </div>
+         <p>
+          <strong>
+           As
+          </strong>
+          <strong>
+           you
+          </strong>
+          <strong>
+           can
+          </strong>
+          <strong>
+           see,
+          </strong>
+          <strong>
+           one
+          </strong>
+          <strong>
+           container
+          </strong>
+          <strong>
+           is
+          </strong>
+          <strong>
+           running
+          </strong>
+          <strong>
+           at
+          </strong>
+          <strong>
+           <code>
+            docker-worker-2
+           </code>
+          </strong>
+          <strong>
+           node
+          </strong>
+          <strong>
+           and
+          </strong>
+          <strong>
+           one
+          </strong>
+          <strong>
+           container
+          </strong>
+          <strong>
+           is
+          </strong>
+          <strong>
+           running
+          </strong>
+          <strong>
+           at
+          </strong>
+          <strong>
+           <code>
+            docker-master
+           </code>
+          </strong>
+          <strong>
+           node,
+          </strong>
+          <strong>
+           showing
+          </strong>
+          <strong>
+           proper
+          </strong>
+          <strong>
+           swarm
+          </strong>
+          <strong>
+           scheduling
+          </strong>
+          <strong>
+           and
+          </strong>
+          <strong>
+           service
+          </strong>
+          <strong>
+           distribution
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             [Switching
+            </strong>
+            <strong>
+             terminal
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             where
+            </strong>
+            <strong>
+             first
+            </strong>
+            <strong>
+             container
+            </strong>
+            <strong>
+             runs
+            </strong>
+            <strong>
+             (eg,
+            </strong>
+            <strong>
+             <code>
+              docker-worker-2
+             </code>
+             )]
+            </strong>
+            You can confirm if the container is actually running in the
+            <code>
+             docker-worker-2
+            </code>
+            node:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker ps</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-013.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             [Switching
+            </strong>
+            <strong>
+             terminal
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             where
+            </strong>
+            <strong>
+             second
+            </strong>
+            <strong>
+             container
+            </strong>
+            <strong>
+             runs
+            </strong>
+            <strong>
+             (eg,
+            </strong>
+            <strong>
+             <code>
+              docker-master
+             </code>
+             )]
+            </strong>
+            You can also confirm if the container is actually running in the
+            <code>
+             docker-master
+            </code>
+            node:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker ps</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-014.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             [Switching
+            </strong>
+            <strong>
+             terminal
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             <code>
+              docker-master
+             </code>
+             ]
+            </strong>
+            <strong>
+             However,
+            </strong>
+            <strong>
+             if
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             do
+            </strong>
+            <strong>
+             not
+            </strong>
+            <strong>
+             want
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             <code>
+              docker-master
+             </code>
+            </strong>
+            <strong>
+             node
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             run
+            </strong>
+            <strong>
+             any
+            </strong>
+            <strong>
+             container,
+            </strong>
+            <strong>
+             just
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             control
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             swarm
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             ensure
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             master
+            </strong>
+            <strong>
+             node
+            </strong>
+            <strong>
+             have
+            </strong>
+            <strong>
+             little
+            </strong>
+            <strong>
+             of
+            </strong>
+            <strong>
+             burden
+            </strong>
+            then you can run the command on the master node:
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker node update --availability drain docker-master</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker node update --availability drain docker-master" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-015.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             After
+            </strong>
+            <strong>
+             applying
+            </strong>
+            <strong>
+             our
+            </strong>
+            <strong>
+             previous
+            </strong>
+            <strong>
+             command,
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             container
+            </strong>
+            <strong>
+             of
+            </strong>
+            <strong>
+             nginx
+            </strong>
+            <strong>
+             in
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             master
+            </strong>
+            <strong>
+             node
+            </strong>
+            <strong>
+             is
+            </strong>
+            <strong>
+             shut
+            </strong>
+            <strong>
+             down,
+            </strong>
+            <strong>
+             thus
+            </strong>
+            <strong>
+             a
+            </strong>
+            <strong>
+             new
+            </strong>
+            <strong>
+             container
+            </strong>
+            <strong>
+             of
+            </strong>
+            <strong>
+             nginx
+            </strong>
+            <strong>
+             in
+            </strong>
+            <strong>
+             <code>
+              docker-worker-1
+             </code>
+            </strong>
+            <strong>
+             is
+            </strong>
+            <strong>
+             launched
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             ensure
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             number
+            </strong>
+            <strong>
+             of
+            </strong>
+            <strong>
+             containers
+            </strong>
+            <strong>
+             of
+            </strong>
+            <strong>
+             nginx
+            </strong>
+            <strong>
+             in
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             swarm
+            </strong>
+            <strong>
+             is
+            </strong>
+            <strong>
+             always
+            </strong>
+            <strong>
+             2
+            </strong>
+            <strong>
+             (the
+            </strong>
+            <strong>
+             effect
+            </strong>
+            <strong>
+             of
+            </strong>
+            <strong>
+             replicas).
+            </strong>
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker service ps nginx</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service ps nginx" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-016.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           Note
+          </strong>
+          : you should see that by draining
+          <code>
+           docker-master
+          </code>
+          , the container that was running there was stopped, and Swarm automatically launched a replacement container on another worker (
+          <code>
+           docker-worker-1
+          </code>
+          ). This demonstrates Docker Swarm’s self-healing and load-balancing behavior: it keeps the service at the desired replica count, even when nodes are marked unavailable.
+         </p>
+         <p>
+          <strong>
+           Good
+          </strong>
+          <strong>
+           job
+          </strong>
+          <strong>
+           so
+          </strong>
+          <strong>
+           far!
+          </strong>
+         </p>
+         <p>
+          Alright, hopefully now the
+          <strong>
+           <code>
+            docker-worker
+           </code>
+          </strong>
+          <strong>
+           1
+          </strong>
+          and
+          <strong>
+           <code>
+            docker-worker
+           </code>
+          </strong>
+          <strong>
+           2
+          </strong>
+          are listening to the port
+          <strong>
+           8080
+          </strong>
+          to serve the
+          <strong>
+           nginx
+          </strong>
+          websites. Please
+          <strong>
+           open
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           public
+          </strong>
+          <strong>
+           IP
+          </strong>
+          <strong>
+           address
+          </strong>
+          of
+          <strong>
+           <code>
+            docker-worker
+           </code>
+          </strong>
+          <strong>
+           1
+          </strong>
+          and
+          <strong>
+           <code>
+            docker-worker
+           </code>
+          </strong>
+          <strong>
+           2
+          </strong>
+          via the port
+          <strong>
+           8080
+          </strong>
+          to test if the homepage of nginx web server is showing.
+          <strong>
+           [Our
+          </strong>
+          <strong>
+           Next
+          </strong>
+          <strong>
+           Task]
+          </strong>
+          <strong>
+           However,
+          </strong>
+          <strong>
+           we
+          </strong>
+          <strong>
+           want
+          </strong>
+          <strong>
+           users
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           access
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           website
+          </strong>
+          <strong>
+           via
+          </strong>
+          <strong>
+           a
+          </strong>
+          <strong>
+           common
+          </strong>
+          <strong>
+           IP
+          </strong>
+          <strong>
+           address
+          </strong>
+          <strong>
+           or
+          </strong>
+          <strong>
+           domain
+          </strong>
+          <strong>
+           name
+          </strong>
+          so the
+          <strong>
+           incoming
+          </strong>
+          <strong>
+           requests
+          </strong>
+          <strong>
+           will
+          </strong>
+          <strong>
+           be
+          </strong>
+          <strong>
+           spread
+          </strong>
+          <strong>
+           out
+          </strong>
+          <strong>
+           for
+          </strong>
+          <strong>
+           all
+          </strong>
+          <strong>
+           of
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           <code>
+            docker-worker
+           </code>
+          </strong>
+          <strong>
+           instances.
+          </strong>
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating name so the incoming requests will be spread out for all of the docker-worker instances." class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-017.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             That's
+            </strong>
+            <strong>
+             why
+            </strong>
+            <strong>
+             we
+            </strong>
+            <strong>
+             need
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             create
+            </strong>
+            <strong>
+             a
+            </strong>
+            <strong>
+             load
+            </strong>
+            <strong>
+             balancer
+            </strong>
+            <strong>
+             on
+            </strong>
+            <strong>
+             AWS
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             do
+            </strong>
+            <strong>
+             that!
+            </strong>
+           </p>
+          </li>
+          <li>
+           <p>
+            Let's go! On the AWS dashboard, select the load balancer:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let's go! On the AWS dashboard, select the load balancer:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-018.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Choose
+            <strong>
+             Application
+            </strong>
+            <strong>
+             Load
+            </strong>
+            <strong>
+             Balancers
+            </strong>
+            as we want to redirect traffic from the balancer to our nginx application servers:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating nginx application servers:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-019.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Enter basic information of your balancer:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <strong>
+               Load
+              </strong>
+              <strong>
+               balancer
+              </strong>
+              <strong>
+               name
+              </strong>
+              :
+              <code>
+               my-docker-swarm-load-balancer
+              </code>
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                A unique identifier for the load balancer within the AWS account.
+               </p>
+              </li>
+             </ul>
+            </li>
+            <li>
+             <p>
+              <strong>
+               Scheme:
+              </strong>
+              Internet-facing
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                This makes the load balancer accessible from the internet.
+               </p>
+              </li>
+              <li>
+               <p>
+                It gets public IP addresses.
+               </p>
+              </li>
+              <li>
+               <p>
+                Its DNS name is publicly resolvable.
+               </p>
+              </li>
+              <li>
+               <p>
+                Requires mapping to a public subnet.
+               </p>
+              </li>
+              <li>
+               <p>
+                Best when your Docker Swarm service should be accessible from outside (e.g., web apps).
+               </p>
+              </li>
+             </ul>
+            </li>
+            <li>
+             <p>
+              <strong>
+               IP
+              </strong>
+              <strong>
+               address
+              </strong>
+              <strong>
+               type:
+              </strong>
+              IPv4
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                Restricts the load balancer to only IPv4 addresses.
+               </p>
+              </li>
+              <li>
+               <p>
+                Suitable if your clients/users connect using IPv4 (most common scenario).
+               </p>
+              </li>
+              <li>
+               <p>
+                Simple and widely supported.
+               </p>
+              </li>
+             </ul>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Simple and widely supported." class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-020.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Availability
+            </strong>
+            <strong>
+             Zone
+            </strong>
+            <strong>
+             Mappings:
+            </strong>
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              You can choose subnets in Availability Zones (AZs) within the
+              <code>
+               VPC
+              </code>
+              where the load balancer will route traffic.
+             </p>
+            </li>
+            <li>
+             <p>
+              Ideally, you should choose the specific availability zones which actually contain your EC2 instances. However, to keep to it simple, we can select all of them: us-east-1a, us-east-1b, us-east-1c, us-east-1d, us-east-1e, us-east-1f
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                High availability: Even if one AZ goes down, traffic can still be routed through others.
+               </p>
+              </li>
+              <li>
+               <p>
+                Better load distribution: The load balancer can spread traffic across multiple zones.
+               </p>
+              </li>
+              <li>
+               <p>
+                Resilience: Minimizes single points of failure.
+               </p>
+              </li>
+             </ul>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Resilience: Minimizes single points of failure." class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-021.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            We can select the same security groups of our docker security group to keep it simple (in theory, you only need to choose a group with the port you want to serve your clients, in our case, we can keep it simple by also choosing the
+            <code>
+             port 8080
+            </code>
+            ):
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating case, we can keep it simple by also choosing the port 8080):" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-022.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            We need to create the target group first before we can route all traffic from the load balancer to it:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating We need to create the target group first before we can route all traffic from the load balancer to it:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-023.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Create a target group of EC2 instances:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Create a target group of EC2 instances:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-024.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let's enter the name of our target group of EC2 instances with the
+            <code>
+             port 8080
+            </code>
+            :
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let's enter the name of our target group of EC2 instances with the port 8080:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-025.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Go next page:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Go next page:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-026.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Add all the
+            <code>
+             docker-worker
+            </code>
+            instances (
+            <code>
+             docker-worker-1
+            </code>
+            and
+            <code>
+             docker-worker-2
+            </code>
+            ) to this group:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Add all the docker-worker instances (docker-worker-1 and docker-worker-2) to this group:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-027.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Confirm the group details and finish the group registration:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Confirm the group details and finish the group registration:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-028.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now, we can go back to the balancer setting page and select the target group we just created:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating created:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-029.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Confirm to create the balancer:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Confirm to create the balancer:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-030.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            View your balancer after creating it:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating View your balancer after creating it:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-031.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now, you can see the DNS name of the balancer which will be the URL link you should give to your clients/customers to open the website:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              You should see that the load balancer is now active, internet-facing, and listening on
+              <code>
+               port 8080
+              </code>
+              . You can use the provided DNS name with the
+              <code>
+               port 8080
+              </code>
+              to access your Docker Swarm Nginx service running across multiple nodes, with AWS
+              <code>
+               ELB
+              </code>
+              automatically distributing the traffic.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating automatically distributing the traffic." class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-032.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           Note
+          </strong>
+          : it might take around two minutes for the load balancers to warm up enough to start directing the traffic so don’t panic if you don’t see the website right away using the DNS of the load balancer!
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can use the DNS Name to access the website running in the Docker Swarm service across multiple nodes being distributed in AWS ELB. Great success! Now you can see the website which is served by one of your many
+            <code>
+             docker-worker
+            </code>
+            instances within the load balancer!
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating which is served by one of your many docker-worker instances within the load balancer!" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-033.png"/>
+         </div>
+         <p>
+          <strong>
+           Super
+          </strong>
+          <strong>
+           awesome!
+          </strong>
+          <strong>
+           Imagine
+          </strong>
+          <strong>
+           for
+          </strong>
+          <strong>
+           a
+          </strong>
+          <strong>
+           very
+          </strong>
+          <strong>
+           complex
+          </strong>
+          <strong>
+           and
+          </strong>
+          <strong>
+           popular
+          </strong>
+          <strong>
+           website
+          </strong>
+          <strong>
+           which
+          </strong>
+          <strong>
+           got
+          </strong>
+          <strong>
+           hundreds
+          </strong>
+          <strong>
+           of
+          </strong>
+          <strong>
+           thousands
+          </strong>
+          <strong>
+           of
+          </strong>
+          <strong>
+           views
+          </strong>
+          <strong>
+           everyday,
+          </strong>
+          <strong>
+           with
+          </strong>
+          <strong>
+           a
+          </strong>
+          <strong>
+           load
+          </strong>
+          <strong>
+           balancer
+          </strong>
+          <strong>
+           and
+          </strong>
+          <strong>
+           hundreds
+          </strong>
+          <strong>
+           of
+          </strong>
+          <strong>
+           instances,
+          </strong>
+          <strong>
+           you
+          </strong>
+          <strong>
+           can
+          </strong>
+          <strong>
+           distribute
+          </strong>
+          <strong>
+           all
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           incoming
+          </strong>
+          <strong>
+           traffics
+          </strong>
+          <strong>
+           from
+          </strong>
+          <strong>
+           users
+          </strong>
+          <strong>
+           across
+          </strong>
+          <strong>
+           among
+          </strong>
+          <strong>
+           all
+          </strong>
+          <strong>
+           of
+          </strong>
+          <strong>
+           instances
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           make
+          </strong>
+          <strong>
+           sure
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           load
+          </strong>
+          <strong>
+           for
+          </strong>
+          <strong>
+           each
+          </strong>
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating all the incoming traffic from users across among all of instances to make sure the load for each" class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-034.png"/>
+         </div>
+         <p>
+          <strong>
+           instance
+          </strong>
+          <strong>
+           small
+          </strong>
+          <strong>
+           enough
+          </strong>
+          <strong>
+           and
+          </strong>
+          <strong>
+           if
+          </strong>
+          <strong>
+           there
+          </strong>
+          <strong>
+           is
+          </strong>
+          <strong>
+           any
+          </strong>
+          <strong>
+           container
+          </strong>
+          <strong>
+           crashing
+          </strong>
+          <strong>
+           then
+          </strong>
+          <strong>
+           a
+          </strong>
+          <strong>
+           new
+          </strong>
+          <strong>
+           container
+          </strong>
+          <strong>
+           will
+          </strong>
+          <strong>
+           be
+          </strong>
+          <strong>
+           launched
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           replace
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           old
+          </strong>
+          <strong>
+           crashed
+          </strong>
+          <strong>
+           one
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           make
+          </strong>
+          <strong>
+           sure
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           availability
+          </strong>
+          <strong>
+           of
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           website
+          </strong>
+          <strong>
+           is
+          </strong>
+          <strong>
+           always
+          </strong>
+          <strong>
+           high!
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can check the visual resources map to see how the load balancer redirects traffic from the start to the end to ensure user requests to land on either one of the instances in the load balancer:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Traffic hitting the DNS of your load balancer on
+              <code>
+               port 8080
+              </code>
+              → listener → rule → forwarded to target group (
+              <code>
+               docker-swarm
+              </code>
+              ) → distributed between 2 healthy EC2 instances (each serving Nginx on
+              <code>
+               port 8080
+              </code>
+              ). This confirms that your Docker Swarm Nginx service is correctly integrated with the AWS Load Balancer and is ready for high availability.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating high availability." class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-035.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Also, you can manage the health and traffic of your load balancer using
+            <strong>
+             CloudWatch
+            </strong>
+            <code>
+             metrics
+            </code>
+            in the Monitoring tab as below:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              The most important metrics to continuously monitor in CloudWatch for ELB are:
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                <strong>
+                 Target
+                </strong>
+                <strong>
+                 Response
+                </strong>
+                <strong>
+                 Time
+                </strong>
+                <strong>
+                 (latency)
+                </strong>
+               </p>
+              </li>
+              <li>
+               <p>
+                <strong>
+                 Requests
+                </strong>
+                <strong>
+                 Count
+                </strong>
+                <strong>
+                 (traffic
+                </strong>
+                <strong>
+                 volume)
+                </strong>
+               </p>
+              </li>
+              <li>
+               <p>
+                <strong>
+                 Target
+                </strong>
+                <strong>
+                 4XXs
+                </strong>
+                <strong>
+                 and
+                </strong>
+                <strong>
+                 5XXs
+                </strong>
+                <strong>
+                 (client/server
+                </strong>
+                <strong>
+                 errors)
+                </strong>
+               </p>
+              </li>
+              <li>
+               <p>
+                <strong>
+                 ELB
+                </strong>
+                <strong>
+                 5XXs
+                </strong>
+                <strong>
+                 (502/503/504)
+                </strong>
+                <strong>
+                 (load
+                </strong>
+                <strong>
+                 balancer-level
+                </strong>
+                <strong>
+                 issues)
+                </strong>
+               </p>
+              </li>
+              <li>
+               <p>
+                <strong>
+                 Connection
+                </strong>
+                <strong>
+                 Errors
+                </strong>
+                <strong>
+                 /
+                </strong>
+                <strong>
+                 Rejected
+                </strong>
+                <strong>
+                 Connections
+                </strong>
+                <strong>
+                 (connectivity
+                </strong>
+                <strong>
+                 &amp;
+                </strong>
+                <strong>
+                 scaling
+                </strong>
+                <strong>
+                 issues)
+                </strong>
+               </p>
+              </li>
+             </ul>
+            </li>
+            <li>
+             <p>
+              These will tell you whether your Docker Swarm Nginx service is healthy, responsive, and reachable through the load balancer.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating and reachable through the load balancer." class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-036.png"/>
+         </div>
+         <p>
+          Alright! I hope that's enough for you to have a taste of
+          <code>
+           Docker Compose
+          </code>
+          , Docker Swarm and Load Balancer.
+         </p>
+         <p>
+          Congratulations on completing this lab! You’ve taken important steps into the world of container orchestration and DevOps practices.
+         </p>
+         <p>
+          What you’ve built here may be a simple voting application, but the skills you’ve practiced are the same ones used to power large-scale, production-grade systems. Each command and configuration you’ve written is another building block toward mastering containerized deployments.
+         </p>
+         <p>
+          Remember:
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Docker
+            </strong>
+            <strong>
+             Compose
+            </strong>
+            helps you quickly set up and manage services for development and testing.
+           </p>
+          </li>
+          <li>
+           <p>
+            <strong>
+             Docker
+            </strong>
+            <strong>
+             Swarm
+            </strong>
+            allows you to orchestrate containers across clusters with reliability and scalability.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating scalability." class="img-large" loading="lazy" src="../assets/tutorials/week-9/10-2d-deploy-services-on-the-swarm-037.png"/>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="prometheus-compose-challenge">
+    <h2 class="collapsible-header">
+     🧪 Challenge: Add Prometheus monitoring with Docker Compose
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         <strong>
+          Goal
+         </strong>
+        </p>
+        <p>
+         Enhance your
+         <code>
+          Docker Compose
+         </code>
+         skills by extending the existing multi-container application to include a new service. You'll configure
+         <code>
+          Prometheus
+         </code>
+         to monitor key
+         <code>
+          metrics
+         </code>
+         of your deployed application.
+        </p>
+       </div>
+       <h4 class="tutorial-static-heading">
+        🎭 Scenario and implementation steps
+       </h4>
+       <div class="tutorial-flow">
+        <p>
+         Imagine you’re running the voting application in a real-world production environment, where monitoring application health and performance is critical. You’ve been tasked to integrate
+         <strong>
+          Prometheus
+         </strong>
+         , a popular metrics monitoring tool, into the existing Docker Compose setup. This new service will track application metrics, such as vote counts, and provide insights into application behavior through real-time monitoring.
+        </p>
+        <p class="callout">
+         <strong>Monitoring checkpoint:</strong> A vote counter proves that traffic is occurring, but does it prove the application is healthy? Which additional metric would help you detect errors or slow responses?
+        </p>
+        <p>
+         <strong>
+          Step-by-step
+         </strong>
+         <strong>
+          guide
+         </strong>
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           For these exercises we will get back to work on the voting server.
+          </p>
+         </li>
+         <li>
+          <p>
+           Open the new port
+           <strong>
+            9090
+           </strong>
+           for the security group for Prometheus.
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Open the new port 9090 for the security group for Prometheus." class="img-large" loading="lazy" src="../assets/tutorials/week-9/11-scenario-and-implementation-steps-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           SSH to your EC2
+           <code>
+            voting-server
+           </code>
+           as root again!
+          </p>
+         </li>
+        </ul>
+        <pre><code>sudo su -</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Ensure your existing application is running by starting by confirming your original application is working correctly:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker-compose up -d</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker-compose up -d" class="img-large" loading="lazy" src="../assets/tutorials/week-9/11-scenario-and-implementation-steps-002.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Check that all services (vote, worker, result, redis, db) are healthy:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker ps</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-9/11-scenario-and-implementation-steps-003.png"/>
+        </div>
+        <p>
+         This is an example of how you can modify your
+         <code>
+          Dockerfile
+         </code>
+         to integrate Prometheus instrumentation for the
+         <code>
+          Python
+         </code>
+         (
+         <code>
+          Flask
+         </code>
+         ) vote application. What we need to do:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Install
+           </strong>
+           the
+           <strong>
+            <code>
+             prometheus_client
+            </code>
+           </strong>
+           Python library inside the container so we can use it in the
+           <code>
+            app.py
+           </code>
+           .
+          </p>
+         </li>
+         <li>
+          <p>
+           In
+           <code>
+            app.py
+           </code>
+           , we will add code to
+           <strong>
+            expose
+           </strong>
+           <strong>
+            a
+           </strong>
+           <strong>
+            /metrics
+           </strong>
+           <strong>
+            endpoint
+           </strong>
+           and increment counters or other metrics. (This part is done in code, not in Dockerfile.)
+          </p>
+         </li>
+         <li>
+          <p>
+           Let’s get started by changing working directory to the vote folder:
+          </p>
+         </li>
+        </ul>
+        <pre><code>cd simple-voting-application/vote</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Add prometheus library to
+           <code>
+            requirements.txt
+           </code>
+           : if you add prometheus to your requirements file, you don’t need to change much in the Dockerfile. Your
+           <code>
+            requirements.txt
+           </code>
+           might look like this:
+          </p>
+         </li>
+        </ul>
+        <pre><code>Flask</code></pre>
+        <pre><code>Redis
+gunicorn
+prometheus_client</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           [Optional] Alternatively, you can instead choose to install prometheus directly in the dockerfile like:
+          </p>
+         </li>
+        </ul>
+        <pre><code>…
+RUN pip install -r requirements.txt
+# Additional line to install prometheus_client
+RUN pip install prometheus_client==0.16.0
+…</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Next, you need modify the existing
+           <code>
+            app.py
+           </code>
+           to integrate Prometheus metrics. We will:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Import the Prometheus client library.
+            </p>
+           </li>
+           <li>
+            <p>
+             Define a
+             <code>
+              metric
+             </code>
+             (a Counter) to track votes.
+            </p>
+           </li>
+           <li>
+            <p>
+             Increment the counter each time a vote is cast.
+            </p>
+           </li>
+           <li>
+            <p>
+             Expose a /
+             <code>
+              metrics endpoint
+             </code>
+             to allow Prometheus to scrape these metrics.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>...
+import logging
+
+# Import Prometheus client library
+from prometheus_client import Counter, generate_latest
+
+option_a = os.getenv('OPTION_A', "Cats")
+
+...
+app.logger.setLevel(logging.INFO)
+
+# Define a counter metric to count the number of votes per choice
+vote_counter = Counter(
+    'app_votes_total',
+    'Total number of votes',
+    ['choice']
+)
+
+def get_redis():
+    ...
+
+...
+app.logger.info('Received vote for %s', vote)
+
+# Increment the Prometheus counter for the chosen option
+vote_counter.labels(choice=vote).inc()
+
+data = json.dumps({'voter_id': voter_id, 'vote': vote})
+...
+
+# Expose a /metrics endpoint for Prometheus scraping
+@app.route("/metrics")
+def metrics():
+    return generate_latest(), 200, {
+        'Content-Type': 'text/plain; charset=utf-8'
+    }
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Rebuild your
+           <code>
+            Docker
+           </code>
+           image (after ensuring
+           <code>
+            prometheus_client
+           </code>
+           is installed via
+           <code>
+            requirements.txt
+           </code>
+           or a pip install line in the Dockerfile). Make sure the image can be successfully built.
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker build . -t voting-app</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Change to the directory where your
+           <code>
+            docker-compose.yml
+           </code>
+           resides (likely /root if you followed the initial instructions).
+          </p>
+         </li>
+        </ul>
+        <pre><code>cd ~</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Create the
+           <strong>
+            <code>
+             prometheus.yml
+            </code>
+           </strong>
+           file to scrape the vote app’s /metrics endpoint:
+          </p>
+         </li>
+        </ul>
+        <pre><code class="language-yaml">global:
+ scrape_interval: 2s
+scrape_configs:
+ - job_name: 'vote_app'
+   static_configs:
+    - targets: ['vote:80']
+# Add more scrape_configs as needed once you have other services exposing
+metrics.</code></pre>
+        <p class="callout">
+         <strong>
+          [Explanation]
+         </strong>
+         The following settings tell Prometheus how often to collect metrics and where to find them:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            <code>
+             scrape_interval
+            </code>
+            :
+           </strong>
+           Prometheus will scrape every 2 seconds, which is fine for testing.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            targets:
+           </strong>
+           <strong>
+            ['vote:80']
+           </strong>
+           : This means Prometheus will try to scrape metrics at
+           <a href="http://vote:80/metrics" rel="noopener" target="_blank">
+            http://vote:80/metrics
+           </a>
+           . Since vote is the service name defined in
+           <code>
+            docker-compose.yml
+           </code>
+           and all services share the same Docker network, this should work correctly. Your vote service runs on
+           <code>
+            port 80
+           </code>
+           internally (mapped to 8080 externally), so internally Prometheus can reach it at vote:80.
+          </p>
+         </li>
+        </ul>
+        <p>
+         With these changes, Prometheus will be able to scrape the
+         <strong>
+          /metrics
+         </strong>
+         endpoint and display real-time voting data.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Edit your existing
+           <strong>
+            <code>
+             docker-compose.yml
+            </code>
+           </strong>
+           to add a new Prometheus service. You can add it at the bottom of the file.
+          </p>
+         </li>
+        </ul>
+        <p class="text-note">
+         <strong>
+          YAML reminder:
+         </strong>
+         Keep the two-space indentation shown below. YAML uses indentation to define which settings belong to each service.
+        </p>
+        <pre><code class="language-compose">services:
+  redis:
+    image: redis
+
+  db:
+    image: postgres:9.4
+    environment:
+      POSTGRES_PASSWORD: "postgres"
+
+  vote:
+    image: voting-app
+    ports:
+      - "8080:80" # Open at http://&lt;EC2_PUBLIC_IP&gt;:8080
+    depends_on:
+      - redis
+
+  worker:
+    image: worker-app
+    depends_on:
+      - db
+      - redis
+
+  result:
+    image: result-app
+    ports:
+      - "8081:80" # Open at http://&lt;EC2_PUBLIC_IP&gt;:8081
+    depends_on:
+      - db
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+    ports:
+      - "9090:9090" # Open at http://&lt;EC2_PUBLIC_IP&gt;:9090
+    depends_on:
+      - vote
+      - result
+      - db
+      - redis
+      - worker</code></pre>
+        <p class="callout">
+         <strong>
+          [Explanation]
+         </strong>
+         The following settings expose Prometheus, mount its configuration, and define service startup relationships:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Exposure
+           </strong>
+           <strong>
+            of
+           </strong>
+           <strong>
+            Prometheus
+           </strong>
+           : Prometheus is exposed at
+           <strong>
+            9090:9090
+           </strong>
+           , so you can access the Prometheus UI at
+           <strong>
+            http://
+            <code>
+             &lt;EC2_PUBLIC_IP&gt;
+            </code>
+            :9090.
+           </strong>
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Mounting
+           </strong>
+           <strong>
+            of
+           </strong>
+           <strong>
+            <code>
+             prometheus.yml
+            </code>
+            :
+           </strong>
+           You’ve mounted ./
+           <code>
+            prometheus.yml
+           </code>
+           into
+           <code>
+            /etc/prometheus/prometheus.yml
+           </code>
+           in the Prometheus container.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Service
+           </strong>
+           <strong>
+            Dependencies:
+           </strong>
+           You have
+           <strong>
+            <code>
+             depends_on
+            </code>
+           </strong>
+           entries for each service. While
+           <code>
+            depends_on
+           </code>
+           ensures the order of starting containers, it doesn’t guarantee that a service is fully ready. However, since Prometheus continuously scrapes, it’s not a big issue.
+          </p>
+         </li>
+         <li>
+          <p>
+           Now, we are ready! Let’s start the entire stack with docker compose:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker-compose up -d</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker-compose up -d" class="img-large" loading="lazy" src="../assets/tutorials/week-9/11-scenario-and-implementation-steps-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Now you can access:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Access the
+             <strong>
+              vote
+             </strong>
+             <strong>
+              app
+             </strong>
+             at http://
+             <code>
+              &lt;EC2_PUBLIC_IP&gt;
+             </code>
+             :
+             <strong>
+              8080
+             </strong>
+            </p>
+           </li>
+           <li>
+            <p>
+             Access the
+             <strong>
+              result
+             </strong>
+             <strong>
+              app
+             </strong>
+             at http://
+             <code>
+              &lt;EC2_PUBLIC_IP&gt;
+             </code>
+             :
+             <strong>
+              8081
+             </strong>
+            </p>
+           </li>
+           <li>
+            <p>
+             Access
+             <strong>
+              Prometheus
+             </strong>
+             <strong>
+              dashboard
+             </strong>
+             at http://
+             <code>
+              &lt;EC2_PUBLIC_IP&gt;
+             </code>
+             :
+             <strong>
+              9090
+             </strong>
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <p>
+         If everything is configured correctly, Prometheus should start scraping the vote service’s metrics, and you’ll be able to see them in Prometheus under the “Status -&gt; Targets” pages.
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating and you’ll be able to see them in Prometheus under the “Status -&gt; Targets” pages." class="img-large" loading="lazy" src="../assets/tutorials/week-9/11-scenario-and-implementation-steps-005.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Time to test
+           <code>
+            app_votes_total
+           </code>
+           metric output!
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             First, please open the browser incognito mode to allow you to make multiple votes to at least increase the count by one. Prometheus client libraries only start reporting counter metrics after they’ve been incremented at least once
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               In my example, I manually vote many times for testing:
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating In my example, I manually vote many times for testing:" class="img-large" loading="lazy" src="../assets/tutorials/week-9/11-scenario-and-implementation-steps-006.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Check the metrics endpoint directly from the terminal
+          </p>
+         </li>
+        </ul>
+        <pre><code>curl http://&lt;EC2_PUBLIC_IP&gt;:8080/metrics | grep app_votes_total</code></pre>
+        <p>
+         Replace
+         <code>
+          &lt;EC2_PUBLIC_IP&gt;
+         </code>
+         with your actual server’s IP. You should see something like this (could be slightly different for you):
+        </p>
+        <pre><code>app_votes_total{choice="a"} x.0
+app_votes_total{choice="b"} x.0</code></pre>
+        <div class="tutorial-image-group">
+         <img alt='Screenshot illustrating app_votes_total{choice="a"} x.0 app_votes_total{choice="b"} x.0' class="img-large" loading="lazy" src="../assets/tutorials/week-9/11-scenario-and-implementation-steps-007.png"/>
+        </div>
+        <p>
+         If you don’t see any lines for
+         <code>
+          app_votes_total
+         </code>
+         , it means the application hasn’t recorded any valid votes.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Query the Metric in Prometheus dashboard:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             In the Query box, type
+             <strong>
+              <code>
+               app_votes_total
+              </code>
+             </strong>
+             and press Enter.
+            </p>
+           </li>
+           <li>
+            <p>
+             You should see the graph for
+             <strong>
+              <code>
+               app_votes_total
+              </code>
+             </strong>
+             for each option (Cat or Dog).
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating You should see the graph for app_votes_total for each option (Cat or Dog)." class="img-large" loading="lazy" src="../assets/tutorials/week-9/11-scenario-and-implementation-steps-008.png"/>
+        </div>
+        <p>
+         <strong>
+          [Website
+         </strong>
+         <strong>
+          Down
+         </strong>
+         <strong>
+          Simulation]
+         </strong>
+         To simulate the vote website going down, you can simply stop or remove the container running the vote service.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Stop
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            Container:
+           </strong>
+           With Docker Compose, you can just stop that one service:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker-compose stop vote</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           What Happens in Prometheus:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Prometheus continuously scrapes targets at the configured interval.
+            </p>
+           </li>
+           <li>
+            <p>
+             Once the vote container is stopped/removed, Prometheus will fail to reach
+             <a href="http://vote:80/metrics" rel="noopener" target="_blank">
+              http://vote:80/metrics
+             </a>
+             .
+            </p>
+           </li>
+           <li>
+            <p>
+             After one or two failed scrapes (depending on your configuration), Prometheus will mark the
+             <code>
+              vote_app
+             </code>
+             target as “down.”
+            </p>
+           </li>
+           <li>
+            <p>
+             In the Prometheus UI (http://
+             <code>
+              &lt;EC2_PUBLIC_IP&gt;
+             </code>
+             :9090/targets), you’ll see the
+             <code>
+              vote_app
+             </code>
+             job listed as “down”.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating vote_app job listed as “down”." class="img-large" loading="lazy" src="../assets/tutorials/week-9/11-scenario-and-implementation-steps-009.png"/>
+        </div>
+        <p>
+         Great job completing this lab! You’ve learned how to deploy a multi-container app with Docker Compose and scale it with
+         <code>
+          Docker Swarm
+         </code>
+         . These tools make managing complex applications simpler and more efficient, whether for development or production. Keep practicing, and you’ll master these essential DevOps skills in no time!
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="bonus-docker-swarm-lab">
+    <h2 class="collapsible-header">
+     🎮 Bonus: Practise Docker Swarm online
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating [Bonus] Learning Docker Swarm with Interactive Online Labs from Docker" class="img-large" loading="lazy" src="../assets/tutorials/week-9/12-bonus-practise-docker-swarm-online-001.png"/>
+        </div>
+        <p>
+         In case you want to revise and work on your docker swarm skills, please follow this very short fun learning labs for
+         <code>
+          Docker
+         </code>
+         swarm from Docker:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Open this link:
+           <a href="https://training.play-with-docker.com/ops-s1-swarm-intro/" rel="noopener" target="_blank">
+            https://training.play-with-docker.com/ops-s1-swarm-intro/
+           </a>
+          </p>
+         </li>
+         <li>
+          <p>
+           Have fun! Always be learning!
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Have fun! Always be learning!" class="img-large" loading="lazy" src="../assets/tutorials/week-9/12-bonus-practise-docker-swarm-online-002.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="whats-next">
+    <h2 class="collapsible-header start-open">
+     📚 Continue the course
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--home">
+      <a class="card" href="week-8-ansible-lab.html">
+       <h3>
+        🤖 Week 8: Ansible
+       </h3>
+       <p>
+        Continue through the COSC2767 learning path.
+       </p>
+       <span class="go-to-link">
+        Previous lab
+       </span>
+      </a>
+      <a class="card" href="week-10-kubernetes-lab.html">
+       <h3>
+        ☸️ Week 10: Kubernetes
+       </h3>
+       <p>
+        Continue through the COSC2767 learning path.
+       </p>
+       <span class="go-to-link">
+        Next lab
+       </span>
+      </a>
+      <a class="card" href="../index.html">
+       <h3>
+        🗓️ All weekly labs
+       </h3>
+       <p>
+        Return to the course map and review every weekly tutorial.
+       </p>
+       <span class="go-to-link">
+        Course home
+       </span>
+      </a>
+     </div>
+    </div>
+   </section>
+  </main>
+  <footer>
+   <p>
+    © Created by Tom Huynh with love ❤️
+   </p>
+  </footer>
+ </body>
+</html>
+

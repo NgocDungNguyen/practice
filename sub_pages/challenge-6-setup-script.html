@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="The Week 4 ultimate challenge, solved: one bash script that takes a blank EC2 instance to a live Maven webapp served by Tomcat on port 80 — with reasoning for every step.">
+<title>Challenge 6: Automated Setup Script - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="challenge6" data-stage="resources" data-root="../" style="--stage-accent: var(--stage-resources)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Reference</span><span class="crumb-sep">/</span><span>Challenge 6 Setup Script</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Reference</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">🚀</span>Challenge 6: Automated Setup Script</h1>
+<p class="page-hero__intro">The Week 4 ultimate challenge, solved: one <code>bash</code> script that takes a blank <code>EC2</code> instance to a live Maven webapp served by <code>Tomcat</code> on port 80 — with the reasoning behind every step.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>4</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>11</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>13</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="c6-overview">
+<h2 class="collapsible-header start-open">🎯 The ultimate challenge, solved<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>What the script does</h3>
+<p>All eight tutorial stages in order, each verified before the next: system update, Java 17 (Corretto), environment variables for all users, Maven, Tomcat 9 on port 80, a systemd service, then generate → build → deploy the archetype webapp.</p>
+<pre><code class="language-bash">1. yum update + Corretto 17 (-devel)
+2. JAVA_HOME / M2_HOME in /etc/profile.d
+3. Maven  → /opt/maven
+4. Tomcat → /opt/tomcat, port 80
+5. systemd unit (survives reboot)
+6. mvn archetype:generate + dynamic index.jsp
+7. mvn clean package → cp WAR → restart
+8. poll http://localhost/helloWorld/ until 200</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> the assignment says "fresh instance to working website" — the end state is <code>http://&lt;public-ip&gt;/helloWorld/</code>.</p>
+</div>
+<div class="card">
+<h3>How to run it</h3>
+<p>Copy the script to a brand-new Amazon Linux 2023 instance and run it as root. Everything it prints is also logged to <code>/var/log/rmit-setup.log</code>.</p>
+<pre><code class="language-bash">scp -i labsuser.pem setup.sh ec2-user@&lt;public-ip&gt;:~
+ssh -i labsuser.pem ec2-user@&lt;public-ip&gt;
+sudo bash setup.sh
+# — or paste the whole script into the EC2
+#   "User data" field at launch: the instance
+#   then configures itself on first boot</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> the security group must allow inbound TCP 80 (and 22 for SSH) — no script can open that for you.</p>
+</div>
+</div>
+<p class="callout callout--warning"><strong>Important:</strong> the script matches the lab PDF — Corretto <em>17</em>, the <code>vn.edu.rmit</code> / <code>helloWorld</code> archetype coordinates, and the port-80 end goal. It is syntax-checked but has not been executed against a live EC2 instance yet: do one real run before submitting anything that depends on it.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="c6-script">
+<h2 class="collapsible-header">📜 The complete setup.sh<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card">
+<h3>setup.sh — copy, save, run with sudo</h3>
+<p>Use the copy button on the block and save as <code>setup.sh</code>. The version variables are pinned to Maven 3.9.16 and Tomcat 9.0.120 (both verified live on the CDN); if a download ever 404s, update the two variables from <a href="https://maven.apache.org/download.cgi" rel="noopener" target="_blank">maven.apache.org</a> and <a href="https://tomcat.apache.org/download-90.cgi" rel="noopener" target="_blank">tomcat.apache.org</a> — the <code>archive.apache.org</code> fallback usually saves you anyway.</p>
+<pre><code class="language-bash">#!/bin/bash
+###############################################################################
+# Challenge 6 — Automate the Entire Setup (Java + Maven + Tomcat + deploy)
+# Target: fresh Amazon Linux 2023 EC2 instance. Run as root:  sudo bash setup.sh
+# End goal: http://&lt;ec2-public-ip&gt;/helloWorld/  (port 80)
+###############################################################################
+set -euo pipefail
+
+# ----- 0. Config (check versions at maven.apache.org / tomcat.apache.org) ----
+MAVEN_VERSION="3.9.16"
+TOMCAT_VERSION="9.0.120"
+APP_GROUP_ID="vn.edu.rmit"
+APP_NAME="helloWorld"
+WORKDIR="/root"
+LOG_FILE="/var/log/rmit-setup.log"
+
+# ----- Logging: everything below goes to console AND the log file -----------
+exec &gt; &gt;(tee -a "$LOG_FILE") 2&gt;&amp;1
+say()  { echo -e "\n=== $* ==="; }
+fail() { echo "FATAL: $*" &gt;&amp;2; exit 1; }
+
+[ "$(id -u)" -eq 0 ] || fail "run me as root: sudo bash $0"
+
+# ----- 1. System preparation -------------------------------------------------
+say "1/8 System update + Java 17 (Amazon Corretto)"
+yum update -y
+yum install -y java-17-amazon-corretto-devel wget tar gzip   # -devel =&gt; javac (Maven compiles)
+java -version  || fail "Java did not install"
+javac -version || fail "JDK (javac) missing"
+
+# ----- 2. Environment variables — for ALL users (Challenge 5, hard solution) -
+say "2/8 JAVA_HOME / M2_HOME in /etc/profile.d (every login shell gets them)"
+JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+cat &gt; /etc/profile.d/maven.sh &lt;&lt;EOF
+export JAVA_HOME=${JAVA_HOME}
+export M2_HOME=/opt/maven
+export M2=/opt/maven/bin
+export PATH=\${M2}:\${PATH}
+EOF
+chmod 644 /etc/profile.d/maven.sh
+# make the vars available inside THIS script too (non-login shell)
+source /etc/profile.d/maven.sh
+
+# ----- helper: fetch from Apache CDN, fall back to the permanent archive -----
+fetch() { # fetch &lt;url-path-on-dlcdn&gt; &lt;url-on-archive&gt; &lt;outfile&gt;
+    wget -q "https://dlcdn.apache.org/$1" -O "$3" || \
+    wget -q "https://archive.apache.org/dist/$2" -O "$3" || \
+    fail "could not download $3"
+}
+
+# ----- 3. Install Maven ------------------------------------------------------
+say "3/8 Maven ${MAVEN_VERSION} -&gt; /opt/maven"
+fetch "maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" \
+      "maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" \
+      /tmp/maven.tar.gz
+tar -xzf /tmp/maven.tar.gz -C /opt
+ln -sfn "/opt/apache-maven-${MAVEN_VERSION}" /opt/maven
+mvn -version || fail "Maven not working"
+
+# ----- 4. Install Tomcat 9 ---------------------------------------------------
+say "4/8 Tomcat ${TOMCAT_VERSION} -&gt; /opt/tomcat, listening on port 80"
+fetch "tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz" \
+      "tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz" \
+      /tmp/tomcat.tar.gz
+tar -xzf /tmp/tomcat.tar.gz -C /opt
+ln -sfn "/opt/apache-tomcat-${TOMCAT_VERSION}" /opt/tomcat
+
+# Challenge 2: serve on port 80 instead of 8080
+sed -i 's/port="8080"/port="80"/' /opt/tomcat/conf/server.xml
+grep -q 'port="80"' /opt/tomcat/conf/server.xml || fail "port edit failed"
+
+# convenience shortcuts from the tutorial
+ln -sfn /opt/tomcat/bin/startup.sh  /usr/local/bin/tomcatup
+ln -sfn /opt/tomcat/bin/shutdown.sh /usr/local/bin/tomcatdown
+
+# ----- 5. Tomcat as a service (Challenge 4, systemd = the robust solution) ---
+say "5/8 systemd unit so Tomcat survives reboots"
+cat &gt; /etc/systemd/system/tomcat.service &lt;&lt;EOF
+[Unit]
+Description=Apache Tomcat 9
+After=network.target
+
+[Service]
+Type=forking
+Environment=JAVA_HOME=${JAVA_HOME}
+Environment=CATALINA_HOME=/opt/tomcat
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable --now tomcat
+systemctl is-active --quiet tomcat || fail "Tomcat service failed to start"
+
+# ----- 6. Generate the Maven web application (the tutorial's one-liner) ------
+say "6/8 Generate ${APP_NAME} from maven-archetype-webapp"
+cd "$WORKDIR"
+rm -rf "$APP_NAME"
+mvn -q archetype:generate -DgroupId="$APP_GROUP_ID" -DartifactId="$APP_NAME" \
+    -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false
+
+# Challenge 1: replace index.jsp with dynamic content
+cat &gt; "$WORKDIR/$APP_NAME/src/main/webapp/index.jsp" &lt;&lt;'EOF'
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;Automated Setup&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Hello, World!&lt;/h1&gt;
+  &lt;h3&gt;DevOps Class at RMIT — deployed by one bash script!&lt;/h3&gt;
+  &lt;p&gt;The current server date and time is: &lt;%= new java.util.Date() %&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+EOF
+
+# ----- 7. Build and deploy (Challenge 3, scripted) ----------------------------
+say "7/8 mvn package + deploy WAR to Tomcat"
+cd "$WORKDIR/$APP_NAME"
+mvn -q clean package
+[ -f "target/${APP_NAME}.war" ] || fail "build produced no WAR"
+
+rm -rf "/opt/tomcat/webapps/${APP_NAME}" "/opt/tomcat/webapps/${APP_NAME}.war"
+cp "target/${APP_NAME}.war" /opt/tomcat/webapps/
+systemctl restart tomcat
+
+# ----- 8. Verify end-to-end (error checking, as the guidance asks) -----------
+say "8/8 Wait for the app to answer on port 80"
+for i in $(seq 1 30); do
+    if curl -sf -o /dev/null "http://localhost:80/${APP_NAME}/"; then
+        break
+    fi
+    [ "$i" -eq 30 ] &amp;&amp; fail "app never came up — check ${LOG_FILE} and /opt/tomcat/logs"
+    sleep 2
+done
+
+# public IP via instance metadata (IMDSv2)
+TOKEN=$(curl -sf -X PUT "http://169.254.169.254/latest/api/token" \
+        -H "X-aws-ec2-metadata-token-ttl-seconds: 60" || true)
+PUBLIC_IP=$(curl -sf -H "X-aws-ec2-metadata-token: $TOKEN" \
+        "http://169.254.169.254/latest/meta-data/public-ipv4" || echo "&lt;ec2-public-ip&gt;")
+
+say "DONE — open:  http://${PUBLIC_IP}/${APP_NAME}/"
+echo "(Security group must allow inbound TCP 80. Full log: ${LOG_FILE})"
+</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> re-running the script is safe — symlinks use <code>ln -sfn</code>, the old deployment is removed before the new WAR is copied, and the version pins mean you always know what is installed.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="c6-guidance-map">
+<h2 class="collapsible-header">🧭 Why each part is there<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Java first, and the -devel package</h3>
+<p>Everything except the webapp itself runs on the JVM, so Java installs before anything else. The plain Corretto package is only a runtime — Maven needs <code>javac</code>, which lives in the <code>-devel</code> variant.</p>
+<pre><code class="language-bash">yum install -y java-17-amazon-corretto-devel
+javac -version || fail "JDK (javac) missing"</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> JRE runs bytecode, JDK compiles source. A Tomcat-only box can live on the JRE; a build box cannot.</p>
+</div>
+<div class="card">
+<h3>/etc/profile.d — Challenge 5's real fix</h3>
+<p>Writing <code>JAVA_HOME</code>, <code>M2_HOME</code>, and <code>PATH</code> into <code>/etc/profile.d/maven.sh</code> makes <code>mvn</code> work for <em>every</em> user and login shell — <code>ec2-user</code>, <code>sudo su</code>, and <code>sudo su -</code> alike — instead of patching one user's <code>.bash_profile</code>.</p>
+<pre><code class="language-bash">cat &gt; /etc/profile.d/maven.sh &lt;&lt;EOF
+export JAVA_HOME=...
+export PATH=\${M2}:\${PATH}
+EOF
+source /etc/profile.d/maven.sh  # scripts are non-login shells</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> the script must <code>source</code> the file itself — a script is a non-login shell and never reads profile files on its own.</p>
+</div>
+<div class="card">
+<h3>/opt, symlinks, and the archive fallback</h3>
+<p>Tarballs unpack into versioned directories under <code>/opt</code>; the stable <code>/opt/maven</code> and <code>/opt/tomcat</code> symlinks mean nothing else ever hard-codes a version. Downloads try the CDN, then fall back to the permanent archive.</p>
+<pre><code class="language-bash">wget https://dlcdn.apache.org/...        \
+  || wget https://archive.apache.org/... \
+  || fail "could not download"</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> a pinned version vanishes from <code>dlcdn</code> — Apache deletes superseded releases there, which is the #1 way setup scripts rot.</p>
+</div>
+<div class="card">
+<h3>Port 80 in one sed (Challenge 2)</h3>
+<p>The end goal URL has no port, so the HTTP Connector in <code>server.xml</code> moves from 8080 to 80 — and the edit is verified immediately, because a silent sed miss would only surface much later as a connection error.</p>
+<pre><code class="language-bash">sed -i 's/port="8080"/port="80"/' /opt/tomcat/conf/server.xml
+grep -q 'port="80"' ... || fail "port edit failed"</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> ports below 1024 are privileged — binding 80 works here because Tomcat runs as root in this lab setup.</p>
+</div>
+<div class="card">
+<h3>systemd, not cron @reboot (Challenge 4)</h3>
+<p>The unit file gives Tomcat journald logging, <code>Restart=on-failure</code> if it crashes, and clean <code>systemctl</code> control — the things the cron shortcut cannot do.</p>
+<pre><code class="language-bash">[Service]
+Type=forking          # startup.sh spawns and exits
+ExecStart=/opt/tomcat/bin/startup.sh
+Restart=on-failure</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> <code>Type=forking</code> because <code>startup.sh</code> launches Tomcat and returns — systemd would otherwise think the service died.</p>
+</div>
+<div class="card">
+<h3>Error checking, logging, verification</h3>
+<p><code>set -euo pipefail</code> stops the script on the first failure, every critical step has an explicit check, all output tees to a log file, and the final loop polls the real URL instead of assuming success.</p>
+<pre><code class="language-bash">set -euo pipefail
+exec &gt; &gt;(tee -a "$LOG_FILE") 2&gt;&amp;1
+curl -sf http://localhost:80/helloWorld/ || retry...</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> the marker runs your script on a fresh instance — "it printed DONE and the URL answered" beats "it probably worked".</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Note:</strong> deployment copies the WAR straight into <code>webapps/</code>, so the Tomcat manager user and IP-restriction steps are skipped on purpose — the lab's own note says a minimal server does not need them.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="c6-test-drill">
+<h2 class="collapsible-header">🧪 Prove it, then drill it<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>The acceptance test</h3>
+<p>Run the whole loop once, end to end, exactly the way it would be marked.</p>
+<pre><code class="language-bash">1. Launch a fresh AL2023 instance (SG: 22, 80)
+2. sudo bash setup.sh          # watch the 8 stages
+3. Open http://&lt;public-ip&gt;/helloWorld/
+4. sudo reboot → page still answers (systemd)
+5. Edit index.jsp, re-run script → change is live</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> before submitting — step 4 is the one people forget to test.</p>
+</div>
+<div class="card">
+<h3>What you should be able to explain cold</h3>
+<p>Every line of the script is a likely question. If any of these is shaky, that is the card to reread above.</p>
+<pre><code class="language-bash">- why Java installs first, and why -devel
+- why /etc/profile.d beats ~/.bash_profile
+- why the script sources the profile itself
+- why downloads fall back to archive.apache.org
+- why Type=forking in the systemd unit
+- what set -euo pipefail does, flag by flag
+- why the script polls the URL at the end</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> open this page and run <code>/grill-me</code> — then rebuild the script from memory and diff it against this one.</p>
+</div>
+</div>
+<p class="callout callout--task"><strong>Question:</strong> the script prints DONE but the browser times out from your laptop. The app answers on <code>localhost</code> from inside the instance. What is wrong, and which single AWS console screen proves it?</p>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-resources)" href="../sub_pages/setup.html"><span class="pager__dir">← Previous</span><span class="pager__title">Practice Environment Setup</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-resources)" href="../sub_pages/debug-jenkins-ssh-agent.html"><span class="pager__dir">Next →</span><span class="pager__title">Debug Log: Jenkins SSH Agent</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="c6-overview"><a class="toc__link" href="#c6-overview"><span>The ultimate challenge, solved</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="c6-script"><a class="toc__link" href="#c6-script"><span>The complete setup.sh</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="c6-guidance-map"><a class="toc__link" href="#c6-guidance-map"><span>Why each part is there</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="c6-test-drill"><a class="toc__link" href="#c6-test-drill"><span>Prove it, then drill it</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 4 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

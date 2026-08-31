@@ -1,0 +1,6152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Use Git for local and remote version control while creating and managing cloud resources in AWS.">
+<title>Week 3: Git and AWS - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="week-3" data-stage="foundations" data-root="../" style="--stage-accent: var(--stage-foundations)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Foundations</span><span class="crumb-sep">/</span><span>Week 03</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Week 03</span><span class="chip">Foundations</span><span class="chip">Lab guide</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">🔀</span>Git and AWS</h1>
+<p class="page-hero__intro">Use
+     <code>
+      Git
+     </code>
+     for local and
+     <code>
+      remote
+     </code>
+<code>
+      version control
+     </code>
+     while creating and managing cloud resources in
+     <code>
+      AWS
+     </code>
+     .</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>11</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 15.5l-4.2-4.2L7 21"/></svg><strong>165</strong>&nbsp;screenshots</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>112</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>82</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="objective">
+<h2 class="collapsible-header start-open">
+     🎯 Objective
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Week tutorial screenshot from page 1" class="img-large" height="435" loading="lazy" src="../assets/tutorials/week-3/01-objective-001.png" width="435"/>
+</div>
+<p>
+         In this lab, we have two
+         <code>
+          main
+         </code>
+         objectives:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Revise what we have learned about the
+           <code>
+            version control
+           </code>
+           GIT and
+           <code>
+            remote
+           </code>
+<code>
+            repository
+           </code>
+           on
+           <code>
+            GitHub
+           </code>
+           .
+          </p>
+</li>
+<li>
+<p>
+           Get familiar with Amazon Web Services on the Learner Lab and learn how to create
+           <code>
+            AWS
+           </code>
+<code>
+            EC2
+           </code>
+           instances.
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating instances." class="img-large" height="366" loading="lazy" src="../assets/tutorials/week-3/01-objective-002.png" width="242"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="instructions">
+<h2 class="collapsible-header">
+     ☁️ AWS Academy and your first EC2 instance
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+<code>
+          AWS
+         </code>
+         Academy Learner Lab offers a long-running lab environment suitable for student projects over a period designated by the educator.
+        </p>
+<p>
+         Each student in an AWS Academy Learner Lab class will have a $50 AWS Platform Credit to use for the duration of the class.
+        </p>
+<p>
+         Each session lasts for 4 hours by default, although students can extend a session to run longer by pressing the start button to reset their session timer. At the end of each session, any resources students create will persist. However, we automatically shut
+         <code>
+          EC2
+         </code>
+         instances down. Other resources, such as RDS instances, keep running. Keep in mind that we do not stop some AWS features, so they can still incur charges between sessions.
+        </p>
+<p>
+         Students may wish to delete those types of resources and recreate them as needed to test their work during a session. Students have access to this environment for the duration of the class in which they are enrolled. When the class ends, student access to the learner lab will also end.
+        </p>
+<p>
+         This guide provides you with instructions on how to use AWS Academy Learner Labs. These instructions apply to both AWS Academy Learner Lab – Foundational Services and AWS Academy Learner Lab – Association Services. This guide covers setting up and logging into your AWS Academy Account, accessing your Learner Lab, and using your Learner Lab.
+        </p>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🔑 Set up and sign in to AWS Academy
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Setting Up and Logging Into Your AWS Academy Account" class="img-large" height="562" loading="lazy" src="../assets/tutorials/week-3/02-set-up-and-sign-in-to-aws-academy-001.png" width="562"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Set up your
+            <code>
+             AWS
+            </code>
+            Academy account by responding to your email invitation and clicking Get Started. The email invitation will come from AWS Academy &lt;notifications@instructure.com&gt;. If you do not see the email, check your junk, spam, or promotional mail folder. Here is a sample invitation email:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating see the email, check your junk, spam, or promotional mail folder. Here is a sample invitation email:" class="img-large" height="434" loading="lazy" src="../assets/tutorials/week-3/02-set-up-and-sign-in-to-aws-academy-002.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Go to
+            <a href="https://www.awsacademy.com/LMS_Login" rel="noopener" target="_blank">
+             https://www.awsacademy.com/LMS_Login
+            </a>
+            to login.
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Press Student Login.
+             </p>
+</li>
+<li>
+<p>
+              Use the email address that received the email invitation for the email field.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Use the email address that received the email invitation for the email field." class="img-large" height="416" loading="lazy" src="../assets/tutorials/week-3/02-set-up-and-sign-in-to-aws-academy-003.png" width="951"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🧪 Open the Learner Lab
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            In the
+            <code>
+             AWS
+            </code>
+            Academy Dashboard, click on the Learner Lab you wish to use. Students invited to more than one course/learner lab will see multiple tiles on the dashboard.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating more than one course/learner lab will see multiple tiles on the dashboard." class="img-large" height="628" loading="lazy" src="../assets/tutorials/week-3/03-open-the-learner-lab-001.png" width="636"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Select Modules.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Select Modules." class="img-large" height="508" loading="lazy" src="../assets/tutorials/week-3/03-open-the-learner-lab-002.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Select the Learner Lab item.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Select the Learner Lab item." class="img-large" height="942" loading="lazy" src="../assets/tutorials/week-3/03-open-the-learner-lab-003.png" width="951"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🎛️ Use the Learner Lab
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            The instructions for using the lab environment are to the right of the console window. You can return to the instructions by pressing the Readme button. The instructions include important details about how to access and use your
+            <code>
+             AWS
+            </code>
+            account, the AWS Services available to you, and the restrictions placed on some AWS Services.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating restrictions placed on some AWS Services." class="img-large" height="390" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-001.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Start the lab by selecting
+            <strong>
+             Start
+            </strong>
+<strong>
+             Lab.
+            </strong>
+</p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Start the lab by selecting Start Lab." class="img-large" height="470" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-002.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            When the dot next to AWS turns
+            <strong>
+             yellow
+            </strong>
+            , your lab environment is still being prepared to use. So wait for it!
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating wait for it!" class="img-large" height="348" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-003.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            When the dot next to AWS turns
+            <strong>
+             green
+            </strong>
+            , your lab environment is
+            <strong>
+             ready
+            </strong>
+<strong>
+             to
+            </strong>
+<strong>
+             use
+            </strong>
+            . Click AWS to launch the AWS Console in a new tab.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating the AWS Console in a new tab." class="img-large" height="386" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-004.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            A new tab will open the AWS Management Console when you click on AWS. The system logged you into a temporary AWS account and the lab session will automatically end when the session timer expires. The system will save your work when you end the session or the session timer expires.
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Note: The system will suspend your
+              <code>
+               EC2
+              </code>
+              instances at the end of a session and they will restart when you start the lab again. Press Start if you need to start up a new lab session.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating restart when you start the lab again. Press Start if you need to start up a new lab session." class="img-large" height="432" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-005.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Alternatively, you can use the terminal window to the left of the instructions to use the AWS Command-Line Interface (CLI) to interact with your account.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Command-Line Interface (CLI) to interact with your account." class="img-large" height="384" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-006.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Return to the AWS Academy LMS tab to view the lab instructions or to control your lab session.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Return to the AWS Academy LMS tab to view the lab instructions or to control your lab session." class="img-large" height="162" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-007.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            To monitor spending, see the area at the top of the lab instructions. Note: This information is provided by the AWS Budgets service and might be delayed by up to 8 hours. This is an approximate view of spending.
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Note: If you spend the entire budget, you will lose all of your work, and the system will deactivate your temporary AWS account. Your $50 budget is sufficient for most academic projects, as long as you take care to stay within the budget guidelines.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating projects, as long as you take care to stay within the budget guidelines." class="img-large" height="304" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-008.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You can monitor your remaining session time at the top of the lab. Note: If you are actively working and you need more time, you can reset your session timer by pressing
+            <strong>
+             Start
+            </strong>
+<strong>
+             Lab
+            </strong>
+            again.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating working and you need more time, you can reset your session timer by pressing Start Lab again." class="img-large" height="308" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-009.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            To delete all resources that you have configured in a lab and start with a fresh AWS account, choose
+            <strong>
+             Reset
+            </strong>
+            . Important: All work will be lost and cannot be recovered.
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              This option will not reset your budget. Any spending that you have incurred will continue to be tracked.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating to be tracked." class="img-large" height="301" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-010.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            When you are finished with the session, choose
+            <strong>
+             End
+            </strong>
+<strong>
+             Lab
+            </strong>
+            .
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Any running Amazon Elastic Compute Cloud (Amazon EC2) instances will be stopped. If you return and restart the lab, any stopped EC2 instances will restart and any other resources that you configured will still be available.
+             </p>
+</li>
+<li>
+<p>
+<strong>
+               Important
+              </strong>
+              : If you created and started other AWS resources such as a NAT gateway or Amazon Relational Database Service (Amazon RDS) database, those resources will continue to run in the background and incur charges, even outside of your lab session time.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<p class="callout callout--warning">
+<strong>
+           [Important
+          </strong>
+<strong>
+           Note]
+          </strong>
+          Due to an AWS Learner Lab policy, our AWS lab environment is restricted to only us-east-1 and us-west-2 regions. Therefore, please make sure to select either one of these regions when you start your lab exercises.
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating you start your lab exercises." class="img-large" height="273" loading="lazy" src="../assets/tutorials/week-3/04-use-the-learner-lab-011.png" width="579"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        ☁️ Create your first EC2 instance
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            First, let's open the
+            <code>
+             AWS
+            </code>
+            console:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating First, let's open the AWS console:" class="img-large" height="372" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-001.png" width="951"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating First, let's open the AWS console:" class="img-large" height="584" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-002.png" width="951"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating First, let's open the AWS console:" class="img-large" height="317" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-003.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Here are the settings of our new
+            <code>
+             EC2
+            </code>
+            Linux instance:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Here are the settings of our new EC2 Linux instance:" class="img-large" height="182" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-004.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Choosing the
+            <strong>
+             default
+            </strong>
+<strong>
+<code>
+              AMI
+             </code>
+</strong>
+<strong>
+             of
+            </strong>
+<strong>
+             AWS
+            </strong>
+<strong>
+             (Amazon
+            </strong>
+<strong>
+             Linux
+            </strong>
+<strong>
+             2023)
+            </strong>
+            is the best to run on EC2 instances. Indeed, this AMI of AWS is based on a version of
+            <strong>
+             RHEL
+            </strong>
+<strong>
+             (Red
+            </strong>
+<strong>
+             Hat
+            </strong>
+<strong>
+             Enterprise
+            </strong>
+<strong>
+             Linux)
+            </strong>
+<strong>
+             -
+            </strong>
+<strong>
+             Fedora
+            </strong>
+            . Amazon has customised it to suit AWS environments, optimising it for cloud use with packages, settings, and configurations tailored to improve performance, security, and compatibility with AWS services
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating services" class="img-large" height="600" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-005.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Because this is a learning environment, choose the smallest instance type that satisfies the lab requirements:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+               The
+              </strong>
+<strong>
+               t3.micro
+              </strong>
+              is a low-cost Amazon EC2 instance with 2 vCPU and 1 GB RAM, ideal for lightweight workloads. It offers burstable performance using a CPU credit system, making it suitable for small web servers, testing, and development.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating it suitable for small web servers, testing, and development." class="img-large" height="199" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-006.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Create a new key pair to securely
+            <code>
+             SSH
+            </code>
+            to your EC2 instance:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Create a new key pair to securely SSH to your EC2 instance:" class="img-large" height="232" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-007.png" width="903"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Create a new key pair to securely SSH to your EC2 instance:" class="img-large" height="758" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-008.png" width="718"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now the browser should download a
+            <code>
+             devops_project_key.pem
+            </code>
+            to your computer. Please keep this file safe (as we will try to use only one key for all of our EC2 instances in this course):
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating file safe (as we will try to use only one key for all of our EC2 instances in this course):" class="img-large" height="147" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-009.png" width="472"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now, our EC2 instance will use that new SSH key “
+            <code>
+             devops_project_key
+            </code>
+            " as a way for us to pass authentication and login to the EC2 instance using the key.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating authentication and login to the EC2 instance using the key." class="img-large" height="212" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-010.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            We need to create a
+            <code>
+             security group
+            </code>
+            (firewall rules) to secure and protect our VMs:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating We need to create a security group (firewall rules) to secure and protect our VMs:" class="img-large" height="666" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-011.png" width="903"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating We need to create a security group (firewall rules) to secure and protect our VMs:" class="img-large" height="933" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-012.png" width="825"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            The default 8 GB for storage is plenty enough for our EC2 server:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+               gp3
+              </strong>
+              is a type of Amazon EBS (Elastic Block Store) SSD storage used with EC2 instances. It offers faster performance and lower cost than the older gp2. With gp3, you get 3,000 IOPS by default, and you can increase speed without changing the storage size. It’s great for things like boot volumes, apps, and small databases.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating things like boot volumes, apps, and small databases." class="img-large" height="95" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-013.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            After that, review the configuration settings and launch the instance:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating After that, review the configuration settings and launch the instance:" class="img-large" height="591" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-014.png" width="609"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            AWS will announce that it has started to create a new EC2 instance based on your configuration:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating AWS will announce that it has started to create a new EC2 instance based on your configuration:" class="img-large" height="101" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-015.png" width="675"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating AWS will announce that it has started to create a new EC2 instance based on your configuration:" class="img-large" height="181" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-016.png" width="590"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating AWS will announce that it has started to create a new EC2 instance based on your configuration:" class="img-large" height="78" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-017.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            In the EC2 dashboard you should see the
+            <code>
+             git
+            </code>
+            -devops EC2 running:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating In the EC2 dashboard you should see the git-devops EC2 running:" class="img-large" height="78" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-018.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You can check out all related information about your EC2 instance here. The most important information is the Public IP address of your EC2 instance which will allow us to connect SSH to the server to control it:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating server to control it:" class="img-large" height="422" loading="lazy" src="../assets/tutorials/week-3/05-create-your-first-ec2-instance-019.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now we will use the SSH key to
+            <strong>
+             SSH
+            </strong>
+<strong>
+             to
+            </strong>
+<strong>
+             the
+            </strong>
+<strong>
+             EC2
+            </strong>
+<strong>
+             instance,
+            </strong>
+            there are
+            <strong>
+             different
+            </strong>
+<strong>
+             instructions
+            </strong>
+<strong>
+             for
+            </strong>
+<strong>
+             different
+            </strong>
+<strong>
+             operating
+            </strong>
+<strong>
+             systems
+            </strong>
+<strong>
+             of
+            </strong>
+<strong>
+             your
+            </strong>
+<strong>
+             laptop
+            </strong>
+<strong>
+             (Windows
+            </strong>
+<strong>
+             10,
+            </strong>
+<strong>
+             11,
+            </strong>
+<strong>
+             macOS
+            </strong>
+<strong>
+             or
+            </strong>
+<strong>
+             Linux):
+            </strong>
+</p>
+</li>
+</ul>
+<h5 class="collapsible-header collapsible-header--chip ssh-platform-header start-open">
+          🐧 macOS or Linux (default path)
+          <span class="collapse-icon">
+</span>
+</h5>
+<div class="collapsible-content ssh-platform-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+               [For
+              </strong>
+<strong>
+               macOS
+              </strong>
+<strong>
+               and
+              </strong>
+<strong>
+               Linux
+              </strong>
+<strong>
+               (like
+              </strong>
+<strong>
+               Ubuntu)
+              </strong>
+<strong>
+               users],
+              </strong>
+              we just need to use
+              <strong>
+               Terminals:
+              </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+                Open a terminal window, and change directory cd to the directory where the
+                <code>
+                 .pem
+                </code>
+                file was downloaded. For example, run this command, if it was saved to your Downloads directory:
+               </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>cd ~/Downloads</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              Change the permissions on the key to be read only, by running this command:
+             </p>
+</li>
+</ul>
+<pre><code>chmod 400 devops_project_key.pem</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              For accuracy, copy the instance-specific SSH command shown by AWS:
+             </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating instance, and copy that command:" class="img-large" height="113" loading="lazy" src="../assets/tutorials/week-3/06-macos-or-linux-default-path-001.png" width="903"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating instance, and copy that command:" class="img-large" height="638" loading="lazy" src="../assets/tutorials/week-3/06-macos-or-linux-default-path-002.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              Run that command in the terminal:
+             </p>
+</li>
+</ul>
+<pre><code>ssh -i "devops_project_key.pem" ec2-user@ec2-18-212-255-237.compute-1.amazonaws.com</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              Note: Copy the command for your own instance because each EC2 instance has a different public DNS name.
+             </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+                The first time you connect to your EC2 instance, you need to type “yes” to add that new SSH connection to known hosts:
+               </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating that new SSH connection to known hosts:" class="img-large" height="90" loading="lazy" src="../assets/tutorials/week-3/06-macos-or-linux-default-path-003.png" width="892"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              After that, you should SSH successfully to the
+              <code>
+               remote
+              </code>
+              EC2 Server like below:
+             </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating After that, you should SSH successfully to the remote EC2 Server like below:" class="img-large" height="277" loading="lazy" src="../assets/tutorials/week-3/06-macos-or-linux-default-path-004.png" width="750"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              Now you can treat this as the usual Fedora VM or CentOS VM, we have been dealing with so far in week 1 and 2. However, the difference is that this VM is actually a cloud server running on a remote Amazon data centre.
+             </p>
+</li>
+<li>
+<p>
+              You can play around with CLI commands you learn so far, for example:
+             </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating You can play around with CLI commands you learn so far, for example:" class="img-large" height="53" loading="lazy" src="../assets/tutorials/week-3/06-macos-or-linux-default-path-005.png" width="429"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating You can play around with CLI commands you learn so far, for example:" class="img-large" height="516" loading="lazy" src="../assets/tutorials/week-3/06-macos-or-linux-default-path-006.png" width="951"/>
+</div>
+<p>
+<strong>
+             Suggestion
+            </strong>
+            : you should move your SSH key to a more secure folder like ~/
+            <code>
+             .ssh
+            </code>
+            /keys so you remember where your SSH key is for the next time you want to SSH to the EC2 instance!
+           </p>
+</div>
+</div></div>
+<h5 class="collapsible-header collapsible-header--chip ssh-platform-header">
+          🪟 Windows 10 or 11
+          <span class="collapse-icon">
+</span>
+</h5>
+<div class="collapsible-content ssh-platform-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+               [For
+              </strong>
+<strong>
+               Windows
+              </strong>
+<strong>
+               10
+              </strong>
+<strong>
+               or
+              </strong>
+<strong>
+               11
+              </strong>
+<strong>
+               users],
+              </strong>
+              you can try to SSH using
+              <strong>
+               PowerShell
+              </strong>
+              or
+              <strong>
+               Command
+              </strong>
+<strong>
+               Prompt
+              </strong>
+<strong>
+               (cmd).
+              </strong>
+              These instructions are for Windows 10 or 11 users only:
+             </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+                Open PowerShell as Administrator
+               </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Open PowerShell as Administrator" class="img-large" height="228" loading="lazy" src="../assets/tutorials/week-3/07-windows-10-or-11-001.png" width="497"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              You can check whether OpenSSH Client is already installed:
+             </p>
+</li>
+</ul>
+<pre><code>ssh -V</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ssh -V" class="img-large" height="138" loading="lazy" src="../assets/tutorials/week-3/07-windows-10-or-11-002.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+               If
+              </strong>
+<strong>
+               SSH
+              </strong>
+<strong>
+               is
+              </strong>
+<strong>
+               not
+              </strong>
+<strong>
+               yet
+              </strong>
+<strong>
+               installed,
+              </strong>
+<strong>
+               then
+              </strong>
+<strong>
+               install
+              </strong>
+<strong>
+               it
+              </strong>
+<strong>
+               if
+              </strong>
+<strong>
+               need:
+              </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+                Windows 10: Settings → Apps → Optional Features
+               </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                  Windows 11: Settings → System → Optional features
+                 </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                    Search for OpenSSH Client
+                   </p>
+</li>
+<li>
+<p>
+                    Select it and click Install
+                   </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Select it and click Install (1 of 3)" class="img-large" height="541" loading="lazy" src="../assets/tutorials/week-3/07-windows-10-or-11-003.png" width="951"/>
+<img alt="Screenshot illustrating Select it and click Install (2 of 3)" class="img-large" height="226" loading="lazy" src="../assets/tutorials/week-3/07-windows-10-or-11-004.png" width="579"/>
+<img alt="Screenshot illustrating Select it and click Install (3 of 3)" class="img-large" height="115" loading="lazy" src="../assets/tutorials/week-3/07-windows-10-or-11-005.png" width="596"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              Reopen PowerShell to check if SSH is already installed:
+             </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Reopen PowerShell to check if SSH is already installed:" class="img-large" height="63" loading="lazy" src="../assets/tutorials/week-3/07-windows-10-or-11-006.png" width="612"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              Next, please change the current directory into where you store that ssh pem file key. (you can use “cd”). Try to copy the example SSH command from AWS EC2:
+             </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+                ssh
+                <code>
+                 -i
+                </code>
+<code>
+                 path_to_ssh_key
+                </code>
+                username@ip-or-domain-name-of-host
+               </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                  Here is example:
+                 </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ssh -i "devops_project_key.pem" ec2-user@ec2-18-212-255-237.compute-1.amazonaws.com</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              SSH is working now, you've just hit the "permissions too open" error, which is the expected next step. The key file needs its permissions locked down so only your user can read it.
+             </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating user can read it." class="img-large" height="234" loading="lazy" src="../assets/tutorials/week-3/07-windows-10-or-11-007.png" width="884"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              Run these two commands in
+              <strong>
+               PowerShell
+              </strong>
+              as the
+              <strong>
+               Administrator
+              </strong>
+              :
+             </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+                 /reset
+                </strong>
+                clears the custom entries back to inherited defaults.
+               </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+<strong>
+                   /inheritance:r
+                  </strong>
+                  then removes all inherited permissions (this is what strips out Authenticated Users, Users, Administrators, and SYSTEM).
+                 </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+<strong>
+                     /grant:r
+                    </strong>
+                    adds back read access for just your account.
+                   </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>icacls "devops_key.pem" /reset
+icacls "devops_key.pem" /inheritance:r
+icacls "devops_key.pem" /grant:r "$($env:USERNAME):(R)"</code></pre>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating icacls "devops_key.pem" /reset icacls "devops_key.pem" /inheritance:r icacls "devops_key.pem" /grant:r "$($env:USERNAME):(R)"' class="img-large" height="242" loading="lazy" src="../assets/tutorials/week-3/07-windows-10-or-11-008.png" width="765"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              To verify only your user is listed afterward:
+             </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+                That's exactly what you want below, only
+                <code>
+                 your_username
+                </code>
+                :(R) and nothing else. The key is now properly locked down.
+               </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>icacls "devops_key.pem"</code></pre>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating icacls "devops_key.pem"' class="img-large" height="115" loading="lazy" src="../assets/tutorials/week-3/07-windows-10-or-11-009.png" width="708"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+              Try to SSH to EC2 again:
+             </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Try to SSH to EC2 again:" class="img-large" height="220" loading="lazy" src="../assets/tutorials/week-3/07-windows-10-or-11-010.png" width="681"/>
+</div>
+</div>
+</div></div>
+<h5 class="collapsible-header collapsible-header--chip ssh-platform-header">
+          🖥️ Windows 7, 8 or XP
+          <span class="collapse-icon">
+</span>
+</h5>
+<div class="collapsible-content ssh-platform-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+               [For
+              </strong>
+<strong>
+               older
+              </strong>
+<strong>
+               Windows
+              </strong>
+<strong>
+               users
+              </strong>
+<strong>
+               (Windows
+              </strong>
+<strong>
+               8,
+              </strong>
+<strong>
+               7
+              </strong>
+<strong>
+               or
+              </strong>
+<strong>
+               XP)],
+              </strong>
+              you can try to SSH using
+              <strong>
+               Putty
+              </strong>
+              or
+              <strong>
+               Mobaxterm.
+              </strong>
+              These instructions are for older Windows users only:
+             </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+                You will use PuTTY to SSH to Amazon EC2 instances. If you do not have PuTTY installed on your computer, download it here.
+               </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                  Open putty.exe
+                 </p>
+</li>
+<li>
+<p>
+                  Configure PuTTY to not timeout:
+                 </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                    Choose Connection
+                   </p>
+</li>
+<li>
+<p>
+                    Set Seconds between keepalives to 30
+                   </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+                  This allows you to keep the PuTTY session open for a longer period of time.
+                 </p>
+</li>
+<li>
+<p>
+                  Configure your PuTTY session:
+                 </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                    Choose Session
+                   </p>
+</li>
+<li>
+<p>
+                    Host Name (or IP address): Copy and paste the IPv4 Public IP address for the instance.
+                   </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+                  Back in PuTTy, in the Connection list, expand SSH
+                 </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                    Choose Auth (don't expand it)
+                   </p>
+</li>
+<li>
+<p>
+                    Choose Browse
+                   </p>
+</li>
+<li>
+<p>
+                    Browse to and select the
+                    <code>
+                     .pem
+                    </code>
+                    file that you downloaded
+                   </p>
+</li>
+<li>
+<p>
+                    Choose Open to select it
+                   </p>
+</li>
+<li>
+<p>
+                    Choose Open
+                   </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+                  Choose Yes, to trust the host and connect to it.
+                 </p>
+</li>
+<li>
+<p>
+                  When prompted login as, enter: ec2-user
+                 </p>
+</li>
+<li>
+<p>
+                  This will connect you to the EC2 instance.
+                 </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div></div>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="intro-to-version-control">
+<h2 class="collapsible-header">
+     📘 Intro to Version Control
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating 2. Intro to Version Control" class="img-large" height="305" loading="lazy" src="../assets/tutorials/week-3/08-intro-to-version-control-001.png" width="548"/>
+</div>
+<p>
+<code>
+          GitHub
+         </code>
+         , in a nutshell, is the way to share files with other people collaboratively without overwriting other people's stuff. GitHub is sort of a community, and there are a lot of open-source projects, which means the project's code is available to look at. GitHub is a web-based platform, and it is based on a technology called
+         <code>
+          Git
+         </code>
+         .
+        </p>
+<p>
+         Git is a piece of software called
+         <code>
+          version control
+         </code>
+         . It is a fancy way of saying Keeps track of changes to code. Git has a lot of other features that are useful for software developers. So if you're programming, eventually you have to learn Git at some point.
+        </p>
+<p class="callout callout--checkpoint">
+<strong>Collaboration checkpoint:</strong> If two students edit the same line, which part can Git record automatically and which part still requires a human decision during the merge?
+        </p>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🎮 Optional: Practise Git with Learn Git Branching
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+<strong>
+           Playground:
+          </strong>
+<a href="https://learngitbranching.js.org/" rel="noopener noreferrer" target="_blank">
+           https://learngitbranching.js.org/
+          </a>
+</p>
+<p>
+          This exercise will help you learn the basics and some advanced features of
+          <code>
+           Git
+          </code>
+          and
+          <code>
+           GitHub
+          </code>
+          . You'll use the interactive platform LearnGitBranching for hands-on practice.
+         </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Getting
+            </strong>
+<strong>
+             Started:
+            </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Go to LearnGitBranching and click "Start Learning" or "Sandbox".
+             </p>
+</li>
+<li>
+<p>
+              Choose your language if asked.
+             </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+             Complete
+            </strong>
+<strong>
+             Main
+            </strong>
+<strong>
+             Module
+            </strong>
+<strong>
+             Exercises:
+            </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Start with the
+              <strong>
+               Introduction
+              </strong>
+<strong>
+               Sequence
+              </strong>
+              in the Main module to learn fundamental
+              <code>
+               Git
+              </code>
+              commands.
+             </p>
+</li>
+<li>
+<p>
+              Continue with the
+              <strong>
+               Ramping
+              </strong>
+<strong>
+               Up
+              </strong>
+              section to explore more about
+              <code>
+               branches
+              </code>
+              and how to reorganize them with
+              <code>
+               rebase
+              </code>
+              .
+             </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+             Move
+            </strong>
+<strong>
+             to
+            </strong>
+<strong>
+             Remote
+            </strong>
+<strong>
+             Module
+            </strong>
+<strong>
+             Exercises:
+            </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              After finishing the Main module, go to the
+              <strong>
+               Remote
+              </strong>
+              module.
+             </p>
+</li>
+<li>
+<p>
+              Complete the exercises in
+              <strong>
+               Push
+              </strong>
+<strong>
+               &amp;
+              </strong>
+<strong>
+               Pull
+              </strong>
+<strong>
+               --
+              </strong>
+<strong>
+               Git
+              </strong>
+<strong>
+               Remotes!
+              </strong>
+              to learn how to connect and work with
+              <code>
+               remote
+              </code>
+<code>
+               repositories
+              </code>
+              .
+             </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+             Tips
+            </strong>
+<strong>
+             for
+            </strong>
+<strong>
+             Using
+            </strong>
+<strong>
+             LearnGitBranching:
+            </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Follow the instructions for each exercise.
+             </p>
+</li>
+<li>
+<p>
+              Use the visuals to see how your actions affect the Git tree.
+             </p>
+</li>
+<li>
+<p>
+              If stuck, use the "Hint" button for tips.
+             </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+             Learning
+            </strong>
+<strong>
+             Goals:
+            </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Get comfortable with basic Git operations.
+             </p>
+</li>
+<li>
+<p>
+              Understand how to manage branches and handle merges.
+             </p>
+</li>
+<li>
+<p>
+              Learn how to
+              <code>
+               push
+              </code>
+              to and
+              <code>
+               pull
+              </code>
+              from remote repositories effectively.
+             </p>
+</li>
+</ul>
+</li>
+</ol>
+<p>
+          Ideally, try your best to finish these recommended exercises:
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Ideally, try your best to finish these recommended exercises:" class="img-large" height="363" loading="lazy" src="../assets/tutorials/week-3/09-optional-practise-git-with-learn-git-branching-001.png" width="543"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Ideally, try your best to finish these recommended exercises:" class="img-large" height="247" loading="lazy" src="../assets/tutorials/week-3/09-optional-practise-git-with-learn-git-branching-002.png" width="702"/>
+</div>
+<p>
+          Finish all the exercises to improve your understanding of Git and
+          <code>
+           GitHub
+          </code>
+          . Feel free to share your experiences or questions with others. This knowledge is essential for working on software development projects.
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating development projects." class="img-large" height="498" loading="lazy" src="../assets/tutorials/week-3/09-optional-practise-git-with-learn-git-branching-003.png" width="496"/>
+</div>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="real-exercises-for-git-on-aws-ec2">
+<h2 class="collapsible-header">
+     ☁️ Git practice on AWS EC2
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+         To start, please:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Ready to play around with CLI commands in the challenges below on the
+           <code>
+            AWS
+           </code>
+           instance:
+          </p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-0-local-git">
+<h2 class="collapsible-header">
+     🧪 Challenge 0: Explore a local Git repository
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           If this
+           <code>
+            AMI
+           </code>
+           image on your
+           <code>
+            AWS
+           </code>
+<code>
+            EC2
+           </code>
+           instance does not have
+           <code>
+            Git
+           </code>
+           , we can install Git command:
+          </p>
+</li>
+</ul>
+<pre><code>sudo yum install git -y</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         why do we need to have “sudo” and “-y”?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question: why do we need to have “sudo” and “-y”?" class="img-large" height="212" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-001.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Enter your git information for the local
+           <code>
+            repository
+           </code>
+           (only need to do once)
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              Explanation
+             </strong>
+             :
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               The commands git config
+               <code>
+                --global
+               </code>
+               user.email "you@example.com" and git config
+               <code>
+                --global
+               </code>
+               user.name "Your Name" set your email and name as the default identity for all your Git
+               <code>
+                commits
+               </code>
+               on that computer.
+              </p>
+</li>
+<li>
+<p>
+               The
+               <code>
+                --global
+               </code>
+               option applies these settings across all Git
+               <code>
+                repositories
+               </code>
+               you work with on that machine. Replace "you@example.com" and "Your Name" with your actual email and name.
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git config --global user.email "you@example.com"
+git config --global user.name "Your Name"</code></pre>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating git config --global user.email "you@example.com" git config --global user.name "Your Name"' class="img-large" height="48" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-002.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Create a new folder so we can work on
+          </p>
+</li>
+</ul>
+<pre><code>mkdir my_project</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Change current working directory to that
+           <code>
+            my_project
+           </code>
+           directory
+          </p>
+</li>
+</ul>
+<pre><code>cd my_project</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           List all files and folders (including hidden ones -a and in long format -l)
+          </p>
+</li>
+</ul>
+<pre><code>ls -la</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         what directories do you see in this empty directory?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question: what directories do you see in this empty directory?" class="img-large" height="129" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-003.png" width="786"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Initialize the git folder
+          </p>
+</li>
+</ul>
+<pre><code>git init</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git init" class="img-large" height="296" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-004.png" width="951"/>
+</div>
+<p>
+         You will see some hints from Git, but you can safely ignore it! Long story short, it tries to tell you that the default
+         <code>
+          main
+         </code>
+<code>
+          branch
+         </code>
+         name is “
+         <code>
+          master
+         </code>
+         ”. However, the default main branch in other
+         <code>
+          remote
+         </code>
+         repositories, like
+         <code>
+          GitHub
+         </code>
+         , is “main” instead of “master”.
+        </p>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         Could you guess why they prefer the name “main” instead of “master” based on the history of America?
+         <strong>
+          Hint
+         </strong>
+         : political reasons.
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Rename the local default branch from <code>master</code> to <code>main</code> so it matches the GitHub default:
+          </p>
+</li>
+</ul>
+<pre><code>git branch -m main</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Set <code>main</code> as the default initial branch for future repositories:
+          </p>
+</li>
+</ul>
+<pre><code>git config --global init.defaultBranch main</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           List all files and folders again (including hidden ones -a and in long format -l)
+          </p>
+</li>
+</ul>
+<pre><code>ls -la</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Do you notice any special folder?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question : Do you notice any special folder?" class="img-large" height="122" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-005.png" width="627"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check current status of git
+          </p>
+</li>
+</ul>
+<pre><code>git status</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : What does git status tell you ?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question : What does git status tell you ?" class="img-large" height="140" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-006.png" width="708"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check log of all the git commits
+          </p>
+</li>
+</ul>
+<pre><code>git log</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : What does it try to tell you?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question : What does it try to tell you?" class="img-large" height="51" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-007.png" width="751"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           That's cool. You have made your first git
+           <code>
+            commit
+           </code>
+           ! Let's add more files!
+          </p>
+</li>
+</ul>
+<pre><code>touch file2.py
+touch file3.py
+echo 'print("Hello")' &gt;&gt; file2.py
+echo 'print("Bonjour")' &gt;&gt; file3.py</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check current status of git again
+          </p>
+</li>
+</ul>
+<pre><code>git status</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         Can you figure out what it means by “untracked files”?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question: Can you figure out what it means by “untracked files”?" class="img-large" height="240" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-008.png" width="792"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let git track that new file for changes (Staged)
+          </p>
+</li>
+</ul>
+<pre><code>git add .</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         What does . means this time? And what does “git add” try to do?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check current status of git again
+          </p>
+</li>
+</ul>
+<pre><code>git status</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         Do you still see “untracked files”? Why or Why not?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question: Do you still see “untracked files”? Why or Why not?" class="img-large" height="273" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-009.png" width="721"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You are happy with these changes and want to finalize your change and really commit to the change!
+          </p>
+</li>
+</ul>
+<pre><code>git commit -m "Two more python files are added"</code></pre>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating git commit -m "Two more python files are added"' class="img-large" height="115" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-010.png" width="951"/>
+</div>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : what does “git commit” try to do? What does “-m” do?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check current status of git again
+          </p>
+</li>
+</ul>
+<pre><code>git status</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : What do you see changed this time?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check the history of all commits
+          </p>
+</li>
+</ul>
+<pre><code>git log</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Do you see your commit and its message?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question : Do you see your commit and its message?" class="img-large" height="190" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-011.png" width="789"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check the names of all
+           <code>
+            branches
+           </code>
+           :
+          </p>
+</li>
+</ul>
+<pre><code>git branch -a</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Can you see how many branches you have and what is your current branch ?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question : Can you see how many branches you have and what is your current branch ?" class="img-large" height="71" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-012.png" width="838"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Create a new branch
+           <code>
+            new_feature
+           </code>
+</p>
+</li>
+</ul>
+<pre><code>git branch new_feature</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Why do we need to create another branch? How about we just always work on the main branch?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check the names of all branches again:
+          </p>
+</li>
+</ul>
+<pre><code>git branch -a</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Can you see how many branches you have and what is your current branch ?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question : Can you see how many branches you have and what is your current branch ?" class="img-large" height="91" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-013.png" width="756"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Switch to that new branch “
+           <code>
+            new_feature
+           </code>
+           ”:
+          </p>
+</li>
+</ul>
+<pre><code>git checkout new_feature</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check the names of all branches again:
+          </p>
+</li>
+</ul>
+<pre><code>git branch -a</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Do you see your current branch has changed to the new branch “
+         <code>
+          new_feature
+         </code>
+         ” ?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question : Do you see your current branch has changed to the new branch “new_feature” ?" class="img-large" height="100" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-014.png" width="793"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           That's cool. You have made your first branch! Let's add more files to that branch!
+          </p>
+</li>
+</ul>
+<pre><code>touch file4.py
+touch file5.py
+echo 'print("cam on")' &gt;&gt; file4.py
+echo 'print("thank you")' &gt;&gt; file5.py</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check current status of git again
+          </p>
+</li>
+</ul>
+<pre><code>git status</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git status" class="img-large" height="191" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-015.png" width="867"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let git track that new file for changes (Staged)
+          </p>
+</li>
+</ul>
+<pre><code>git add .</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check current status of git again
+          </p>
+</li>
+</ul>
+<pre><code>git status</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git status" class="img-large" height="194" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-016.png" width="769"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Finalize your change and really commit to the change (Committed)
+          </p>
+</li>
+</ul>
+<pre><code>git commit -m "New files are added on the new branch"</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check current status of git again
+          </p>
+</li>
+</ul>
+<pre><code>git status</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git status" class="img-large" height="99" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-017.png" width="750"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check log of all the git commits
+          </p>
+</li>
+</ul>
+<pre><code>git log</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git log" class="img-large" height="265" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-018.png" width="738"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Switch back to main branch
+          </p>
+</li>
+</ul>
+<pre><code>git checkout main</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git checkout main" class="img-large" height="63" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-019.png" width="760"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           List all files again:
+          </p>
+</li>
+</ul>
+<pre><code>ls -la</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         Can you see what has changed at the moment you switch back to the main branch from
+         <code>
+          new_feature
+         </code>
+         branch? Is there any file missing? Why is that?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating new_feature branch? Is there any file missing? Why is that?" class="img-large" height="187" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-020.png" width="801"/>
+</div>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         What will happen if you switch back to
+         <code>
+          new_feature
+         </code>
+         branch from the main branch?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Hint: what happens to
+           <code>
+            file4.py
+           </code>
+           and
+           <code>
+            file5.py
+           </code>
+           ?
+          </p>
+</li>
+<li>
+<p>
+           Switch back to that
+           <code>
+            new_feature
+           </code>
+           branch
+          </p>
+</li>
+</ul>
+<pre><code>git checkout new_feature</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         Can you see what has changed you expected?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question: Can you see what has changed you expected?" class="img-large" height="282" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-021.png" width="811"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Switch back to that main branch
+          </p>
+</li>
+</ul>
+<pre><code>git checkout main</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           If you are happy with what is on the
+           <code>
+            new_feature
+           </code>
+           branch, let's
+           <code>
+            merge
+           </code>
+           it to the main branch!
+          </p>
+</li>
+</ul>
+<pre><code>git merge new_feature</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git merge new_feature" class="img-large" height="210" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-022.png" width="774"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           See what is on the git log on the main branch
+          </p>
+</li>
+</ul>
+<pre><code>git log</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git log" class="img-large" height="258" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-023.png" width="784"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's add some new files and content to main branch
+          </p>
+</li>
+</ul>
+<pre><code>touch file6.py
+echo "This is pretty new content" &gt;&gt; file6.py</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           See what is on the git log on the main branch
+          </p>
+</li>
+</ul>
+<pre><code>git status</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's track it (stage) and commit it
+          </p>
+</li>
+</ul>
+<pre><code>git add .
+git commit -m "added file6.py"</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Now, you switch back to
+           <code>
+            new_feature
+           </code>
+           branch
+          </p>
+</li>
+</ul>
+<pre><code>git checkout new_feature</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : you are back to the
+         <code>
+          new_feature
+         </code>
+         branch, what will happen to
+         <code>
+          file6.py
+         </code>
+         ?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Now, if we want the new content of main branch to be on
+           <code>
+            new_feature
+           </code>
+           branch, we need to merge main branch back to
+           <code>
+            new_feature
+           </code>
+           branch
+          </p>
+</li>
+</ul>
+<pre><code>git merge main</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git merge main" class="img-large" height="192" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-024.png" width="807"/>
+</div>
+<p>
+         That's pretty much the basic local Git!
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           If you want to check the compact (shorter and neat) version of git log then run this command:
+          </p>
+</li>
+</ul>
+<pre><code>git log --graph --decorate --oneline</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Does it look cleaner for you?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Question : Does it look cleaner for you?" class="img-large" height="108" loading="lazy" src="../assets/tutorials/week-3/10-challenge-0-explore-a-local-git-repository-025.png" width="951"/>
+</div>
+<p>
+         Remember these commands on local Git:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           git init
+          </p>
+</li>
+<li>
+<p>
+           git status
+          </p>
+</li>
+<li>
+<p>
+           git add .
+          </p>
+</li>
+<li>
+<p>
+           git commit -m "xxx"
+          </p>
+</li>
+<li>
+<p>
+           git log
+          </p>
+</li>
+<li>
+<p>
+           git branch -a
+          </p>
+</li>
+<li>
+<p>
+           git branch
+           <code>
+            my_new_branch
+           </code>
+</p>
+</li>
+<li>
+<p>
+           git
+           <code>
+            checkout
+           </code>
+<code>
+            my_new_branch
+           </code>
+</p>
+</li>
+<li>
+<p>
+           git merge
+           <code>
+            other_branch
+           </code>
+</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-1-remote-git">
+<h2 class="collapsible-header">
+     🧪 Challenge 1: Work with a remote GitHub repository
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Challenge 1: Git Commands Exercises for Remote Git on GitHub Repository" class="img-large" height="478" loading="lazy" src="../assets/tutorials/week-3/11-challenge-1-work-with-a-remote-github-repository-001.png" width="476"/>
+</div>
+<p>
+<strong>
+          Now
+         </strong>
+<strong>
+          time
+         </strong>
+<strong>
+          to
+         </strong>
+<strong>
+          move
+         </strong>
+<strong>
+          online
+         </strong>
+<strong>
+          to
+         </strong>
+<strong>
+          practise
+         </strong>
+<strong>
+<code>
+           Git
+          </code>
+</strong>
+<strong>
+          commands
+         </strong>
+<strong>
+          on
+         </strong>
+<strong>
+          actual
+         </strong>
+<strong>
+<code>
+           GitHub
+          </code>
+</strong>
+<strong>
+<code>
+           repositories
+          </code>
+          !
+         </strong>
+</p>
+<p>
+         How to set up a new GitHub
+         <code>
+          repository
+         </code>
+</p>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📦 Step 1: Create a GitHub repository
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Go to
+            <a href="https://github.com/" rel="noopener" target="_blank">
+             https://github.com/
+            </a>
+</p>
+</li>
+<li>
+<p>
+            In the upper-right corner of any page, use the drop-down menu, and select New.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating In the upper-right corner of any page, use the drop-down menu, and select New." class="img-large" height="315" loading="lazy" src="../assets/tutorials/week-3/12-step-1-create-a-github-repository-001.png" width="704"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Type a short, memorable name for your
+            <code>
+             repository
+            </code>
+            . For example, "
+            <code>
+             my_new_project
+            </code>
+            ".
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating Type a short, memorable name for your repository. For example, "my_new_project".' class="img-large" height="136" loading="lazy" src="../assets/tutorials/week-3/12-step-1-create-a-github-repository-002.png" width="573"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Optionally, add a description of your repository. For example, "Learning DevOps at RMIT"
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating Optionally, add a description of your repository. For example, "Learning DevOps at RMIT"' class="img-large" height="120" loading="lazy" src="../assets/tutorials/week-3/12-step-1-create-a-github-repository-003.png" width="355"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Choose public visibility (Anyone can see, and
+            <code>
+             checkout
+            </code>
+            your GitHub repository).
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Choose public visibility (Anyone can see, and checkout your GitHub repository)." class="img-large" height="137" loading="lazy" src="../assets/tutorials/week-3/12-step-1-create-a-github-repository-004.png" width="637"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Untick
+            </strong>
+<strong>
+             to
+            </strong>
+<strong>
+             initialise
+            </strong>
+<strong>
+             this
+            </strong>
+<strong>
+             repository
+            </strong>
+<strong>
+             without
+            </strong>
+<strong>
+             a
+            </strong>
+<strong>
+<code>
+              README
+             </code>
+</strong>
+            file to keep things simple when we
+            <code>
+             push
+            </code>
+            it! However, later on, it is important to add a README file which is important if you want other people to understand what and how to use your project.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating people to understand what and how to use your project." class="img-large" height="91" loading="lazy" src="../assets/tutorials/week-3/12-step-1-create-a-github-repository-005.png" width="712"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             For
+            </strong>
+<strong>
+             a
+            </strong>
+<strong>
+             licence:
+            </strong>
+            Since we are learning so we can skip this and choose None! However, later on if you are doing a serious project then it’s better to add a licence so other people on the internet will know how much you are willing for them to reuse parts of your code! The default good one is “MIT License” which is meant to be extremely straightforward and open. It permits users to do anything with a given project as long as they credit the developer and don't hold him or her liable for the project's use.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating for the project's use." class="img-large" height="497" loading="lazy" src="../assets/tutorials/week-3/12-step-1-create-a-github-repository-006.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Click Create repository.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Click Create repository." class="img-large" height="60" loading="lazy" src="../assets/tutorials/week-3/12-step-1-create-a-github-repository-007.png" width="205"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🔗 Step 2: Connect the local repository to GitHub
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Note:
+            </strong>
+            You can find the HTTPS URL of your
+            <code>
+             GitHub
+            </code>
+            repo here:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Note: You can find the HTTPS URL of your GitHub repo here:" class="img-large" height="184" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-001.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Here
+            </strong>
+<strong>
+             are
+            </strong>
+<strong>
+             two
+            </strong>
+<strong>
+             ways
+            </strong>
+<strong>
+             for
+            </strong>
+<strong>
+             you
+            </strong>
+<strong>
+             to
+            </strong>
+<strong>
+             get
+            </strong>
+<strong>
+             started
+            </strong>
+<strong>
+             with
+            </strong>
+<strong>
+             a
+            </strong>
+<strong>
+             GitHub
+            </strong>
+<strong>
+             repo:
+            </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+               Option
+              </strong>
+<strong>
+               1
+              </strong>
+<strong>
+               (Recommended
+              </strong>
+<strong>
+               in
+              </strong>
+<strong>
+               this
+              </strong>
+<strong>
+               lab):
+              </strong>
+<strong>
+               Push
+              </strong>
+<strong>
+               an
+              </strong>
+<strong>
+               existing
+              </strong>
+<strong>
+<code>
+                repository
+               </code>
+</strong>
+<strong>
+               from
+              </strong>
+<strong>
+               the
+              </strong>
+<strong>
+               command
+              </strong>
+<strong>
+               line
+              </strong>
+</p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git remote add origin https://github.com/your_github_name/your_git_repo_name.git
+git push -u origin main</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Option
+            </strong>
+<strong>
+             2
+            </strong>
+<strong>
+             (Recommended
+            </strong>
+<strong>
+             in
+            </strong>
+<strong>
+             other
+            </strong>
+<strong>
+             cases):
+            </strong>
+<strong>
+             Create
+            </strong>
+<strong>
+             a
+            </strong>
+<strong>
+             new
+            </strong>
+<strong>
+             repository
+            </strong>
+<strong>
+             on
+            </strong>
+<strong>
+             the
+            </strong>
+<strong>
+             command
+            </strong>
+<strong>
+             line
+            </strong>
+</p>
+</li>
+</ul>
+<pre><code>git clone https://github.com/your_github_name/your_git_repo_name.git</code></pre>
+<p>
+          Choose option 2 if you want to create a fresh new local repo (offline) which connects to your
+          <code>
+           remote
+          </code>
+          repo (online). This is an easier option if you want to start fresh!
+         </p>
+<p>
+<strong>
+           In
+          </strong>
+<strong>
+           our
+          </strong>
+<strong>
+           case,
+          </strong>
+<strong>
+           you've
+          </strong>
+<strong>
+           already
+          </strong>
+<strong>
+           created
+          </strong>
+<strong>
+           a
+          </strong>
+<strong>
+           local
+          </strong>
+<strong>
+           repo
+          </strong>
+<strong>
+           on
+          </strong>
+<strong>
+           your
+          </strong>
+<strong>
+<code>
+            AWS
+           </code>
+</strong>
+<strong>
+<code>
+            EC2
+           </code>
+</strong>
+<strong>
+           instance
+          </strong>
+<strong>
+           so
+          </strong>
+<strong>
+           you
+          </strong>
+<strong>
+           can
+          </strong>
+<strong>
+           choose
+          </strong>
+<strong>
+           option
+          </strong>
+<strong>
+           1
+          </strong>
+<strong>
+           to
+          </strong>
+<strong>
+           connect
+          </strong>
+<strong>
+           your
+          </strong>
+<strong>
+           remote
+          </strong>
+<strong>
+           repository
+          </strong>
+<strong>
+           (online)
+          </strong>
+<strong>
+           to
+          </strong>
+<strong>
+           your
+          </strong>
+<strong>
+           local
+          </strong>
+<strong>
+           repository
+          </strong>
+<strong>
+           (offline)!
+          </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s switch back to the
+            <code>
+             main
+            </code>
+<code>
+             branch
+            </code>
+            :
+           </p>
+</li>
+</ul>
+<pre><code>git checkout main</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<code>
+             origin
+            </code>
+            is a local name used to refer to the remote repository. It could be called anything, but origin is a convention that is often used by default in
+            <code>
+             git
+            </code>
+            and GitHub, so it’s helpful to stick with this unless there’s a reason not to.
+           </p>
+</li>
+</ul>
+<pre><code>git remote add origin https://github.com/your_github_name/your_git_repo_name.git</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            We can check if our command has worked by list all
+            <code>
+             remotes
+            </code>
+            :
+           </p>
+</li>
+</ul>
+<pre><code>git remote -v</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git remote -v" class="img-large" height="87" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-002.png" width="846"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now we will
+            <code>
+             push
+            </code>
+            the changes from our local repository to the repository on GitHub:
+           </p>
+</li>
+</ul>
+<pre><code>git push -u origin main</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            GitHub no longer supports password-based authentication for Git operations:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating GitHub no longer supports password-based authentication for Git operations:" class="img-large" height="101" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-003.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            We need to generate a GitHub personal access token (PAT) to authenticate and push the existing
+            <code>
+             commits
+            </code>
+            on the local repository to the remote repository on GitHub:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating commits on the local repository to the remote repository on GitHub:" class="img-large" height="671" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-004.png" width="268"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating commits on the local repository to the remote repository on GitHub:" class="img-large" height="560" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-005.png" width="450"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating commits on the local repository to the remote repository on GitHub:" class="img-large" height="234" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-006.png" width="951"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating commits on the local repository to the remote repository on GitHub:" class="img-large" height="250" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-007.png" width="669"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Select these permissions of the access code to be able to have full control of your private
+            <code>
+             repositories
+            </code>
+            , full controls of your team projects and also able to delete repositories:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+               repo
+              </strong>
+              = Full control of private repositories
+             </p>
+</li>
+<li>
+<p>
+<strong>
+               admin:org
+              </strong>
+<strong>
+               =
+              </strong>
+              Full control of orgs and teams, read and write org projects
+             </p>
+</li>
+<li>
+<p>
+<strong>
+<code>
+                delete_repo
+               </code>
+</strong>
+<strong>
+               =
+              </strong>
+              Delete repositories
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating delete_repo = Delete repositories (1 of 2)" class="img-large" height="629" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-008.png" width="432"/>
+<img alt="Screenshot illustrating delete_repo = Delete repositories (2 of 2)" class="img-large" height="74" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-009.png" width="223"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Remember
+            </strong>
+<strong>
+             to
+            </strong>
+<strong>
+             copy
+            </strong>
+<strong>
+             this
+            </strong>
+<strong>
+             personal
+            </strong>
+<strong>
+             access
+            </strong>
+<strong>
+             token
+            </strong>
+<strong>
+             somewhere
+            </strong>
+<strong>
+             safe!
+            </strong>
+</p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Remember to copy this personal access token somewhere safe!" class="img-large" height="353" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-010.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now you can use this personal access token to authenticate to push to your remote repository on GitHub:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating GitHub:" class="img-large" height="281" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-011.png" width="951"/>
+</div>
+<p>
+          Using a personal access token is straightforward to set up, but repeatedly entering it for every push is inconvenient.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You should now see that all commits completed in Challenge 0 have been pushed to the remote repository on GitHub:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating the remote repository on GitHub:" class="img-large" height="430" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-012.png" width="822"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You can see that the list of our commits in the local repository has been pushed to the remote repository on GitHub:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating repository on GitHub:" class="img-large" height="212" loading="lazy" src="../assets/tutorials/week-3/13-step-2-connect-the-local-repository-to-github-013.png" width="903"/>
+</div>
+<p class="callout callout--task">
+<strong>
+           Question:
+          </strong>
+          Did you notice your
+          <code>
+           new_feature
+          </code>
+          branch is missing on the GitHub remote repository? Can you figure out how to push the
+          <code>
+           new_feature
+          </code>
+          branch from the local repository also to the remote repository?
+         </p>
+<p>
+<strong>
+           Hint
+          </strong>
+          : just switch to that brand and try to git push and see what happens then follow the instructions of Git.
+         </p>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🔄 Step 3: Synchronise local and remote repositories
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          After you follow the step 2, your local
+          <code>
+           git
+          </code>
+          should be connected with your
+          <code>
+           remote
+          </code>
+          git and you did your first
+          <code>
+           push
+          </code>
+          to the remote git repo.
+         </p>
+<pre><code>git branch -a</code></pre>
+<p class="callout callout--task">
+<strong>
+           Question
+          </strong>
+          : Do you notice anything different in your
+          <code>
+           branches
+          </code>
+          ? What is the "
+          <code>
+           remotes/origin/main
+          </code>
+          "
+          <code>
+           branch
+          </code>
+          ?
+         </p>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating Question : Do you notice anything different in your branches ? What is the "remotes/origin/main" branch?' class="img-large" height="120" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-001.png" width="783"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's switch back to the
+            <code>
+             main
+            </code>
+            branch
+           </p>
+</li>
+</ul>
+<pre><code>git checkout main</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's
+            <code>
+             pull
+            </code>
+            any new update of content from the remote git
+           </p>
+</li>
+</ul>
+<pre><code>git pull</code></pre>
+<p>
+          Because there is no new content on your remote git so the result is "Already up to date."
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Check your git log
+           </p>
+</li>
+</ul>
+<pre><code>git log</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Okie, it's time to add some file to the local git, add,
+            <code>
+             commit
+            </code>
+            and push it to the remote git
+           </p>
+</li>
+</ul>
+<pre><code>touch my_greeting.txt
+echo Hello From Local Computer &gt;&gt; my_greeting.txt
+git add .</code></pre>
+<pre><code>git commit -m "add my_greeting.txt on my local"</code></pre>
+<p>
+          These steps so far happen on the local git or on your laptop.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's push the new commit to the remote git
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              You might need to enter the
+              <code>
+               GitHub
+              </code>
+              access token again for authentication before you can push to the GitHub
+              <code>
+               repository
+              </code>
+              .
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git push</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git push" class="img-large" height="254" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-002.png" width="843"/>
+</div>
+<p>
+          That's it! Now your new changes are pushed to the remote git! That's how you can work on local git and remote git!
+         </p>
+<p>
+          Remember to do git pull first before you do git push!
+         </p>
+<p>
+          How to setup
+          <code>
+           SSH
+          </code>
+          key-pair for GitHub authentication
+         </p>
+<p class="callout callout--note">
+<strong>
+           Note:
+          </strong>
+          A more secure and convenient option is to authenticate to GitHub with an SSH key pair (a public key and a private key). The
+          <code>
+           EC2
+          </code>
+          instance keeps the private key, while GitHub stores the public key. Together, they verify the connection without sending a password. Follow the setup below or read Section 7.3.
+         </p>
+<p>
+          Follow these steps to set up GitHub authentication with an SSH key pair:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            On your EC2 instance, generate a new SSH key pair:
+           </p>
+</li>
+</ul>
+<pre><code>ssh-keygen -t rsa -b 4096 -C "your_email@example.com"</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            When prompted, press Enter to save the key to the default location. You can skip the passphrase by just pressing Enter to have an empty passphrase.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating passphrase by just pressing Enter to have an empty passphrase." class="img-large" height="371" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-003.png" width="783"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Add Your SSH Key to the
+            <code>
+             ssh-agent
+            </code>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Start the ssh-agent in the background:
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>eval "$(ssh-agent -s)"</code></pre>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating eval "$(ssh-agent -s)"' class="img-large" height="60" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-004.png" width="816"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Add your SSH private key to the ssh-agent:
+           </p>
+</li>
+</ul>
+<pre><code>ssh-add ~/.ssh/id_rsa</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ssh-add ~/.ssh/id_rsa" class="img-large" height="57" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-005.png" width="813"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Copy the SSH Public Key
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              You need to copy the content of your public key file. You can display and copy it using:
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>cat ~/.ssh/id_rsa.pub</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating cat ~/.ssh/id_rsa.pub" class="img-large" height="109" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-006.png" width="793"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Add the SSH Key to Your GitHub Account
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Go to your GitHub account settings.
+             </p>
+</li>
+<li>
+<p>
+              Navigate to the “SSH and
+              <code>
+               GPG
+              </code>
+              keys” section.
+             </p>
+</li>
+<li>
+<p>
+              Click on “New SSH Key,” give it a descriptive title, and paste the copied public key.
+             </p>
+</li>
+<li>
+<p>
+              Save the key.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Save the key." class="img-large" height="501" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-007.png" width="702"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Save the key." class="img-large" height="874" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-008.png" width="736"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Save the key." class="img-large" height="560" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-009.png" width="739"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Test Your SSH Connection
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Go back to your EC2 instance, to ensure that everything is set up correctly, try to connect to GitHub via SSH:
+             </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                If successful, you should receive a welcome message from GitHub.
+               </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ssh -T git@github.com</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ssh -T git@github.com" class="img-large" height="133" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-010.png" width="804"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            However, there is one more thing we need to do! The local repository is set up to use
+            <code>
+             HTTPS
+            </code>
+            instead of SSH for the remote URL. We need to switch the remote URL from HTTPS to SSH!
+           </p>
+</li>
+<li>
+<p>
+            Check Current Remote URL: First, check what the current remote URL is set to:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              This will show you the URLs for your remote. If it starts with https://, then it's set to use HTTPS.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git remote -v</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git remote -v" class="img-large" height="83" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-011.png" width="822"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Switch
+            </strong>
+<strong>
+             to
+            </strong>
+<strong>
+             SSH
+            </strong>
+            : To switch to SSH, you'll need the SSH URL of your GitHub repository. This typically looks like git@github.com:username/repository.git, which you can find here!
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating looks like git@github.com:username/repository.git, which you can find here!" class="img-large" height="413" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-012.png" width="639"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You can change the remote URL with the following command:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Replace username and repository.git with your actual GitHub username and repository name.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git remote set-url origin git@github.com:username/repository.git</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Verify the Change: Run git remote
+            <code>
+             -v
+            </code>
+            again to make sure the remote URL has been updated to the SSH format.
+           </p>
+</li>
+</ul>
+<pre><code>git remote -v</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git remote -v" class="img-large" height="97" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-013.png" width="874"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            That’s it! Now you can do all remote git commands without a need to enter your username and password ever again like git
+            <code>
+             clone
+            </code>
+            or git push. You can make some changes, git add then git commit, finally git push to see if you can push without being asked for username and password of GitHub again!
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating GitHub again!" class="img-large" height="236" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-014.png" width="874"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            By switching to an SSH URL for your remote, you leverage the SSH keys method you've already set up for authentication, thus avoiding the need to enter your username and password for operations like git push!!!
+           </p>
+</li>
+</ul>
+<p>
+          How to handle Merge Conflicts
+         </p>
+<p>
+          Let's learn how to resolve
+          <code>
+           merge
+          </code>
+          conflicts.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Create a New Branch:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Create a branch named
+              <code>
+               feature-login
+              </code>
+</p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git checkout -b feature-login</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git checkout -b feature-login" class="img-large" height="52" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-015.png" width="801"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Confirm if you are already on the
+            <code>
+             feature-login
+            </code>
+            branch
+           </p>
+</li>
+</ul>
+<pre><code>git branch -a</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git branch -a" class="img-large" height="133" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-016.png" width="676"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Add a New File:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              In the
+              <code>
+               feature-login
+              </code>
+              branch, create a file named
+              <code>
+               login.txt
+              </code>
+              and some text related to login features:
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>echo "console.log('some login features')" &gt; login.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Stage, Commit, and Push Changes:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Add the
+              <code>
+               login.txt
+              </code>
+              file to staging:
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git add login.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Commit the changes:
+           </p>
+</li>
+</ul>
+<pre><code>git commit -m "Add login feature"</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Push the branch to GitHub:
+           </p>
+</li>
+</ul>
+<pre><code>git push -u origin feature-login</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git push -u origin feature-login" class="img-large" height="289" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-017.png" width="783"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Merge the Branch:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Switch back to the main branch:
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git checkout main</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            On the main branch, let's merge the login-feature branch into main branch so that it got the
+            <code>
+             login.txt
+            </code>
+            file as well
+           </p>
+</li>
+</ul>
+<pre><code>git merge feature-login</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git merge feature-login" class="img-large" height="156" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-018.png" width="790"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Push the merged changes to GitHub:
+           </p>
+</li>
+</ul>
+<pre><code>git push origin main</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git push origin main" class="img-large" height="111" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-019.png" width="804"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Confirm the new change has been pushed to the main branch on GitHub:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Confirm the new change has been pushed to the main branch on GitHub:" class="img-large" height="362" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-020.png" width="784"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Create Conflicting Changes:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              On the main branch, modify
+              <code>
+               login.txt
+              </code>
+              by adding "Here are some text Version 1" at the bottom. Alternative, you can use VSC for this:
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>nano login.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating nano login.txt" class="img-large" height="136" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-021.png" width="799"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Commit and push these changes to GitHub.
+           </p>
+</li>
+</ul>
+<pre><code>git add .
+git commit -m "add Version 1 to login.txt"
+git push</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Confirm the change on the main branch:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Confirm the change on the main branch:" class="img-large" height="342" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-022.png" width="685"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Switch to
+            <code>
+             feature-login
+            </code>
+            and also modify
+            <code>
+             login.txt
+            </code>
+            by adding "Here are some text to cause a conflict Version 2" at the bottom. Alternative, you can use VSC for this:
+           </p>
+</li>
+</ul>
+<pre><code>git checkout feature-login
+nano login.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git checkout feature-login nano login.txt" class="img-large" height="105" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-023.png" width="804"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Try to push these changes.
+           </p>
+</li>
+</ul>
+<pre><code>git add .
+git commit -m "add Version 2 to login.txt"
+git push</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Confirm the change on the
+            <code>
+             feature-login
+            </code>
+            branch:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Confirm the change on the feature-login branch:" class="img-large" height="358" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-024.png" width="744"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Resolve the Conflict:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              When you encounter a merge conflict after trying to push, pull the changes from main:
+             </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                git pull
+                <code>
+                 origin
+                </code>
+                main
+               </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git pull origin main" class="img-large" height="326" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-025.png" width="718"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            The issue arises because your
+            <strong>
+<code>
+              feature-login
+             </code>
+</strong>
+<strong>
+             branch
+            </strong>
+            and the
+            <strong>
+             main
+            </strong>
+<strong>
+             branch
+            </strong>
+            have diverged because they both have unique
+            <code>
+             commits
+            </code>
+            that the other doesn't have. When you try to pull changes from main into
+            <code>
+             feature-login
+            </code>
+            , Git doesn't know whether to merge or
+            <code>
+             rebase
+            </code>
+            the changes.
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              To resolve this conflict, you need to specify how Git should handle the divergent branches. Here are the steps:
+             </p>
+</li>
+<li>
+<p>
+<strong>
+               Choose
+              </strong>
+<strong>
+               your
+              </strong>
+<strong>
+               reconciliation
+              </strong>
+<strong>
+               strategy
+              </strong>
+              :
+             </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+<strong>
+                 Option
+                </strong>
+<strong>
+                 1
+                </strong>
+<strong>
+                 -
+                </strong>
+<strong>
+                 Merge
+                </strong>
+                : Combines the histories of the two branches, creating a new merge commit.
+               </p>
+</li>
+<li>
+<p>
+<strong>
+                 Option
+                </strong>
+<strong>
+                 2
+                </strong>
+<strong>
+                 -
+                </strong>
+<strong>
+                 Rebase
+                </strong>
+                : Reapplies your commits on top of the main branch, creating a linear history.
+               </p>
+</li>
+<li>
+<p>
+                Both options have pros and cons:
+               </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Both options have pros and cons:" class="img-large" height="275" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-026.png" width="822"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Since our goal is to keep both sets of changes without altering commit history too much, I’d recommend the merge option (
+            <code>
+             --no-rebase
+            </code>
+            ).
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Execute the chosen command:
+             </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+<strong>
+                 For
+                </strong>
+<strong>
+                 Option
+                </strong>
+<strong>
+                 -
+                </strong>
+<strong>
+                 merge:
+                </strong>
+</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git pull origin main --no-rebase</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git pull origin main --no-rebase" class="img-large" height="135" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-027.png" width="714"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You're encountering a merge conflict in
+            <strong>
+<code>
+              login.txt
+             </code>
+</strong>
+            during the merge. Let's resolve this step by step as below!
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Verify the status of your repository, you should see that
+              <code>
+               login.txt
+              </code>
+              has conflicts:
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git status</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git status" class="img-large" height="264" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-028.png" width="642"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Open
+            <strong>
+<code>
+              login.txt
+             </code>
+</strong>
+            with nano to see the conflict markers:
+           </p>
+</li>
+</ul>
+<pre><code>nano login.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating nano login.txt" class="img-large" height="211" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-029.png" width="711"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Decide how you want to merge the changes:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Option 1: Keep both versions.
+             </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                Option 2: Choose one version over the other.
+               </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                  Option 3: Manually combine the changes.
+                 </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+                Ensure all conflict markers (&lt;&lt;&lt;&lt;&lt;&lt;&lt;, =======, &gt;&gt;&gt;&gt;&gt;&gt;&gt;) are removed after resolving.
+               </p>
+</li>
+<li>
+<p>
+                For example, remove the conflict markers and edit the file so it contains the intended final text:
+               </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                  For example, remove the conflict markers and edit the file so it contains the intended final text:
+                 </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating new text to show I have resolved the conflict:" class="img-large" height="75" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-030.png" width="598"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Mark the conflict as resolved by adding the file:
+           </p>
+</li>
+</ul>
+<pre><code>git add login.txt
+git commit -m "Resolve conflict between main and feature-login"</code></pre>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating git add login.txt git commit -m "Resolve conflict between main and feature-login"' class="img-large" height="66" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-031.png" width="754"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Finally, let’s push the merge commit to our GitHub repo:
+           </p>
+</li>
+</ul>
+<pre><code>git push</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Optionally, you can check the log to verify the commits:
+           </p>
+</li>
+</ul>
+<pre><code>git log --oneline --graph --all</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git log --oneline --graph --all" class="img-large" height="180" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-032.png" width="748"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Check the result on GitHub:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Check the result on GitHub:" class="img-large" height="372" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-033.png" width="808"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Check the result on GitHub:" class="img-large" height="259" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-034.png" width="819"/>
+</div>
+<p>
+          These exercises cover basic Git commands and scenarios involving creating and managing branches, handling merge conflicts, and collaborating using GitHub. They are a great way for you to get hands-on practice with Git.
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating practice with Git." class="img-large" height="366" loading="lazy" src="../assets/tutorials/week-3/14-step-3-synchronise-local-and-remote-repositories-035.png" width="366"/>
+</div>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-2-private-repository">
+<h2 class="collapsible-header">
+     🧪 Challenge 2: Work with your assigned private repository
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Challenge 2: Practice with Your Private GitHub Repository in Our GitHub Organization" class="img-large" height="484" loading="lazy" src="../assets/tutorials/week-3/15-challenge-2-work-with-your-assigned-private-repository-001.png" width="483"/>
+</div>
+<p>
+         As announced on Canvas, each student has been assigned a private
+         <code>
+          GitHub
+         </code>
+<code>
+          repository
+         </code>
+         in the rmit-vietnam-computing-technologies GitHub organization. This repository is provided for testing and practice. You should use it to practise the
+         <code>
+          Git
+         </code>
+         commands and GitHub authentication process before the in-class exam.
+        </p>
+<p>
+         During the exam, you will receive a different private repository with a similar setup. Therefore, make sure that you understand the complete process rather than simply copying the commands.
+        </p>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        ✉️ Step 1: Accept the GitHub repository invitation
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+<code>
+           GitHub
+          </code>
+          will send an invitation to the email address linked to your GitHub account.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Open the invitation email and accept the invitation within seven days.
+           </p>
+</li>
+<li>
+<p>
+            The invitation will expire after seven days if it is not accepted.
+           </p>
+</li>
+<li>
+<p>
+            Check your spam, junk, or promotional folder if you cannot find the email.
+           </p>
+</li>
+<li>
+<p>
+            Make sure that you are signed in to the correct GitHub account before accepting the invitation.
+           </p>
+</li>
+<li>
+<p>
+            After accepting the invitation, visit:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<a href="https://github.com/rmit-vietnam-computing-technologies/" rel="noopener" target="_blank">
+               https://github.com/rmit-vietnam-computing-technologies/
+              </a>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+            Check that you can see and access your assigned private
+            <code>
+             repository
+            </code>
+            .
+           </p>
+</li>
+<li>
+<p>
+            Your repository name should follow this format:
+           </p>
+</li>
+</ul>
+<pre><code class="language-xml">&lt;year&gt;-&lt;course&gt;-&lt;assignment&gt;-&lt;campus&gt;-&lt;your-github-username&gt;-&lt;your-student-id&gt;</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            For example:
+           </p>
+</li>
+</ul>
+<pre><code>2026b-cosc2767-testing-sg-theodore-huynh-s123456</code></pre>
+<p>
+          Use only the private repository assigned to you. Do not create another repository in the organisation or rename the assigned repository.
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating rename the assigned repository." class="img-large" height="276" loading="lazy" src="../assets/tutorials/week-3/16-step-1-accept-the-github-repository-invitation-001.png" width="951"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🔐 Step 2: Configure GitHub authentication with SSH
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Because this is a private
+          <code>
+           repository
+          </code>
+          ,
+          <code>
+           GitHub
+          </code>
+          must authenticate you before allowing you to
+          <code>
+           fetch
+          </code>
+          ,
+          <code>
+           pull
+          </code>
+          , or
+          <code>
+           push
+          </code>
+          repository content.
+         </p>
+<p>
+          For this challenge, use
+          <code>
+           SSH
+          </code>
+          key-pair authentication. With SSH authentication, your computer or
+          <code>
+           EC2
+          </code>
+          instance stores the private key, while your GitHub account stores the matching public key.
+         </p>
+<p class="callout callout--checkpoint">
+<strong>Security checkpoint:</strong> Which SSH key may be shared with GitHub, which key must remain secret, and what should you do if the private key is exposed?
+         </p>
+<p>
+          If you have done the SSH Key Pair setup in Challenge 1, then you can skip this step. If not, then follow the steps in challenge 1 to set up the SSH Key Pair in your EC2.
+         </p>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📦 Step 3: Create the local repository
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Repeat the
+          <code>
+           main
+          </code>
+          activities from Challenge 0 by creating a local
+          <code>
+           repository
+          </code>
+          with some local
+          <code>
+           commits
+          </code>
+          .
+         </p>
+<p>
+          At this point, your local
+          <code>
+           git
+          </code>
+          repo was initialized and therefore have different commits in the git log history.
+         </p>
+<p>
+          Below screenshot is exactly our local git repo
+          <code>
+           commit
+          </code>
+          history at the end of challenge 0 (before challenge 1)!
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating 1)!" class="img-large" height="100" loading="lazy" src="../assets/tutorials/week-3/17-step-3-create-the-local-repository-001.png" width="951"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🔗 Step 4: Connect to the assigned private repository
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Open your assigned
+          <code>
+           repository
+          </code>
+          on
+          <code>
+           GitHub
+          </code>
+          and copy its
+          <code>
+           SSH
+          </code>
+          URL. The URL should look similar to:
+         </p>
+<pre><code>git@github.com:rmit-vietnam-computing-technologies/2026b-cosc2767-testing-sg-yourusername-s123456.git</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git@github.com:rmit-vietnam-computing-technologies/2026b-cosc2767-testing-sg-yourusername-s123456.git" class="img-large" height="359" loading="lazy" src="../assets/tutorials/week-3/18-step-4-connect-to-the-assigned-private-repository-001.png" width="431"/>
+</div>
+<p>
+          Add the assigned repository as the
+          <code>
+           origin
+          </code>
+<code>
+           remote
+          </code>
+          :
+         </p>
+<pre><code>git remote add origin
+git@github.com:rmit-vietnam-computing-technologies/&lt;your-assigned-repository-name&gt;.git</code></pre>
+<p>
+          Check the remote configuration:
+         </p>
+<pre><code>git remote -v</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git remote -v" class="img-large" height="49" loading="lazy" src="../assets/tutorials/week-3/18-step-4-connect-to-the-assigned-private-repository-002.png" width="951"/>
+</div>
+<p>
+          Both the
+          <code>
+           fetch
+          </code>
+          and
+          <code>
+           push
+          </code>
+          URLs should use the SSH format beginning with (“
+          <strong>
+<code>
+            git
+           </code>
+           @github.com:
+          </strong>
+          ”):
+         </p>
+<pre><code>origin git@github.com:rmit-vietnam-computing-technologies/2026b-cosc2767-testing-sg-theodore-huynh-s123456.git ( fetch )
+origin git@github.com:rmit-vietnam-computing-technologies/2026b-cosc2767-testing-sg-theodore-huynh-s123456.git ( push )</code></pre>
+<p>
+<strong>
+           [Only
+          </strong>
+<strong>
+           follow
+          </strong>
+<strong>
+           these
+          </strong>
+<strong>
+           steps
+          </strong>
+<strong>
+           below
+          </strong>
+<strong>
+           if
+          </strong>
+<strong>
+           you
+          </strong>
+<strong>
+           receive
+          </strong>
+<strong>
+           the
+          </strong>
+<strong>
+           following
+          </strong>
+<strong>
+           error
+          </strong>
+<strong>
+           “error:
+          </strong>
+<strong>
+           remote
+          </strong>
+<strong>
+           origin
+          </strong>
+<strong>
+           already
+          </strong>
+<strong>
+           exists”.
+          </strong>
+<strong>
+           Otherwise,
+          </strong>
+<strong>
+           skip
+          </strong>
+<strong>
+           to
+          </strong>
+<strong>
+           step
+          </strong>
+<strong>
+           5]
+          </strong>
+          when running the command “
+          <strong>
+           git
+          </strong>
+<strong>
+           remote
+          </strong>
+<strong>
+<code>
+            -v
+           </code>
+</strong>
+          ” or
+          <strong>
+           “git
+          </strong>
+<strong>
+           remote
+          </strong>
+<strong>
+           add
+          </strong>
+<strong>
+           origin”
+          </strong>
+          :
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            This means that your local Git repository already has an <code>origin</code> remote so you cannot just add a new origin remote as you
+            <strong>
+             need
+            </strong>
+<strong>
+             to
+            </strong>
+<strong>
+             update
+            </strong>
+<strong>
+             it
+            </strong>
+<strong>
+             instead!
+            </strong>
+</p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating cannot just add a new origin remote as you need to update it instead!" class="img-large" height="54" loading="lazy" src="../assets/tutorials/week-3/18-step-4-connect-to-the-assigned-private-repository-003.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Update the existing remote instead (to replace the previous origin remote):
+           </p>
+</li>
+</ul>
+<pre><code>git remote set-url origin
+git@github.com:rmit-vietnam-computing-technologies/&lt;your-assigned-repository-name&gt;.g
+it</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git remote set-url origin git@github.com:rmit-vietnam-computing-technologies/&lt;your-assigned-repository-name&gt;.git" class="img-large" height="42" loading="lazy" src="../assets/tutorials/week-3/18-step-4-connect-to-the-assigned-private-repository-004.png" width="951"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Then check it again:
+           </p>
+</li>
+</ul>
+<pre><code>git remote -v</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git remote -v" class="img-large" height="50" loading="lazy" src="../assets/tutorials/week-3/18-step-4-connect-to-the-assigned-private-repository-005.png" width="806"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📥 Step 5: Fetch the existing remote content
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Unlike the empty public
+          <code>
+           repository
+          </code>
+          used in Challenge 1,
+          <strong>
+           your
+          </strong>
+<strong>
+           assigned
+          </strong>
+<strong>
+           private
+          </strong>
+<strong>
+           repository
+          </strong>
+<strong>
+           already
+          </strong>
+<strong>
+           contains
+          </strong>
+<strong>
+           files
+          </strong>
+<strong>
+           such
+          </strong>
+<strong>
+           as
+          </strong>
+<strong>
+<code>
+            README.md
+           </code>
+</strong>
+<strong>
+           and
+          </strong>
+<strong>
+<code>
+            .gitignore
+           </code>
+           .
+          </strong>
+</p>
+<p>
+          Do not immediately
+          <code>
+           push
+          </code>
+          your local
+          <code>
+           commits
+          </code>
+          as the
+          <code>
+           remote
+          </code>
+<code>
+           GitHub
+          </code>
+          repo has an existing
+          <code>
+           commit
+          </code>
+          with some files (
+          <code>
+           README
+          </code>
+          and
+          <code>
+           .gitignore
+          </code>
+          ) so you will not be able to push without pulling and merging first.
+         </p>
+<p>
+          So if you try to push it, you will see this error:
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating So if you try to push it, you will see this error:" class="img-large" height="242" loading="lazy" src="../assets/tutorials/week-3/19-step-5-fetch-the-existing-remote-content-001.png" width="951"/>
+</div>
+<p>
+          First, download information about the existing remote
+          <code>
+           branches
+          </code>
+          and commits:
+         </p>
+<pre><code>git fetch origin</code></pre>
+<p>
+          The
+          <code>
+           git
+          </code>
+<code>
+           fetch
+          </code>
+          command downloads the remote
+          <code>
+           branch
+          </code>
+          information and commits but does not modify the files in your current working directory.
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating files in your current working directory." class="img-large" height="151" loading="lazy" src="../assets/tutorials/week-3/19-step-5-fetch-the-existing-remote-content-002.png" width="951"/>
+</div>
+<p>
+          List all local and remote branches:
+         </p>
+<pre><code>git branch -a</code></pre>
+<p>
+          You should see your local
+          <code>
+           main
+          </code>
+          branch and a remote-tracking branch similar to “
+          <strong>
+<code>
+            remotes/origin/main
+           </code>
+</strong>
+          ”:
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating You should see your local main branch and a remote-tracking branch similar to “ remotes/origin/main ”:" class="img-large" height="180" loading="lazy" src="../assets/tutorials/week-3/19-step-5-fetch-the-existing-remote-content-003.png" width="951"/>
+</div>
+<p>
+          Inspect both the local and remote commit histories:
+         </p>
+<pre><code>git log --oneline --graph --decorate --all</code></pre>
+<p>
+          You may notice that the
+          <strong>
+           local
+          </strong>
+<strong>
+           main
+          </strong>
+<strong>
+           branch
+          </strong>
+          and
+          <strong>
+<code>
+            origin/main
+           </code>
+</strong>
+          have separate starting commits. This happens because the local repository and the GitHub repository were initialized independently.
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating because the local repository and the GitHub repository were initialized independently." class="img-large" height="126" loading="lazy" src="../assets/tutorials/week-3/19-step-5-fetch-the-existing-remote-content-004.png" width="951"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        ⬆️ Step 6: Set the upstream branch
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Connect your local
+          <code>
+           main
+          </code>
+<code>
+           branch
+          </code>
+          to the
+          <code>
+           remote
+          </code>
+<code>
+           origin/main
+          </code>
+          branch:
+         </p>
+<pre><code>git branch --set-upstream-to=origin/main main</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git branch --set-upstream-to=origin/main main" class="img-large" height="54" loading="lazy" src="../assets/tutorials/week-3/20-step-6-set-the-upstream-branch-001.png" width="951"/>
+</div>
+<p>
+          Check the branch relationship:
+         </p>
+<pre><code>git branch -vv</code></pre>
+<p>
+          The output should show that your local main branch is tracking
+          <strong>
+<code>
+            origin/main
+           </code>
+</strong>
+          .
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating The output should show that your local main branch is tracking origin/main ." class="img-large" height="85" loading="lazy" src="../assets/tutorials/week-3/20-step-6-set-the-upstream-branch-002.png" width="951"/>
+</div>
+<p>
+          An
+          <code>
+           upstream
+          </code>
+          branch tells
+          <code>
+           Git
+          </code>
+          which remote branch should normally be used when you run commands such as “
+          <strong>
+           git
+          </strong>
+<strong>
+<code>
+            pull
+           </code>
+           ”
+          </strong>
+          or
+          <strong>
+           “git
+          </strong>
+<strong>
+<code>
+            push
+           </code>
+</strong>
+          ” without writing the remote and branch names every time.
+         </p>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🧬 Step 7: Combine the local and remote histories
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Before pushing,
+          <code>
+           pull
+          </code>
+          the existing files and
+          <code>
+           commits
+          </code>
+          from the assigned
+          <code>
+           repository
+          </code>
+          :
+         </p>
+<pre><code>git pull --no-rebase --allow-unrelated-histories --no-edit</code></pre>
+<p>
+          The options have the following purposes:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+<code>
+              --no-rebase
+             </code>
+</strong>
+            tells
+            <code>
+             Git
+            </code>
+            to combine the histories using a
+            <code>
+             merge
+            </code>
+            rather than rewriting your local commits.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+<code>
+              --allow-unrelated-histories
+             </code>
+</strong>
+            allows Git to merge
+            <code>
+             repositories
+            </code>
+            that were initialized separately.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+<code>
+              --no-edit
+             </code>
+</strong>
+            accepts Git’s default merge
+            <code>
+             commit
+            </code>
+            message.
+           </p>
+</li>
+</ul>
+<p>
+          The
+          <strong>
+<code>
+            --allow-unrelated-histories
+           </code>
+</strong>
+          option should normally only be required for the first merge between these two independently created repositories.
+         </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating two independently created repositories." class="img-large" height="120" loading="lazy" src="../assets/tutorials/week-3/21-step-7-combine-the-local-and-remote-histories-001.png" width="951"/>
+</div>
+<p>
+          If the local and
+          <code>
+           remote
+          </code>
+          repositories contain different filenames, Git may merge them automatically. After the pull, check the result:
+         </p>
+<pre><code>git status
+git log --oneline --graph --decorate --all
+ls -la</code></pre>
+<p>
+          You should now have both:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            The files that you created locally.
+           </p>
+</li>
+<li>
+<p>
+            The existing files from the private
+            <code>
+             GitHub
+            </code>
+            repository, such as
+            <code>
+             README.md
+            </code>
+            and
+            <code>
+             .gitignore
+            </code>
+            .
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating The existing files from the private GitHub repository, such as README.md and .gitignore." class="img-large" height="318" loading="lazy" src="../assets/tutorials/week-3/21-step-7-combine-the-local-and-remote-histories-002.png" width="951"/>
+</div>
+<p>
+<strong>
+           [Only
+          </strong>
+<strong>
+           follow
+          </strong>
+<strong>
+           these
+          </strong>
+<strong>
+           steps
+          </strong>
+<strong>
+           if
+          </strong>
+<strong>
+           you
+          </strong>
+<strong>
+           have
+          </strong>
+<strong>
+           a
+          </strong>
+<strong>
+           conflict
+          </strong>
+<strong>
+           to
+          </strong>
+<strong>
+           resolve
+          </strong>
+<strong>
+           a
+          </strong>
+<strong>
+           merge
+          </strong>
+<strong>
+           conflict
+          </strong>
+<strong>
+           if
+          </strong>
+<strong>
+           one
+          </strong>
+<strong>
+           occurs]
+          </strong>
+<strong>
+           (
+          </strong>
+          maybe happens because you got existing
+          <code>
+           .gitignore
+          </code>
+          or
+          <code>
+           README
+          </code>
+          on your local
+          <code>
+           main
+          </code>
+          already before the merge happens so it conflicts because it cannot merge either
+          <code>
+           .gitignore
+          </code>
+          or README between local main and
+          <code>
+           origin/main
+          </code>
+          )
+          <strong>
+           .
+          </strong>
+<strong>
+           [Otherwise,
+          </strong>
+<strong>
+           please
+          </strong>
+<strong>
+           skip
+          </strong>
+<strong>
+           to
+          </strong>
+<strong>
+           step
+          </strong>
+<strong>
+           8!]
+          </strong>
+</p>
+<p>
+          A conflict may occur if both repositories contain different versions of the same file.
+         </p>
+<p>
+          Check the conflicting files:
+         </p>
+<pre><code>git status</code></pre>
+<p>
+          Open each conflicting file and look for conflict markers similar to:
+         </p>
+<pre><code class="language-xml">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+Your local content
+=======
+Content from the remote repository
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; origin/main</code></pre>
+<p>
+          Edit the file so that it contains the correct final content, and remove all conflict markers.
+         </p>
+<p>
+          Stage the resolved file:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            For example: git add
+            <code>
+             README.md
+            </code>
+</p>
+</li>
+</ul>
+<pre><code>git add &lt;filename&gt;</code></pre>
+<p>
+          Complete the merge:
+         </p>
+<pre><code>git commit -m "Merge assigned repository with local practice history"</code></pre>
+<p>
+          Check that there are no unresolved conflicts:
+         </p>
+<pre><code>git status</code></pre>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📤 Step 8: Push the existing local commits
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          After successfully fetching and merging the
+          <code>
+           remote
+          </code>
+          content,
+          <code>
+           push
+          </code>
+          the combined history to your assigned private
+          <code>
+           repository
+          </code>
+          :
+         </p>
+<pre><code>git push</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating git push" class="img-large" height="180" loading="lazy" src="../assets/tutorials/week-3/22-step-8-push-the-existing-local-commits-001.png" width="951"/>
+</div>
+<p>
+          Because the
+          <strong>
+<code>
+            upstream
+           </code>
+</strong>
+<strong>
+<code>
+            branch
+           </code>
+</strong>
+<strong>
+           has
+          </strong>
+<strong>
+           already
+          </strong>
+<strong>
+           been
+          </strong>
+<strong>
+           configured
+          </strong>
+          ,
+          <code>
+           Git
+          </code>
+          knows that the local
+          <strong>
+<code>
+            main
+           </code>
+</strong>
+          branch should be pushed to
+          <strong>
+<code>
+            origin/main
+           </code>
+</strong>
+          .
+         </p>
+<p>
+          Optional that if you want to, you can also explicitly write the remote and branch instead of just “git push”:
+         </p>
+<pre><code>git push origin main</code></pre>
+<p>
+          Return to your repository on the
+          <code>
+           GitHub
+          </code>
+          website and refresh the page. Confirm that you can see:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Your local practice file.
+           </p>
+</li>
+<li>
+<p>
+            The original
+            <code>
+             README.md
+            </code>
+            and
+            <code>
+             .gitignore
+            </code>
+            files.
+           </p>
+</li>
+<li>
+<p>
+            Your local
+            <code>
+             commits
+            </code>
+            .
+           </p>
+</li>
+<li>
+<p>
+            The
+            <code>
+             merge
+            </code>
+<code>
+             commit
+            </code>
+            that combined the local and remote histories.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating The merge commit that combined the local and remote histories." class="img-large" height="492" loading="lazy" src="../assets/tutorials/week-3/22-step-8-push-the-existing-local-commits-002.png" width="951"/>
+</div>
+<p>
+<strong>
+           Your
+          </strong>
+<strong>
+           tasks
+          </strong>
+<strong>
+           (if
+          </strong>
+<strong>
+           you
+          </strong>
+<strong>
+           want
+          </strong>
+<strong>
+           more
+          </strong>
+<strong>
+           practice):
+          </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Practise
+            </strong>
+<strong>
+             the
+            </strong>
+<strong>
+             Normal
+            </strong>
+<strong>
+             Pull–Commit–Push
+            </strong>
+<strong>
+             Workflow:
+            </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Make another local change.
+             </p>
+</li>
+<li>
+<p>
+              Stage and commit the change.
+             </p>
+</li>
+<li>
+<p>
+              Before pushing,
+              <code>
+               pull
+              </code>
+              and merge any new remote updates.
+             </p>
+</li>
+<li>
+<p>
+              Then push your commit.
+             </p>
+</li>
+<li>
+<p>
+              For example, the normal workflow is:
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>git status
+git pull --no-rebase
+git add .
+git commit -m "Describe the change"
+git push</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Make sure that your current work is committed or safely stored before pulling remote changes.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             Practise
+            </strong>
+<strong>
+             with
+            </strong>
+<strong>
+             a
+            </strong>
+<strong>
+             New
+            </strong>
+<strong>
+             Branch:
+            </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Create a new local branch.
+             </p>
+</li>
+<li>
+<p>
+              Create and commit a file.
+             </p>
+</li>
+<li>
+<p>
+              Push the new branch and configure its upstream branch. (for example, “
+              <strong>
+               git
+              </strong>
+<strong>
+               push
+              </strong>
+<strong>
+<code>
+                -u
+               </code>
+</strong>
+<strong>
+<code>
+                origin
+               </code>
+</strong>
+<strong>
+<code>
+                practice-feature
+               </code>
+               ”
+              </strong>
+              )
+             </p>
+</li>
+<li>
+<p>
+              List the local and remote
+              <code>
+               branches
+              </code>
+              .
+             </p>
+</li>
+<li>
+<p>
+              Switch back to main.
+             </p>
+</li>
+<li>
+<p>
+              Pull the latest remote changes (for example “
+              <strong>
+               git
+              </strong>
+<strong>
+               pull
+              </strong>
+<strong>
+<code>
+                --no-rebase
+               </code>
+</strong>
+              ”)
+             </p>
+</li>
+<li>
+<p>
+              Merge the practice branch.
+             </p>
+</li>
+<li>
+<p>
+              Push the updated main branch.
+             </p>
+</li>
+<li>
+<p>
+              Check the repository and branch list on GitHub to confirm that both branches were pushed successfully.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-3-collaboration">
+<h2 class="collapsible-header">
+     🧪 Challenge 3: Collaborate with a partner using Git
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Challenge 3: Remote Git + Collaboration with your friends (in pair)" class="img-large" height="516" loading="lazy" src="../assets/tutorials/week-3/23-challenge-3-collaborate-with-a-partner-using-git-001.png" width="516"/>
+</div>
+<p>
+         Try to pick one person in your team to create a
+         <code>
+          remote
+         </code>
+         repo, add the other person to the remote
+         <code>
+          git
+         </code>
+         and two people try to
+         <code>
+          push
+         </code>
+         code to the remote git!
+        </p>
+<p class="callout callout--checkpoint">
+<strong>Teamwork checkpoint:</strong> Before both partners push, what fetch-or-pull, merge, and push sequence reduces conflicts? What will Git do if the remote branch changed since your last synchronization?
+        </p>
+<p>
+         The knowledge of Git will be super valuable to the Continuous Integration pipeline!
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Ask for the username of the person you're inviting as a collaborator. If they don't have a username yet, they can sign up for
+           <code>
+            GitHub
+           </code>
+           For more information, search for "Signing up for a new GitHub account".
+          </p>
+</li>
+<li>
+<p>
+           On GitHub, navigate to the
+           <code>
+            main
+           </code>
+           page of the
+           <code>
+            repository
+           </code>
+           .
+          </p>
+</li>
+<li>
+<p>
+           Under your repository name, click Settings.
+          </p>
+</li>
+<li>
+<p>
+           Click Invite a collaborator.
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Click Invite a collaborator." class="img-large" height="398" loading="lazy" src="../assets/tutorials/week-3/23-challenge-3-collaborate-with-a-partner-using-git-002.png" width="626"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           In the search field, start typing the name of the person you want to invite, then click a name in the list of matches.
+          </p>
+</li>
+<li>
+<p>
+           Click Add NAME to REPOSITORY.
+          </p>
+</li>
+<li>
+<p>
+           The user will receive an email inviting them to the repository. Once they accept your invitation, they will have collaborator access to your repository.
+          </p>
+</li>
+</ul>
+<p>
+         Now that invited user should receive an email of collaboration and they should accept it to start collaborating!
+        </p>
+<p>
+         Now those people who are collaborators will be able to git
+         <code>
+          clone
+         </code>
+         !
+        </p>
+<p>
+<strong>
+          Your
+         </strong>
+<strong>
+          task
+         </strong>
+         :
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Each person should try to push their own files to the remote repo and please add a file like
+           <code>
+            your_name.txt
+           </code>
+           and inside say "Hello! My name is ...!".
+          </p>
+</li>
+<li>
+<p>
+           Try to create a conflict by both editing the same file on the same file on different
+           <code>
+            branches
+           </code>
+           then try to
+           <code>
+            merge
+           </code>
+           both branches back to the main brain.
+          </p>
+</li>
+<li>
+<p>
+           Then try to resolve the conflict.
+          </p>
+</li>
+<li>
+<p>
+           Next, one person try to create a
+           <code>
+            pull
+           </code>
+           request and the other person try to accept that pull request.
+          </p>
+</li>
+</ul>
+<p>
+         Have fun!
+        </p>
+<p>
+<strong>
+          A
+         </strong>
+<strong>
+          pro
+         </strong>
+<strong>
+          tip
+         </strong>
+<strong>
+          for
+         </strong>
+<strong>
+          you
+         </strong>
+<strong>
+          guys
+         </strong>
+<strong>
+          in
+         </strong>
+<strong>
+          the
+         </strong>
+<strong>
+          actual
+         </strong>
+<strong>
+          group
+         </strong>
+<strong>
+          project:
+         </strong>
+</p>
+<p>
+         You could establish these rules when naming a
+         <code>
+          branch
+         </code>
+         on GitHub:
+        </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            features/
+            <code>
+             {feature-name}
+            </code>
+</strong>
+<strong>
+            -
+           </strong>
+           This convention is used when developing new features
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            fix/
+            <code>
+             {bug-name}
+            </code>
+</strong>
+           This convention is used when fixing bugs in the development environment.
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            hotfix/
+            <code>
+             {bug-name}
+            </code>
+</strong>
+           - This convention is used when fixing bugs in the production environment
+          </p>
+</li>
+</ol>
+<p>
+         Here are the example branch names: features/home-page, features/user-post, features/admin-pages, features/sitemap, fix/user-database, fix/responsive-
+         <code>
+          my-account
+         </code>
+         , fix/change-color-focus-visible, fix/light-dark-mode-when-logout, hotfix/init-database-config-path
+        </p>
+<p>
+<strong>
+          You
+         </strong>
+<strong>
+          can
+         </strong>
+<strong>
+          use
+         </strong>
+<strong>
+          the
+         </strong>
+<strong>
+          Best
+         </strong>
+<strong>
+          Practices
+         </strong>
+<strong>
+          as
+         </strong>
+<strong>
+          following:
+         </strong>
+</p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Branching
+           </strong>
+<strong>
+            Strategy:
+           </strong>
+           You can use a clear branching strategy with features/ branches for new features developed in the development environment, fix/ branches for bug fixing, and hotfix/ branches for urgent production issues.
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            Regular
+           </strong>
+<strong>
+            and
+           </strong>
+<strong>
+            meaning
+           </strong>
+<strong>
+<code>
+             commits
+            </code>
+            :
+           </strong>
+           Team members
+           <code>
+            commit
+           </code>
+           the changes of code to their features or fix bug branches to ensure seamless integration with detailed and informative commit messages to provide clear purposes.
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            Code
+           </strong>
+<strong>
+            Reviews:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             All pull requests must be reviewed and approved by at least one other team member before merging.
+            </p>
+</li>
+<li>
+<p>
+             Reviewers will check for code quality and ensure there are no code conflicts before merging.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Merge
+           </strong>
+<strong>
+            Strategy:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Features/ branches will be merged into the main branch after code reviews are approved.
+            </p>
+</li>
+<li>
+<p>
+             Fix/ branches will be merged into the main branch after code reviews are approved.
+            </p>
+</li>
+<li>
+<p>
+             Hotfix/ branches will be merged into the deploy branch if there are any emerging issues in the production environment and resolved in hotfix/ branches.
+            </p>
+</li>
+</ul>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="bonus-oh-my-git">
+<h2 class="collapsible-header">
+     🎮 Bonus: Practise Git with Oh My Git!
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Bonus Challenge Game: Oh My Git! game about learning Git!" class="img-large" height="270" loading="lazy" src="../assets/tutorials/week-3/24-bonus-practise-git-with-oh-my-git-001.png" width="478"/>
+</div>
+<p>
+         Oh My
+         <code>
+          Git
+         </code>
+         ! is an open source Git learning game! See ohmygit.org and the
+         <code>
+          GitHub
+         </code>
+         project for details!
+        </p>
+<p>
+         Oh My Git! visualises the internal structures of Git
+         <code>
+          repositories
+         </code>
+         in real time. To accommodate people who are new to Git, the game features a custom-designed playing card interface! The cards help remember newly introduced Git commands, but also contain a short description and an icon. Therefore, they combine both action as well as documentation:
+        </p>
+<p>
+         Here are some screenshots and demo videos:
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Here are some screenshots and demo videos:" class="img-large" height="426" loading="lazy" src="../assets/tutorials/week-3/24-bonus-practise-git-with-oh-my-git-002.png" width="758"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Here are some screenshots and demo videos:" class="img-large" height="426" loading="lazy" src="../assets/tutorials/week-3/24-bonus-practise-git-with-oh-my-git-003.png" width="758"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Here are some screenshots and demo videos:" class="img-large" height="430" loading="lazy" src="../assets/tutorials/week-3/24-bonus-practise-git-with-oh-my-git-004.png" width="764"/>
+</div>
+<p>
+         You can download the installation files to install on your personal laptop for Linux, macOS, and Windows here:
+         <a href="https://blinry.itch.io/oh-my-git" rel="noopener" target="_blank">
+          https://blinry.itch.io/oh-my-git
+         </a>
+</p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating here: https://blinry.itch.io/oh-my-git" class="img-large" height="310" loading="lazy" src="../assets/tutorials/week-3/24-bonus-practise-git-with-oh-my-git-005.png" width="555"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="reference-git-commands">
+<h2 class="collapsible-header">
+     🌿 Git command reference
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+<code>
+             git
+            </code>
+</strong>
+<strong>
+<code>
+             clone
+            </code>
+</strong>
+<strong>
+<code>
+             &lt;url&gt;
+            </code>
+</strong>
+           : makes a copy of a
+           <code>
+            repository
+           </code>
+           and stores it on your computer.
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+            init
+           </strong>
+           : makes the current folder as a git repository
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+            add
+           </strong>
+           : adds a file to "
+           <code>
+            staging area
+           </code>
+           ", which means telling git to include the file in the next time it saves a version of the repo. git add . to add all changed files.
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+            status
+           </strong>
+           : a helpful command, to see what's currently going on in the git repo
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+<code>
+             commit
+            </code>
+            :
+           </strong>
+           saves the version of the repository.
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+<code>
+             push
+            </code>
+</strong>
+<strong>
+<code>
+             -u
+            </code>
+</strong>
+<strong>
+<code>
+             origin
+            </code>
+</strong>
+<strong>
+<code>
+             main
+            </code>
+            :
+           </strong>
+           pushes the changes I made on my computer up to the
+           <code>
+            GitHub
+           </code>
+           repo
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+<code>
+             pull
+            </code>
+</strong>
+           : is opposite of git push, pull the most recent version of the online repository.
+          </p>
+</li>
+<li>
+<p>
+           Merge conflicts occur when two developers change the same lines and Git cannot safely choose one version. You must review the competing changes and resolve the
+           <code>
+            merge
+           </code>
+           conflict by specifically telling Git which version of the code you want to use.
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+            log:
+           </strong>
+           to see all the version that you have saved and you can see the commit message is a very good indicator or reminder of what was changed in a particular version. So make sure you use good commit messages.
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+            reset
+           </strong>
+<strong>
+<code>
+             --hard
+            </code>
+</strong>
+<strong>
+<code>
+             &lt;commit&gt;
+            </code>
+</strong>
+           : reverts code back to a previous commit
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+            reset
+           </strong>
+<strong>
+<code>
+             --hard
+            </code>
+</strong>
+<strong>
+<code>
+             origin/main
+            </code>
+</strong>
+           : reverts code back to
+           <code>
+            remote
+           </code>
+           repository version
+          </p>
+</li>
+<li>
+<p>
+           Branching: Branch is a version of the repository. Each
+           <code>
+            branch
+           </code>
+           has its own commit history and current version.
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+            branch
+           </strong>
+           : shows all
+           <code>
+            branches
+           </code>
+           of code
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+            branch
+           </strong>
+<strong>
+<code>
+             &lt;branch_name&gt;
+            </code>
+</strong>
+           : creates a new branch
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+<code>
+             checkout
+            </code>
+</strong>
+<strong>
+<code>
+             &lt;branch_name&gt;
+            </code>
+</strong>
+           : switches to a branch
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+            merge
+           </strong>
+<strong>
+<code>
+             &lt;branch_name&gt;
+            </code>
+</strong>
+           : merges the branch with current branch
+          </p>
+</li>
+<li>
+<p>
+<strong>
+            git
+           </strong>
+<strong>
+            config
+           </strong>
+<strong>
+<code>
+             --global
+            </code>
+</strong>
+<strong>
+            alias.sla
+           </strong>
+<strong>
+            'log
+           </strong>
+<strong>
+<code>
+             --oneline
+            </code>
+</strong>
+<strong>
+<code>
+             --decorate
+            </code>
+</strong>
+<strong>
+<code>
+             --graph
+            </code>
+</strong>
+<strong>
+<code>
+             --all
+            </code>
+</strong>
+           makes git log a bit prettier.
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating prettier." class="img-large" height="339" loading="lazy" src="../assets/tutorials/week-3/25-git-command-reference-001.png" width="339"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="whats-next">
+<h2 class="collapsible-header start-open">
+     📚 Continue the course
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--home">
+<a class="card" href="week-2-linux-cli-lab.html">
+<h3>
+        ⌨️ Week 2: Linux and CLI Commands
+       </h3>
+<p>
+        Continue through the COSC2767 learning path.
+       </p>
+<span class="go-to-link">
+        Previous lab
+       </span>
+</a>
+<a class="card" href="week-4-java-maven-tomcat-lab.html">
+<h3>
+        ☕ Week 4: Java, Maven and Tomcat
+       </h3>
+<p>
+        Continue through the COSC2767 learning path.
+       </p>
+<span class="go-to-link">
+        Next lab
+       </span>
+</a>
+<a class="card" href="../index.html">
+<h3>
+        🗓️ All weekly labs
+       </h3>
+<p>
+        Return to the course map and review every weekly tutorial.
+       </p>
+<span class="go-to-link">
+        Course home
+       </span>
+</a>
+</div>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-foundations)" href="../sub_pages/week-2-linux-cli-lab.html"><span class="pager__dir">← Previous</span><span class="pager__title">Linux and CLI Commands</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-delivery)" href="../sub_pages/week-4-java-maven-tomcat-lab.html"><span class="pager__dir">Next →</span><span class="pager__title">Java, Maven and Tomcat</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="objective"><a class="toc__link" href="#objective"><span>Objective</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="instructions"><a class="toc__link" href="#instructions"><span>AWS Academy and your first EC2 instance</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="intro-to-version-control"><a class="toc__link" href="#intro-to-version-control"><span>Intro to Version Control</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="real-exercises-for-git-on-aws-ec2"><a class="toc__link" href="#real-exercises-for-git-on-aws-ec2"><span>Git practice on AWS EC2</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-0-local-git"><a class="toc__link" href="#challenge-0-local-git"><span>Challenge 0: Explore a local Git repository</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-1-remote-git"><a class="toc__link" href="#challenge-1-remote-git"><span>Challenge 1: Work with a remote GitHub repository</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-2-private-repository"><a class="toc__link" href="#challenge-2-private-repository"><span>Challenge 2: Work with your assigned private repository</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-3-collaboration"><a class="toc__link" href="#challenge-3-collaboration"><span>Challenge 3: Collaborate with a partner using Git</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="bonus-oh-my-git"><a class="toc__link" href="#bonus-oh-my-git"><span>Bonus: Practise Git with Oh My Git!</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="reference-git-commands"><a class="toc__link" href="#reference-git-commands"><span>Git command reference</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="whats-next"><a class="toc__link" href="#whats-next"><span>Continue the course</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 11 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

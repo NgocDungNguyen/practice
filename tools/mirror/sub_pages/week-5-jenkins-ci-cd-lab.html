@@ -1,0 +1,4659 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="Create Jenkins jobs and pipelines that automate application build, test, and deployment stages." name="description"/>
+  <title>
+   Week 5: Jenkins for CI and CD - COSC2767
+  </title>
+  <link href="../assets/images/rmit-logo.png" rel="icon" type="image/png"/>
+  <link href="../css/main.css" rel="stylesheet"/>
+  <script src="../js/main.js" type="module">
+  </script>
+ </head>
+ <body>
+  <header>
+   <div class="container">
+    <div class="back-to-home-container">
+     <a class="back-to-home-button" href="../index.html">
+      ← Back to Home
+     </a>
+    </div>
+    <div class="university-branding">
+     <img alt="RMIT University Logo" class="logo" src="../assets/images/rmit-logo.png"/>
+     <span class="university-name">
+      RMIT University
+     </span>
+    </div>
+    <p class="course-kicker">
+     COSC2767 · Systems Deployment and Operations
+    </p>
+    <h1>
+     🔧 Week 5: Jenkins for CI and CD
+     <span>
+      Lab Guide
+     </span>
+    </h1>
+    <p class="intro">
+     Create
+     <code>
+      Jenkins
+     </code>
+     jobs and
+     <code>
+      pipelines
+     </code>
+     that automate application build, test, and deployment stages.
+    </p>
+   </div>
+  </header>
+  <main class="container">
+   <section class="cheatsheet-section" id="objective">
+    <h2 class="collapsible-header start-open">
+     🎯 Objective
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Week tutorial screenshot from page 1" class="img-large" loading="lazy" src="../assets/tutorials/week-5/01-objective-001.png"/>
+        </div>
+        <p>
+         In this lab, we will learn to set up the basic
+         <code>
+          pipeline
+         </code>
+         of
+         <code>
+          CI/CD
+         </code>
+         of
+         <code>
+          Jenkins
+         </code>
+         to integrate it with Git,
+         <code>
+          GitHub
+         </code>
+         ,
+         <code>
+          Maven
+         </code>
+         and
+         <code>
+          Tomcat
+         </code>
+         on two separate
+         <code>
+          EC2
+         </code>
+         instances.
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating GitHub, Maven and Tomcat on two separate EC2 instances." class="img-large" loading="lazy" src="../assets/tutorials/week-5/01-objective-002.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="jenkins-pipeline-overview">
+    <h2 class="collapsible-header">
+     🧭 Jenkins CI/CD pipeline overview
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         In this week lab, we will setup this
+         <code>
+          CI/CD
+         </code>
+         <code>
+          pipeline
+         </code>
+         as below:
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating This week, we will build the CI/CD pipeline shown below:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/02-jenkins-ci-cd-pipeline-overview-001.png"/>
+        </div>
+        <p>
+         As you can see, we are dealing with two different
+         <code>
+          EC2
+         </code>
+         instances (which are very common for microservices).
+        </p>
+        <p class="callout">
+         <strong>Architecture checkpoint:</strong> Why might Jenkins and Tomcat belong on separate servers? Consider credentials, blast radius, resource contention, and independent scaling.
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="setup-jenkins-server">
+    <h2 class="collapsible-header">
+     🧰 Set up the Jenkins server
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Instructions to setup for the the EC2 Instance 1 (Jenkins Server)" class="img-large" loading="lazy" src="../assets/tutorials/week-5/03-set-up-the-jenkins-server-001.png"/>
+        </div>
+        <p>
+         Here are the overall steps to setup a Jenkins server on the first
+         <code>
+          EC2
+         </code>
+         instance 1 (Jenkins Server):
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Set up Linux on EC2 instance 1.
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Install Java.
+            </p>
+           </li>
+           <li>
+            <p>
+             Install &amp; Setup
+             <code>
+              Maven
+             </code>
+             .
+            </p>
+           </li>
+           <li>
+            <p>
+             Install &amp; Setup
+             <code>
+              Jenkins
+             </code>
+             .
+            </p>
+           </li>
+           <li>
+            <p>
+             Integrate Jenkins with
+             <code>
+              GitHub
+             </code>
+             and Maven using plugins.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <p class="callout">
+         <strong>
+          Your task:
+         </strong>
+         Set up the Jenkins EC2 instance as follows:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Here are the settings of the Jenkins Server for EC2:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Name:
+             <code>
+              Jenkins_Server
+             </code>
+            </p>
+           </li>
+           <li>
+            <p>
+             OS: default Amazon Linux 2023 AMI
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Instance Type: t3.micro
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Key pair: select and reuse your old key in other labs (
+             <code>
+              devops_project_key
+             </code>
+             )
+            </p>
+           </li>
+           <li>
+            <p>
+             Storage: 15GB (since Jenkins build can be large for big projects)!
+            </p>
+           </li>
+           <li>
+            <p>
+             Security Group:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               Optional Name:
+               <code>
+                Jenkins_Security_Group
+               </code>
+              </p>
+             </li>
+             <li>
+              <p>
+               Source Type: Anywhere
+              </p>
+             </li>
+             <li>
+              <p>
+               Open two ports:
+              </p>
+              <ul class="tutorial-list tutorial-list--level-4">
+               <li>
+                <p>
+                 22 for
+                 <code>
+                  SSH
+                 </code>
+                </p>
+               </li>
+               <li>
+                <p>
+                 8080 for Jenkins
+                </p>
+               </li>
+              </ul>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating OS: default Amazon Linux 2023 AMI (1 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-5/03-set-up-the-jenkins-server-002.png"/>
+        </div>
+         <li>
+
+          <p>
+           After launching the instance then, in the EC2 dashboard you should see the
+           <code>
+            Jenkin_Server
+           </code>
+           EC2 running:
+          </p>
+         </li>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating OS: default Amazon Linux 2023 AMI (2 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-5/03-set-up-the-jenkins-server-003.png"/>
+        </div>
+         <li>
+          <p>
+           The most important information is the Public IP address of your EC2 instance which will allow us to connect SSH to the server to control it:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating us to connect SSH to the server to control it:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/03-set-up-the-jenkins-server-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           After that, let’s SSH to the Jenkins Server on EC2:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating After that, let’s SSH to the Jenkins Server on EC2:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/03-set-up-the-jenkins-server-005.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           To keep things simple without dealing with permission, let’s login as a root user and change our current directory to /root:
+          </p>
+         </li>
+        </ul>
+        <pre><code>sudo su -</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           You are now the root user and have unrestricted system privileges. You can check your current directory, which should tell you that you are at root directory:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating directory:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/03-set-up-the-jenkins-server-006.png"/>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        💾 Allocate more disk space to Temp directory (/tmp) for Jenkins to work
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Before installing
+            <code>
+             Jenkins
+            </code>
+            , let’s check the available disk space allocated for the Temporary directory (/tmp):
+           </p>
+          </li>
+         </ul>
+         <pre><code>df -h /tmp</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating df -h /tmp" class="img-large" loading="lazy" src="../assets/tutorials/week-5/04-allocate-more-disk-space-to-temp-directory-tmp-for-jenkins-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            The initial <code>/tmp</code> allocation is too small for reliable Jenkins builds. Jenkins may warn below 2 GB and take an agent offline below 1 GB, so this lab allocates 3 GB.
+           </p>
+          </li>
+          <li>
+           <p>
+            Open the
+            <code>
+             /etc/fstab
+            </code>
+            file which defines how and where disk partitions, devices, or other file systems should be mounted:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo nano /etc/fstab</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            At the end of the file, add the following line. This line tells the system to mount /tmp as a tmpfs with a size limit of 3GB every time the system boots:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              tmpfs: Specifies the filesystem type, which is a temporary filesystem stored in RAM.
+             </p>
+            </li>
+            <li>
+             <p>
+              /tmp: The mount point. This means /tmp will be mounted as a tmpfs
+             </p>
+            </li>
+            <li>
+             <p>
+              defaults,size=3G: Mount options. defaults applies default settings, and size=3G limits the size to 3GB.
+             </p>
+            </li>
+            <li>
+             <p>
+              Dump: 0 means "do not dump" the filesystem for backups.
+             </p>
+            </li>
+            <li>
+             <p>
+              Fsck order: 0 means "do not check" the filesystem at boot.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>tmpfs /tmp tmpfs defaults,size=3G 0 0</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating tmpfs /tmp tmpfs defaults,size=3G 0 0" class="img-large" loading="lazy" src="../assets/tutorials/week-5/04-allocate-more-disk-space-to-temp-directory-tmp-for-jenkins-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            To apply the changes without rebooting the
+            <code>
+             EC2
+            </code>
+            , let’s manually remount /tmp:
+           </p>
+          </li>
+         </ul>
+         <pre><code>mount -o remount /tmp</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check that /tmp is now mounted with the specified size:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Check that /tmp is now mounted with the specified size:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/04-allocate-more-disk-space-to-temp-directory-tmp-for-jenkins-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             [Optional]
+            </strong>
+            You can choose to reboot the EC2 server to double check if the /tmp directory’s space allocation would still have 3GB or revert back to 475MB:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating space allocation would still have 3GB or revert back to 475MB:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/04-allocate-more-disk-space-to-temp-directory-tmp-for-jenkins-004.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        📦 Install Jenkins
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Cool, now we need to install
+            <code>
+             Jenkins
+            </code>
+            , let’s open this website:
+            <a href="https://www.jenkins.io/download/" rel="noopener" target="_blank">
+             https://www.jenkins.io/download/
+            </a>
+           </p>
+          </li>
+          <li>
+           <p>
+            Choose the stable LTS release for this lab. Select the Red Hat/Fedora installation instructions because they match the RPM-based Amazon Linux environment used by this EC2 instance:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating (AMI) based on:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/05-install-jenkins-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            We should see the instructions to download and install Jenkins:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating We should see the instructions to download and install Jenkins:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/05-install-jenkins-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            So let’s follow those above instructions commands, copy them into the terminal:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              First, add the official Jenkins package repository so the instance knows where to obtain Jenkins and its updates:
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code class="language-yaml">sudo wget -O /etc/yum.repos.d/jenkins.repo \
+  https://pkg.jenkins.io/rpm-stable/jenkins.repo
+sudo yum upgrade</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Next, install Fontconfig and Java 21, which Jenkins requires:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Fontconfig’s purpose is to provide the necessary font management and configuration support to ensure that Jenkins can properly render fonts and display text when generating graphical content like charts, reports, or logs that include graphical elements.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>sudo yum install fontconfig java-21-amazon-corretto</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Finally, we can install jenkins after installing Java:
+           </p>
+          </li>
+         </ul>
+         <pre><code>yum install jenkins</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You should see the message like so:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating You should see the message like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/05-install-jenkins-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Reloads systemd to recognize new or updated service files, including the Jenkins service that was just installed:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo systemctl daemon-reload</code></pre>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        ▶️ Start Jenkins
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now, we can check the current status of our jenkins:
+           </p>
+          </li>
+         </ul>
+         <pre><code>service jenkins status</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You should see that the status of jenkins is currently inactive (dead):
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating You should see that the status of jenkins is currently inactive (dead):" class="img-large" loading="lazy" src="../assets/tutorials/week-5/06-start-jenkins-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can start jenkins like so, it could take a few minutes to start:
+           </p>
+          </li>
+         </ul>
+         <pre><code>service jenkins start</code></pre>
+         <p>
+          And you should see the message it is starting like so:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating And you should see the message it is starting like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/06-start-jenkins-002.png"/>
+         </div>
+         <p>
+          Please be patient as it could take a few minutes for
+          <code>
+           Jenkins
+          </code>
+          to start for the first time.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now, we can check the current status of jenkins again:
+           </p>
+          </li>
+         </ul>
+         <pre><code>service jenkins status</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You should see that the status of jenkins is currently running at the port number 8080:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating You should see that the status of jenkins is currently running at the port number 8080:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/06-start-jenkins-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now we can try to access Jenkins via the public IP address which I have mentioned before via the port number
+            <strong>
+             8080
+            </strong>
+            :
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating the port number 8080 :" class="img-large" loading="lazy" src="../assets/tutorials/week-5/06-start-jenkins-004.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating the port number 8080 :" class="img-large" loading="lazy" src="../assets/tutorials/week-5/06-start-jenkins-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            As you can see that, Jenkins tells you that the default admin password is in the file “
+            <code>
+             /var/lib/jenkins/secrets/initialAdminPassword
+            </code>
+            ”, so we need to copy it and paste to the Administrator password to login to the Jenkins admin dashboard:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cat /var/lib/jenkins/secrets/initialAdminPassword</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            In my case, the default admin password is:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating In my case, the default admin password is:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/06-start-jenkins-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Copy that string and paste that to the password login field and press Continue:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Copy that string and paste that to the password login field and press Continue:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/06-start-jenkins-007.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        ⚙️ Initial Setup for Jenkins
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            After the password is accepted, we are greeted with this page to install plugins. However,
+            <strong>
+             we
+            </strong>
+            <strong>
+             are
+            </strong>
+            <strong>
+             learning
+            </strong>
+            <strong>
+             and
+            </strong>
+            <strong>
+             want
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             install
+            </strong>
+            <strong>
+             plugin
+            </strong>
+            <strong>
+             one
+            </strong>
+            <strong>
+             by
+            </strong>
+            <strong>
+             one
+            </strong>
+            <strong>
+             as
+            </strong>
+            <strong>
+             we
+            </strong>
+            <strong>
+             go,
+            </strong>
+            <strong>
+             so
+            </strong>
+            <strong>
+             let’s
+            </strong>
+            <strong>
+             close
+            </strong>
+            <strong>
+             (x)
+            </strong>
+            <strong>
+             this
+            </strong>
+            <strong>
+             page
+            </strong>
+            <strong>
+             for
+            </strong>
+            <strong>
+             now:
+            </strong>
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating for now:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            That’s it! you can start to use
+            <code>
+             Jenkins
+            </code>
+            now! Remember, the username is “admin” and the password is the one you have accessed just now!
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating password is the one you have accessed just now!" class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now, you should see the Jenkins admin dashboard like below! Congrats, you have successfully installed Jenkins on an
+            <code>
+             AWS
+            </code>
+            <code>
+             EC2
+            </code>
+            instance and accessed its dashboard through a public IP address which is super cool!
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating public IP address which is super cool!" class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Y
+            </strong>
+            ou can confirm that the /tmp disk space has been allocated to 3GB for Jenkins so all Jenkins agent nodes are working as usual without any problem.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating agent nodes are working as usual without any problem." class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-004.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating agent nodes are working as usual without any problem." class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-005.png"/>
+         </div>
+         <p>
+          <strong>
+           [Optional
+          </strong>
+          <strong>
+           -
+          </strong>
+          <strong>
+           If
+          </strong>
+          <strong>
+           you
+          </strong>
+          <strong>
+           choose
+          </strong>
+          <strong>
+           not
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           allocate
+          </strong>
+          <strong>
+           more
+          </strong>
+          <strong>
+           temp
+          </strong>
+          <strong>
+           disk
+          </strong>
+          <strong>
+           space
+          </strong>
+          <strong>
+           as
+          </strong>
+          <strong>
+           I
+          </strong>
+          <strong>
+           instructed
+          </strong>
+          <strong>
+           above]
+          </strong>
+          <strong>
+           [STARTS]
+          </strong>
+          If you did not allocate more space for /tmp then the Jenkins agent node might be shutdown. Let’s fix a few things in the warning message before we can move on:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating few things in the warning message before we can move on:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s select this option as we do not want Jenkins to force the agent node to be offline when the Temp Space (/tmp) is low on disk space so that we can build our Jenkins’ jobs without any problem.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating any problem." class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-007.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s bring our Jenkins agent node back online after we update the above setting:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let’s bring our Jenkins agent node back online after we update the above setting:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-008.png"/>
+         </div>
+         <p>
+          <strong>
+           [Optional
+          </strong>
+          <strong>
+           -
+          </strong>
+          <strong>
+           If
+          </strong>
+          <strong>
+           you
+          </strong>
+          <strong>
+           choose
+          </strong>
+          <strong>
+           not
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           allocate
+          </strong>
+          <strong>
+           more
+          </strong>
+          <strong>
+           temp
+          </strong>
+          <strong>
+           disk
+          </strong>
+          <strong>
+           space]
+          </strong>
+          <strong>
+           [ENDS]
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Set the server's time zone to our local region:
+            <strong>
+             Asia/Ho
+            </strong>
+            <strong>
+             Chi
+            </strong>
+            <strong>
+             Minh
+            </strong>
+            so when we check out the build log in Jenkins, all of the date time of each build run is based on the correct timezone, which is very helpful to figure out the exact time when things go wrong:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating correct timezone, which is very helpful to figure out the exact time when things go wrong:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-009.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Setup
+            </strong>
+            <strong>
+             a
+            </strong>
+            <strong>
+             new
+            </strong>
+            <strong>
+             password
+            </strong>
+            <strong>
+             for
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             admin
+            </strong>
+            <strong>
+             Jenkins
+            </strong>
+            <strong>
+             user
+            </strong>
+            , so next time you login Jenkins dashboard, you can use the new password you set:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating you can use the new password you set:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-010.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            After changing the password, you will get kicked out from the security page, please just refresh the URL of your jenkins dashboard and enter the admin username and your new password to login:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating password to login:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/07-initial-setup-for-jenkins-011.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🚀 Run First Jenkins Job
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          We're gonna create a first
+          <code>
+           Jenkins
+          </code>
+          job for fun which only executes some simple bash command to demonstrate Jenkins.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            If you are not in the main page of dashboard, click on the logo of Jenkins to be back to homepage:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating homepage:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/08-run-first-jenkins-job-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Create a new item:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Create a new item:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/08-run-first-jenkins-job-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Enter the item name and select it to be Freestyle project:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Enter the item name and select it to be Freestyle project:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/08-run-first-jenkins-job-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Enter the description of this Jenkins job and select build to execute shell as we want to run the bash command line:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating the bash command line:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/08-run-first-jenkins-job-004.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can type the bash linux commands in the command shell like so:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating You can type the bash linux commands in the command shell like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/08-run-first-jenkins-job-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Choose apply then save it to be sure your first Jenkins job is saved and redirect back to the dashboard of that job:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating dashboard of that job:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/08-run-first-jenkins-job-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            To execute the Jenkins job, we can click on the “Build Now” button!
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating To execute the Jenkins job, we can click on the “Build Now” button!" class="img-large" loading="lazy" src="../assets/tutorials/week-5/08-run-first-jenkins-job-007.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check the result of your Jenkins build:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Check the result of your Jenkins build:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/08-run-first-jenkins-job-008.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now you should see the output of your build:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Now you should see the output of your build:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/08-run-first-jenkins-job-009.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            This is exactly similar to how we have to run the bash command lines by typing them manually in the terminal! You can try to type the same bash commands to test it out:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating manually in the terminal! You can try to type the same bash commands to test it out:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/08-run-first-jenkins-job-010.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🔗 Integrate Git &amp; GitHub with Jenkins
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Integrate Git &amp; GitHub with Jenkins" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-001.png"/>
+         </div>
+         <p>
+          <strong>
+           The
+          </strong>
+          <strong>
+           overview
+          </strong>
+          <strong>
+           steps:
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Install Git on
+            <code>
+             Jenkins
+            </code>
+            <code>
+             EC2
+            </code>
+            instance
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Install
+              <code>
+               GitHub
+              </code>
+              Plugin on Jenkins GUI
+             </p>
+            </li>
+            <li>
+             <p>
+              Configure Git on Jenkins GUI
+             </p>
+            </li>
+           </ul>
+          </li>
+          <li>
+           <p>
+            Install git on the EC2 instance using this command:
+           </p>
+          </li>
+         </ul>
+         <pre><code>yum install git</code></pre>
+         <p>
+          To confirm the installation, you need to type “y” for yes:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating To confirm the installation, you need to type “y” for yes:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            After git installation, you can check the version of git:
+           </p>
+          </li>
+         </ul>
+         <pre><code>git --version</code></pre>
+         <p>
+          You should see the current version of git installed like so:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating You should see the current version of git installed like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s go back to the main dashboard page of Jenkins:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let’s go back to the main dashboard page of Jenkins:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-004.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            It's time to install Git plugins on Jenkins GUI, go to manage plugins in Jenkins:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating It's time to install Git plugins on Jenkins GUI, go to manage plugins in Jenkins:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Search “
+            <strong>
+             GitHub
+            </strong>
+            "
+            <strong>
+             plugins
+            </strong>
+            in the available plugins to install and select the first option:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt='Screenshot illustrating Search “ GitHub " plugins in the available plugins to install and select the first option:' class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Wait while Jenkins installs the GitHub plugin and its dependencies:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating before installing the GitHub plugin:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-007.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let's configure the GitHub plugin we just installed:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let's configure the GitHub plugin we just installed:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-008.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            As long as, the configuration looks like this, then it should be good enough:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating As long as, the configuration looks like this, then it should be good enough:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-009.png"/>
+         </div>
+         <ol class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Run
+            </strong>
+            <strong>
+             Jenkins
+            </strong>
+            <strong>
+             job
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             pull
+            </strong>
+            <strong>
+             code
+            </strong>
+            <strong>
+             from
+            </strong>
+            <strong>
+             GitHub
+            </strong>
+           </p>
+          </li>
+         </ol>
+         <p>
+          In this session, we will use a GitHub repository containing a simple website:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating In this session, we will use a GitHub repository containing a simple website:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-010.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Fork the repository so you have your own GitHub copy to modify and push:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating the same copy of this repo on your own GitHub:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-011.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Note:
+            </strong>
+            <strong>
+             Whenever
+            </strong>
+            <strong>
+             I
+            </strong>
+            <strong>
+             refer
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             this
+            </strong>
+            <strong>
+             GitHub
+            </strong>
+            <strong>
+             repo
+            </strong>
+            <strong>
+             in
+            </strong>
+            <strong>
+             this
+            </strong>
+            <strong>
+             lab,
+            </strong>
+            <strong>
+             then
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             should
+            </strong>
+            <strong>
+             use
+            </strong>
+            <strong>
+             your
+            </strong>
+            <strong>
+             own
+            </strong>
+            <strong>
+             forked
+            </strong>
+            <strong>
+             GitHub
+            </strong>
+            <strong>
+             repo
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             follow
+            </strong>
+            <strong>
+             these
+            </strong>
+            <strong>
+             instructions.
+            </strong>
+            <strong>
+             Because
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             are
+            </strong>
+            <strong>
+             required
+            </strong>
+            <strong>
+             later
+            </strong>
+            <strong>
+             on
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             commit
+            </strong>
+            <strong>
+             and
+            </strong>
+            <strong>
+             push
+            </strong>
+            <strong>
+             changes
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             your
+            </strong>
+            <strong>
+             own
+            </strong>
+            <strong>
+             public
+            </strong>
+            <strong>
+             forked
+            </strong>
+            <strong>
+             GitHub
+            </strong>
+            <strong>
+             repo
+            </strong>
+            <strong>
+             in
+            </strong>
+            <strong>
+             this
+            </strong>
+            <strong>
+             tutorial.
+            </strong>
+           </p>
+          </li>
+          <li>
+           <p>
+            Copy the repository URL from your own GitHub fork:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating repo):" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-012.png"/>
+         </div>
+         <p>
+          The URL of this Hello World GitHub repository is:
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Create a new item in Jenkins:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Create a new item in Jenkins:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-013.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Create a new job as following:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Create a new job as following:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-014.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Fill in the details of this new job as following:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Fill in the details of this new job as following:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-015.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Alright, it's time to build this job and see the result:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Alright, it's time to build this job and see the result:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-016.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let's check this result:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let's check this result:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-017.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can double check if the jenkins job has pulled the simple website repo to the default workspace like it said. You should see that every files in the hello world repo are there in the jenkins workspace folder in EC2 instance:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating jenkins workspace folder in EC2 instance:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-018.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Or you can check out files and directories in the workplace of this job in the dashboard like so:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating so:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/09-integrate-git-github-with-jenkins-019.png"/>
+         </div>
+         <p>
+          Yeah, so you know how to use Jenkins to create a job to pull code from a public GitHub repo. However, we need to use
+          <code>
+           Maven
+          </code>
+          to build this web project to create a
+          <code>
+           WAR
+          </code>
+          file.
+         </p>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🔗 Integrate Maven with Jenkins
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Integrate Maven with Jenkins" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Important
+            </strong>
+            <strong>
+             Note:
+            </strong>
+            <strong>
+             Please
+            </strong>
+            <strong>
+             install
+            </strong>
+            <strong>
+             <code>
+              Maven
+             </code>
+            </strong>
+            <strong>
+             on
+            </strong>
+            <strong>
+             this
+            </strong>
+            <strong>
+             Jenkins
+            </strong>
+            <strong>
+             Server
+            </strong>
+            <strong>
+             like
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             have
+            </strong>
+            <strong>
+             practiced
+            </strong>
+            <strong>
+             before
+            </strong>
+            <strong>
+             in
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             previous
+            </strong>
+            <strong>
+             lab.
+            </strong>
+            <strong>
+             If
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             forgot
+            </strong>
+            <strong>
+             then
+            </strong>
+            <strong>
+             please
+            </strong>
+            <strong>
+             open
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             previous
+            </strong>
+            <strong>
+             lab
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             repeat
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             steps
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             install
+            </strong>
+            <strong>
+             and
+            </strong>
+            <strong>
+             set
+            </strong>
+            <strong>
+             up
+            </strong>
+            <strong>
+             Mavens
+            </strong>
+            <strong>
+             (“Install
+            </strong>
+            <strong>
+             Maven
+            </strong>
+            <strong>
+             on
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             <code>
+              EC2
+             </code>
+            </strong>
+            <strong>
+             instance”
+            </strong>
+            <strong>
+             section).
+            </strong>
+           </p>
+          </li>
+          <li>
+           <p>
+            After completing the Maven setup, verify that <code>mvn</code> is available from the shell:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Note the maven version could be different to yours in the screenshot.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>mvn -v</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating mvn -v" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-002.png"/>
+         </div>
+         <p>
+          Now, we just need to let Jenkins know the locations of Maven folders.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Open
+            <code>
+             Jenkins
+            </code>
+            admin dashboard again, and go to manage plugins:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Open Jenkins admin dashboard again, and go to manage plugins:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s install Maven integration plugin:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let’s install Maven integration plugin:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-004.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You need to wait for it to install dependencies and the Maven integration plugin:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating You need to wait for it to install dependencies and the Maven integration plugin:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s set up configuration settings for the Maven plugin. First, let’s tell Maven plugin where is the path of
+            <code>
+             JDK
+            </code>
+            :
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating the path of JDK:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            At the JDK section,
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating At the JDK section," class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-007.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Add JDK Name and
+            <code>
+             JAVA_HOME
+            </code>
+            as following:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Note that your JDK specific version number could be different to yours in the screenshot below:
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating screenshot below:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-008.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Secondly, let’s tell Maven plugin where is the path of Maven in our EC2 instance:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Secondly, let’s tell Maven plugin where is the path of Maven in our EC2 instance:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-009.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Secondly, let’s tell Maven plugin where is the path of Maven in our EC2 instance:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-010.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            The name is up to you so you can choose to name it as simple as “maven”.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating The name is up to you so you can choose to name it as simple as “maven”." class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-011.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Time to apply and save the configuration for the JDK and Maven:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Time to apply and save the configuration for the JDK and Maven:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-012.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Alright, it’s time to create a new Jenkins job to build our Maven project from GitHub:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Alright, it’s time to create a new Jenkins job to build our Maven project from GitHub:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-013.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Select Maven project to be the Jenkins job type we want:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Select Maven project to be the Jenkins job type we want:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-014.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s fill in the details:
+           </p>
+          </li>
+         </ul>
+         <p>
+          The description is up to you so name it meaningfully!
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating The description is up to you so name it meaningfully!" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-015.png"/>
+         </div>
+         <p>
+          The same details of Git and
+          <code>
+           GitHub
+          </code>
+          repo URL as before:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating The same details of Git and GitHub repo URL as before:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-016.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            So let’s use “clean” and “package” for our Maven build phases:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              As we have learnt, every Maven project has specific goals and options. In the previous lab, we use “mvn package” to compile and package the project into a
+              <code>
+               WAR
+              </code>
+              file. This time, we will use “mvn install” which will do all the things that “package” does, additionally it will add a packaged war file in the local repository as well. Also we are using the clean command, which will delete all previously compiled Java
+              <code>
+               .class
+              </code>
+              files and resources (like
+              <code>
+               .properties
+              </code>
+              ) in your project. Your build will start from a clean slate every time!
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating clean slate every time!" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-017.png"/>
+         </div>
+         <p>
+          Time to apply and save:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Time to apply and save:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-018.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s get the real action of Jenkins:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Let’s get the real action of Jenkins:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-019.png"/>
+         </div>
+         <p>
+          As you can see, our Jenkins job built successfully, by looking at the end of the log:
+         </p>
+         <p>
+          The
+          <code>
+           webapp.war
+          </code>
+          is built successfully (The WAR Plugin is responsible for collecting all artifact dependencies, classes and resources of the web application and packaging them into a web application archive
+          <strong>
+           )
+          </strong>
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating application archive )" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-020.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating application archive )" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-021.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can check the location of the our first Maven project build as following:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating You can check the location of the our first Maven project build as following:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-022.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating You can check the location of the our first Maven project build as following:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/10-integrate-maven-with-jenkins-023.png"/>
+         </div>
+         <p>
+          So far, we got this CI (Continuous Integration)
+          <code>
+           pipeline
+          </code>
+          :
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Jenkins pulls the code from GitHub to the EC2 instance.
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Then Jenkins uses Maven to build the code to create WAR artifacts which are ready for deployment on the
+              <code>
+               Tomcat
+              </code>
+              web server!
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="setup-tomcat-server">
+    <h2 class="collapsible-header">
+     🐈 Set up the Tomcat server
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Instructions to setup for the the EC2 Instance 2 (Tomcat Server)" class="img-large" loading="lazy" src="../assets/tutorials/week-5/11-set-up-the-tomcat-server-001.png"/>
+        </div>
+        <p>
+         <strong>
+          [You
+         </strong>
+         <strong>
+          can
+         </strong>
+         <strong>
+          reuse
+         </strong>
+         <strong>
+          your
+         </strong>
+         <strong>
+          existing
+         </strong>
+         <strong>
+          “
+          <code>
+           Maven_Tomcat_Server
+          </code>
+          ”
+         </strong>
+         <strong>
+          <code>
+           EC2
+          </code>
+         </strong>
+         <strong>
+          from
+         </strong>
+         <strong>
+          last
+         </strong>
+         <strong>
+          week
+         </strong>
+         <strong>
+          tutorial
+         </strong>
+         <strong>
+          to
+         </strong>
+         <strong>
+          save
+         </strong>
+         <strong>
+          time
+         </strong>
+         <strong>
+          instead
+         </strong>
+         <strong>
+          of
+         </strong>
+         <strong>
+          setting
+         </strong>
+         <strong>
+          up
+         </strong>
+         <strong>
+          a
+         </strong>
+         <strong>
+          new
+         </strong>
+         <strong>
+          <code>
+           Tomcat
+          </code>
+         </strong>
+         <strong>
+          EC2
+         </strong>
+         <strong>
+          server
+         </strong>
+         <strong>
+          from
+         </strong>
+         <strong>
+          beginning
+         </strong>
+         <strong>
+          then
+         </strong>
+         <strong>
+          skip
+         </strong>
+         <strong>
+          to
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          “Instructions
+         </strong>
+         <strong>
+          to
+         </strong>
+         <strong>
+          setup
+         </strong>
+         <strong>
+          Deployment
+         </strong>
+         <strong>
+          on
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          <code>
+           Jenkins
+          </code>
+         </strong>
+         <strong>
+          Server”
+         </strong>
+         <strong>
+          section]
+         </strong>
+        </p>
+        <p>
+         Use the second EC2 instance as the Tomcat server and complete these steps:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Set up Linux on EC2 instance 2.
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Install Java.
+            </p>
+           </li>
+           <li>
+            <p>
+             Install &amp; Setup Tomcat.
+            </p>
+           </li>
+           <li>
+            <p>
+             Start Tomcat.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Access Tomcat Admin Web UI on
+           <code>
+            port 8080
+           </code>
+           .
+          </p>
+         </li>
+        </ul>
+        <p class="callout">
+         <strong>
+          Your task:
+         </strong>
+         Set up the second EC2 instance as the Tomcat server like so:
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Start Tomcat." class="img-large" loading="lazy" src="../assets/tutorials/week-5/11-set-up-the-tomcat-server-002.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Use the following settings for the Tomcat EC2 server:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Name:
+             <code>
+              Tomcat_Server
+             </code>
+            </p>
+           </li>
+           <li>
+            <p>
+             OS: default Amazon Linux 2023 AMI (Free-tier)
+            </p>
+           </li>
+           <li>
+            <p>
+             Instance Type: t2.micro (Free-tier)
+            </p>
+           </li>
+           <li>
+            <p>
+             Key pair: select and reuse your old key in other labs (
+             <code>
+              devops_project_key
+             </code>
+             )
+            </p>
+           </li>
+           <li>
+            <p>
+             Storage: Default 8 GB is plenty enough!
+            </p>
+           </li>
+           <li>
+            <p>
+             Security Group:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               Optional Name:
+               <code>
+                Tomcat_Security_Group
+               </code>
+              </p>
+             </li>
+             <li>
+              <p>
+               Source Type: Anywhere
+              </p>
+             </li>
+             <li>
+              <p>
+               Open two ports:
+              </p>
+              <ul class="tutorial-list tutorial-list--level-4">
+               <li>
+                <p>
+                 22 for
+                 <code>
+                  SSH
+                 </code>
+                </p>
+               </li>
+               <li>
+                <p>
+                 8080 for Tomcat
+                </p>
+               </li>
+               <li>
+                <p>
+                 80 for HTTP (Optional but useful in the future)
+                </p>
+               </li>
+               <li>
+                <p>
+                 443 for HTTPS (Optional but useful in the future)
+                </p>
+               </li>
+              </ul>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating 443 for HTTPS (Optional but useful in the future)" class="img-large" loading="lazy" src="../assets/tutorials/week-5/11-set-up-the-tomcat-server-003.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           After launching it, you should have two EC2 instances like so:
+          </p>
+         </li>
+        </ul>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        📦 Install and Setup for Java &amp; Tomcat
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Please
+            <code>
+             SSH
+            </code>
+            to the
+            <code>
+             Tomcat
+            </code>
+            Server.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Please SSH to the Tomcat Server." class="img-large" loading="lazy" src="../assets/tutorials/week-5/12-install-and-setup-for-java-tomcat-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            To keep things simple without dealing with permission, let’s login as a root user and change our current directory to /root:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo su -</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            The important dependency of Tomcat is
+            <code>
+             JDK
+            </code>
+            21, so let’s install JDK21 with the usual installation command.
+           </p>
+          </li>
+         </ul>
+         <pre><code>yum install java-21-amazon-corretto</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Important
+            </strong>
+            <strong>
+             Note:
+            </strong>
+            <strong>
+             Please
+            </strong>
+            <strong>
+             install
+            </strong>
+            <strong>
+             Tomcat
+            </strong>
+            <strong>
+             on
+            </strong>
+            <strong>
+             this
+            </strong>
+            <strong>
+             Tomcat
+            </strong>
+            <strong>
+             Server
+            </strong>
+            <strong>
+             like
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             have
+            </strong>
+            <strong>
+             practiced
+            </strong>
+            <strong>
+             before
+            </strong>
+            <strong>
+             in
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             previous
+            </strong>
+            <strong>
+             lab.
+            </strong>
+            <strong>
+             If
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             forgot
+            </strong>
+            <strong>
+             then
+            </strong>
+            <strong>
+             please
+            </strong>
+            <strong>
+             open
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             previous
+            </strong>
+            <strong>
+             lab
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             repeat
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             steps
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             install
+            </strong>
+            <strong>
+             and
+            </strong>
+            <strong>
+             set
+            </strong>
+            <strong>
+             up
+            </strong>
+            <strong>
+             Tomcat
+            </strong>
+            <strong>
+             (“Install
+            </strong>
+            <strong>
+             Tomcat
+            </strong>
+            <strong>
+             (Web
+            </strong>
+            <strong>
+             Server)
+            </strong>
+            <strong>
+             on
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             <code>
+              EC2
+             </code>
+            </strong>
+            <strong>
+             instance”
+            </strong>
+            <strong>
+             section).
+            </strong>
+           </p>
+          </li>
+          <li>
+           <p>
+            <strong>
+             There
+            </strong>
+            <strong>
+             are
+            </strong>
+            <strong>
+             two
+            </strong>
+            <strong>
+             important
+            </strong>
+            <strong>
+             steps
+            </strong>
+            <strong>
+             in
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             previous
+            </strong>
+            <strong>
+             lab
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             need
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             do:
+            </strong>
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Please comment out or remove the local IP address restriction for the Tomcat manager in this file:
+              <code>
+               /opt/tomcat/webapps/manager/META-INF/context.xml
+              </code>
+             </p>
+            </li>
+            <li>
+             <p>
+              Also, please do the steps to add a few users with right permissions to use Tomcat which is in the file
+              <code>
+               tomcat-users.xml
+              </code>
+              (
+              <code>
+               /opt/tomcat/conf/tomcat-users.xml
+              </code>
+              ) as we will need to use the username and password of Tomcat later on:
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating need to use the username and password of Tomcat later on:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/12-install-and-setup-for-java-tomcat-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Make you can see the Tomcat dashboard available via the public IP address of the EC2 instance via the
+            <code>
+             port 8080
+            </code>
+            :
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating instance via the port 8080:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/12-install-and-setup-for-java-tomcat-003.png"/>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="configure-jenkins-deployment">
+    <h2 class="collapsible-header">
+     🚀 Configure deployment from Jenkins
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           After
+           <code>
+            Tomcat
+           </code>
+           installation in the second
+           <code>
+            EC2
+           </code>
+           instance, Now, let’s go back to the first EC2 instance (
+           <code>
+            Jenkins
+           </code>
+           server) and install deployment plugin for Jenkins to deploy on Tomcat server:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating server:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Install the plugin
+           <strong>
+            “Deploy
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            Container”:
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Its purpose is
+             <strong>
+              specifically
+             </strong>
+             <strong>
+              for
+             </strong>
+             <strong>
+              deploying
+             </strong>
+             <strong>
+              Java
+             </strong>
+             <strong>
+              web
+             </strong>
+             <strong>
+              applications
+             </strong>
+             <strong>
+              (e.g.,
+             </strong>
+             <strong>
+              <code>
+               .war
+              </code>
+             </strong>
+             <strong>
+              files)
+             </strong>
+             <strong>
+              to
+             </strong>
+             <strong>
+              servlet
+             </strong>
+             <strong>
+              containers
+             </strong>
+             <strong>
+              like
+             </strong>
+             <strong>
+              Tomcat.
+             </strong>
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating servlet containers like Tomcat." class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-002.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating servlet containers like Tomcat." class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-003.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s add credentials of Tomcat users to deploy our web application:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Let’s add credentials of Tomcat users to deploy our web application:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Choose “System” in the credentials context:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Choose “System” in the credentials context:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-005.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Choose “Global” which are credentials that available to all jobs, agents, and users across the entire Jenkins instance:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating entire Jenkins instance:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-006.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating entire Jenkins instance:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-007.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Remember that we have an admin user of Tomcat to have a “manager-script” role so this specific “admin” user can run script from one instance to manage another instance (from Jenkins Server to Tomcat Server):
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Jenkins Server to Tomcat Server):" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-008.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Jenkins Server to Tomcat Server):" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-009.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Jenkins Server to Tomcat Server):" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-010.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Now, you should have the credentials like so:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Now, you should have the credentials like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-011.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Nice, now we are ready to create a new Jenkins job to build and deploy on Tomcat Server:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Nice, now we are ready to create a new Jenkins job to build and deploy on Tomcat Server:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-012.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Please fill in the details of this job:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Description:
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Description:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-013.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Git:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Git:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-014.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <code>
+            Maven
+           </code>
+           Build:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Maven Build:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-015.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <code>
+            Post-build Actions
+           </code>
+           (Things happens after building completion):
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Post-build Actions (steps that run after a successful build):" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-016.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Post-build Actions (steps that run after a successful build):" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-017.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Post-build Actions (steps that run after a successful build):" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-018.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           We are done with the configurations of that Jenkins job:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating We are done with the configurations of that Jenkins job:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-019.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           It’s time to build and deploy with our new Jenkins job:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating It’s time to build and deploy with our new Jenkins job:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-020.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s look at the build log and try to understand it:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Let’s look at the build log and try to understand it:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-021.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Let’s look at the build log and try to understand it:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-022.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Let’s look at the build log and try to understand it:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-023.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Alright, it seems alright! Git pull -&gt; Maven Build -&gt; Deploy on Tomcat done! Let’s check the website:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating website:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-024.png"/>
+        </div>
+        <p>
+         Super glorious! We love to see that!
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           You can login as Tomcat admin to check out the Manager App to see if your War file is in the webapps directory:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating webapps directory:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/13-configure-deployment-from-jenkins-025.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           That’s pretty awesome!
+          </p>
+         </li>
+        </ul>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🔄 Auto-deployment with Poll SCM to trigger build when pushing a new GitHub commit
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            However, there is one more thing we want to do is that the build process on
+            <code>
+             Jenkins
+            </code>
+            should be automated instead of manual as we still need to click on the build button for this Jenkins job to run!
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating job to run!" class="img-large" loading="lazy" src="../assets/tutorials/week-5/14-auto-deployment-with-poll-scm-to-trigger-build-when-pushing-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            That’s why let’s go back to this job and modify its configuration:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating That’s why let’s go back to this job and modify its configuration:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/14-auto-deployment-with-poll-scm-to-trigger-build-when-pushing-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Add the schedule like “* * * * *” to the
+            <code>
+             Poll SCM
+            </code>
+            which is going to be an expensive operation.
+           </p>
+           <p class="callout">
+            <strong>Trigger checkpoint:</strong> Polling every minute and receiving a webhook can both start a build. Which produces more unnecessary work, and which depends on GitHub being able to reach Jenkins?
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating For demonstration, <code>* * * * *</code> polls every minute. This is resource-intensive; use a less frequent schedule or a webhook outside this short lab." class="img-large" loading="lazy" src="../assets/tutorials/week-5/14-auto-deployment-with-poll-scm-to-trigger-build-when-pushing-003.png"/>
+         </div>
+         <p>
+          That’s it! Your task now is to test if this works:
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Clone the public Git repository to your computer.
+           </p>
+          </li>
+          <li>
+           <p>
+            Modify the
+            <code>
+             index.jsp
+            </code>
+            file to add some lines.
+           </p>
+          </li>
+          <li>
+           <p>
+            Git add, commit and push that change to your
+            <code>
+             GitHub
+            </code>
+            repo. (To do that, you need to use a GitHub personal access token or set up
+            <code>
+             SSH
+            </code>
+            keys for GitHub. For a quick test, you can instead edit and commit the file directly on the GitHub website.)
+           </p>
+          </li>
+          <li>
+           <p>
+            Then check the build history of BuildAndDeploy job to see if there is any build trigger automatically whenever you push a new change to your GitHub repo.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating automatically whenever you push a new change to your GitHub repo. (1 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-5/14-auto-deployment-with-poll-scm-to-trigger-build-when-pushing-004.png"/>
+          <img alt="Screenshot illustrating automatically whenever you push a new change to your GitHub repo. (2 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-5/14-auto-deployment-with-poll-scm-to-trigger-build-when-pushing-005.png"/>
+         </div>
+         <p>
+          Alright! That’s pretty cool for a nice automation from Development ➜ Commit and Push to GitHub ➜ Jenkins pulls the new version of your code on GitHub ➜ Jenkins builds the new artifacts of the project using
+          <code>
+           Maven
+          </code>
+          ➜ Jenkins deploy that artifacts on
+          <code>
+           Tomcat
+          </code>
+          server ➜ Customers can see the new features of the website immediately with no downtime!
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating features of the website immediately with no downtime!" class="img-large" loading="lazy" src="../assets/tutorials/week-5/14-auto-deployment-with-poll-scm-to-trigger-build-when-pushing-006.png"/>
+         </div>
+         <p>
+          Congratulations for building your first basic
+          <code>
+           CI/CD
+          </code>
+          <code>
+           pipeline
+          </code>
+          using Jenkins!
+         </p>
+         <p class="callout">
+          <strong>
+           [Important
+          </strong>
+          <strong>
+           Note]
+          </strong>
+          Please do not delete the Jenkins server after you finish this week's tutorial as we still need it for next week's tutorial with Docker! Otherwise, you might need to set up the Jenkins server all over again to follow the next week's tutorial!
+         </p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="challenge-1-github-webhook">
+    <h2 class="collapsible-header">
+     🧪 Challenge 1: Trigger Jenkins with GitHub webhooks
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Poll
+           </strong>
+           <strong>
+            <code>
+             SCM
+            </code>
+           </strong>
+           is very easy to set up as it does not require additional integration or setup outside
+           <code>
+            Jenkins
+           </code>
+           . However, it is quite inefficient as Jenkins continuously checks if there is any new change of the repository, even when no changes are made. As a result, this consumes more resources, especially when polling frequently or with large repositories.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            <code>
+             GitHub
+            </code>
+           </strong>
+           <strong>
+            Hook
+           </strong>
+           <strong>
+            Trigger
+           </strong>
+           <strong>
+            for
+           </strong>
+           <strong>
+            GITScm
+           </strong>
+           <strong>
+            Polling
+           </strong>
+           is more efficient as there is no periodic polling; Jenkins acts only when notified of changes (real-time triggers). As a result, it reduces unnecessary load on both Jenkins and Git servers. However, it has more complex steps to set up as it requires GitHub repository admin rights to set up webhooks.
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating up as it requires GitHub repository admin rights to set up webhooks." class="img-large" loading="lazy" src="../assets/tutorials/week-5/15-challenge-1-trigger-jenkins-with-github-webhooks-001.png"/>
+        </div>
+        <p>
+         Instead of using
+         <code>
+          Poll SCM
+         </code>
+         , can you try to use the “GitHub hook trigger for GITScm polling” option to trigger builds efficiently?
+        </p>
+        <p>
+         Follow these steps to configure it:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Configure
+           </strong>
+           <strong>
+            GitHub
+           </strong>
+           <strong>
+            Repository:
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Go to your repository on GitHub.
+            </p>
+           </li>
+           <li>
+            <p>
+             Navigate to Settings &gt; Webhooks.
+            </p>
+           </li>
+           <li>
+            <p>
+             Click on Add
+             <code>
+              webhook
+             </code>
+             .
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               <strong>
+                Payload
+               </strong>
+               <strong>
+                URL
+               </strong>
+               : Use http://
+               <code>
+                &lt;JENKINS_URL&gt;
+               </code>
+               :
+               <code>
+                &lt;PORT&gt;
+               </code>
+               /github-webhook/ (replace
+               <code>
+                &lt;JENKINS_URL&gt;
+               </code>
+               and
+               <code>
+                &lt;PORT&gt;
+               </code>
+               with your Jenkins URL and port).
+              </p>
+             </li>
+             <li>
+              <p>
+               <strong>
+                Content
+               </strong>
+               <strong>
+                type
+               </strong>
+               : Select application/json.
+              </p>
+             </li>
+             <li>
+              <p>
+               <strong>
+                Secret
+               </strong>
+               : Leave blank (optional).
+              </p>
+             </li>
+             <li>
+              <p>
+               <strong>
+                SSL
+               </strong>
+               <strong>
+                verification
+               </strong>
+               : Enable.
+              </p>
+             </li>
+             <li>
+              <p>
+               <strong>
+                Trigger
+               </strong>
+               <strong>
+                events
+               </strong>
+               : Select Just the push event.
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Trigger events : Select Just the push event." class="img-large" loading="lazy" src="../assets/tutorials/week-5/15-challenge-1-trigger-jenkins-with-github-webhooks-002.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Install
+           </strong>
+           <strong>
+            Required
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+           <strong>
+            Plugins
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             GitHub Plugin (if not yet installed)
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating GitHub Plugin (if not yet installed)" class="img-large" loading="lazy" src="../assets/tutorials/week-5/15-challenge-1-trigger-jenkins-with-github-webhooks-003.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Enable
+           </strong>
+           <strong>
+            GitHub
+           </strong>
+           <strong>
+            Hook
+           </strong>
+           <strong>
+            Trigger
+           </strong>
+           <strong>
+            in
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+           <strong>
+            Job
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Select GitHub hook trigger for GITScm polling for the Jenkins job!
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Select GitHub hook trigger for GITScm polling for the Jenkins job!" class="img-large" loading="lazy" src="../assets/tutorials/week-5/15-challenge-1-trigger-jenkins-with-github-webhooks-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Test
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            Webhook
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Go back to your GitHub repository settings.
+            </p>
+           </li>
+           <li>
+            <p>
+             Under Webhooks, click on your newly created webhook.
+            </p>
+           </li>
+           <li>
+            <p>
+             Click Redeliver to send a test payload to Jenkins.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Click Redeliver to send a test payload to Jenkins." class="img-large" loading="lazy" src="../assets/tutorials/week-5/15-challenge-1-trigger-jenkins-with-github-webhooks-005.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Go to Jenkins Dashboard &gt; Manage Jenkins &gt; System Log.
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Go to Jenkins Dashboard &gt; Manage Jenkins &gt; System Log." class="img-large" loading="lazy" src="../assets/tutorials/week-5/15-challenge-1-trigger-jenkins-with-github-webhooks-006.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Go to Jenkins Dashboard &gt; Manage Jenkins &gt; System Log." class="img-large" loading="lazy" src="../assets/tutorials/week-5/15-challenge-1-trigger-jenkins-with-github-webhooks-007.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Verify that the webhook payload is received by Jenkins.
+          </p>
+         </li>
+         <li>
+          <p>
+           Test with a real Commit
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Go to the GitHub repo
+            </p>
+           </li>
+           <li>
+            <p>
+             Make a change and commit
+            </p>
+           </li>
+           <li>
+            <p>
+             Check your Jenkins job to see if the build is triggered automatically.
+            </p>
+           </li>
+           <li>
+            <p>
+             In the log of the build triggered by
+             <code>
+              GitHub Webhook
+             </code>
+             , you should see this:
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating In the log of the build triggered by GitHub Webhook, you should see this:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/15-challenge-1-trigger-jenkins-with-github-webhooks-008.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="challenge-2-github-pat">
+    <h2 class="collapsible-header">
+     🧪 Challenge 2: Authenticate a private repository with a GitHub PAT
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         <strong>
+          Objective:
+         </strong>
+         In the tutorial so far, to keep it simple, you have been working with a public
+         <code>
+          GitHub
+         </code>
+         repo. However, in real-life projects, most of the company projects are in private repos.
+        </p>
+        <p>
+         When working with private GitHub repositories,
+         <code>
+          Jenkins
+         </code>
+         needs proper authentication credentials to access the repository. This challenge guides you through setting up Jenkins to securely pull code from a private repository.
+        </p>
+        <p>
+         ⚠ Reminder: Your GitHub repository must be private to simulate real-world
+         <code>
+          CI/CD
+         </code>
+         scenarios and prepare you for the exam. You should have received a private GitHub Classroom repository for this challenge. If you haven't received it yet, please contact your instructor.
+        </p>
+        <p>
+         📦
+         <strong>
+          After
+         </strong>
+         <strong>
+          receiving
+         </strong>
+         <strong>
+          your
+         </strong>
+         <strong>
+          private
+         </strong>
+         <strong>
+          GitHub
+         </strong>
+         <strong>
+          Classroom
+         </strong>
+         <strong>
+          repo:
+         </strong>
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Add some files to your repo (e.g., a simple README or
+           <code>
+            .java
+           </code>
+           files), or upload a sample
+           <code>
+            Maven
+           </code>
+           Web Project.
+          </p>
+         </li>
+         <li>
+          <p>
+           This will allow you to verify later that Jenkins can clone or pull the repository contents successfully when configured.
+          </p>
+         </li>
+        </ul>
+        <p>
+         🔧
+         <strong>
+          Step-by-Step
+         </strong>
+         <strong>
+          Instructions:
+         </strong>
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Step
+           </strong>
+           <strong>
+            1:
+           </strong>
+           Generate classic
+           <code>
+            Personal Access Token
+           </code>
+           (
+           <code>
+            PAT
+           </code>
+           ) from GitHub
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Select scopes:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               <strong>
+                repo
+               </strong>
+               ( Full control of private repositories)
+              </p>
+             </li>
+             <li>
+              <p>
+               <strong>
+                admin:
+                <code>
+                 repo_hook
+                </code>
+               </strong>
+               (To read repo webhooks)
+              </p>
+             </li>
+             <li>
+              <p>
+               <strong>
+                <code>
+                 deplete_repo
+                </code>
+               </strong>
+               (Delete repositories)
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating delete_repo (delete repositories; do not select this scope unless the exercise explicitly requires repository deletion)" class="img-large" loading="lazy" src="../assets/tutorials/week-5/16-challenge-2-authenticate-a-private-repository-with-a-github-002.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Step
+           </strong>
+           <strong>
+            2:
+           </strong>
+           Add GitHub Credentials to Jenkins
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Manage Jenkins &gt; Credentials &gt; System
+            </p>
+           </li>
+           <li>
+            <p>
+             The credentials (e.g., Global credentials), click Add credentials.
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               Kind: Username with password.
+              </p>
+             </li>
+             <li>
+              <p>
+               Username: Your GitHub username.
+              </p>
+             </li>
+             <li>
+              <p>
+               Password: Paste the generated PAT here.
+              </p>
+             </li>
+             <li>
+              <p>
+               ID: Enter a recognizable ID like
+               <code>
+                github-private
+               </code>
+               -repo-credentials.
+              </p>
+             </li>
+             <li>
+              <p>
+               Description: Add an optional description (e.g., "GitHub PAT for private repositories").
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt='Screenshot illustrating repositories").' class="img-large" loading="lazy" src="../assets/tutorials/week-5/16-challenge-2-authenticate-a-private-repository-with-a-github-003.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt='Screenshot illustrating repositories").' class="img-large" loading="lazy" src="../assets/tutorials/week-5/16-challenge-2-authenticate-a-private-repository-with-a-github-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Step
+           </strong>
+           <strong>
+            3
+           </strong>
+           : Configure Jenkins Job to Use the Credentials
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Under Source Code Management, select Git.
+            </p>
+           </li>
+           <li>
+            <p>
+             Click on Credentials and select the credential ID you created (
+             <code>
+              github-private
+             </code>
+             -repo-credentials).
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating (github-private-repo-credentials)." class="img-large" loading="lazy" src="../assets/tutorials/week-5/16-challenge-2-authenticate-a-private-repository-with-a-github-005.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Step
+           </strong>
+           <strong>
+            4
+           </strong>
+           : Test the Configuration
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Build the Jenkins job.
+            </p>
+           </li>
+           <li>
+            <p>
+             Check the build log:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               If successful, you should see Jenkins fetching the repository code.
+              </p>
+             </li>
+             <li>
+              <p>
+               If there’s an error, ensure the PAT has the correct permissions and was copied correctly.
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating copied correctly." class="img-large" loading="lazy" src="../assets/tutorials/week-5/16-challenge-2-authenticate-a-private-repository-with-a-github-006.png"/>
+        </div>
+        <p>
+         <strong>
+          Notes:
+         </strong>
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           For security, never expose your Personal Access Token in job logs or configuration files.
+          </p>
+         </li>
+         <li>
+          <p>
+           If your team uses
+           <code>
+            SSH
+           </code>
+           for GitHub authentication, you can configure Jenkins with an SSH private key instead (you should research how to set up SSH private-key authentication instead of PAT for more secure GitHub authentication)
+          </p>
+         </li>
+        </ul>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="challenge-3-github-ssh">
+    <h2 class="collapsible-header">
+     🧪 Challenge 3: Authenticate a private repository with SSH
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         <strong>
+          Objective
+         </strong>
+         : In a professional environment,
+         <code>
+          SSH
+         </code>
+         key pairs are often used to securely authenticate
+         <code>
+          Jenkins
+         </code>
+         with external services like
+         <code>
+          GitHub
+         </code>
+         . Your task is to set up SSH key-based authentication for Jenkins and use it to securely pull code from a private GitHub repository.
+        </p>
+        <p>
+         Here are some general steps for your hints:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Generate
+           </strong>
+           <strong>
+            SSH
+           </strong>
+           <strong>
+            Key
+           </strong>
+           <strong>
+            Pair
+           </strong>
+           <strong>
+            for
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             SSH into the Jenkins server (
+             <code>
+              EC2
+             </code>
+             Instance 1).
+            </p>
+           </li>
+           <li>
+            <p>
+             Generate an SSH key pair for Jenkins using the following command:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               ssh-keygen -t rsa -b 4096 -C "your-email@your-company.com"
+              </p>
+             </li>
+            </ul>
+           </li>
+           <li>
+            <p>
+             Press Enter to save the key to the default location (~/
+             <code>
+              .ssh
+             </code>
+             /
+             <code>
+              id_rsa
+             </code>
+             ) and skip the passphrase by pressing Enter again.
+            </p>
+           </li>
+           <li>
+            <p>
+             Pay attention to the location of these public and private key files:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               Private Key: ~/
+               <code>
+                .ssh
+               </code>
+               /
+               <code>
+                id_rsa
+               </code>
+              </p>
+             </li>
+             <li>
+              <p>
+               Public Key: ~/
+               <code>
+                .ssh
+               </code>
+               /
+               <code>
+                id_rsa.pub
+               </code>
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Public Key: ~/.ssh/id_rsa.pub" class="img-large" loading="lazy" src="../assets/tutorials/week-5/17-challenge-3-authenticate-a-private-repository-with-ssh-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Add
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            Public
+           </strong>
+           <strong>
+            Key
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            GitHub
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Copy the public key content:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               cat ~/
+               <code>
+                .ssh
+               </code>
+               /
+               <code>
+                id_rsa.pub
+               </code>
+              </p>
+             </li>
+            </ul>
+           </li>
+           <li>
+            <p>
+             Go to GitHub:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               Navigate to Settings &gt; SSH and GPG Keys.
+              </p>
+             </li>
+             <li>
+              <p>
+               Click New SSH Key.
+              </p>
+             </li>
+             <li>
+              <p>
+               Paste the copied key content and save it.
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Paste the copied key content and save it." class="img-large" loading="lazy" src="../assets/tutorials/week-5/17-challenge-3-authenticate-a-private-repository-with-ssh-002.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Add
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            Private
+           </strong>
+           <strong>
+            Key
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Access the Jenkins dashboard and navigate to:
+             <strong>
+              Manage
+             </strong>
+             <strong>
+              Jenkins
+             </strong>
+             <strong>
+              &gt;
+             </strong>
+             <strong>
+              Manage
+             </strong>
+             <strong>
+              Credentials
+             </strong>
+             <strong>
+              &gt;
+             </strong>
+             <strong>
+              (Global)
+             </strong>
+             <strong>
+              &gt;
+             </strong>
+             <strong>
+              Add
+             </strong>
+             <strong>
+              Credentials.
+             </strong>
+            </p>
+           </li>
+           <li>
+            <p>
+             Select the credential type
+             <strong>
+              SSH
+             </strong>
+             <strong>
+              Username
+             </strong>
+             <strong>
+              with
+             </strong>
+             <strong>
+              Private
+             </strong>
+             <strong>
+              Key
+             </strong>
+             and configure it:
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Select the credential type SSH Username with Private Key and configure it:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/17-challenge-3-authenticate-a-private-repository-with-ssh-003.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Username: git
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Private Key: Select Enter directly and paste the private key content:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               cat ~/
+               <code>
+                .ssh
+               </code>
+               /
+               <code>
+                id_rsa
+               </code>
+              </p>
+             </li>
+             <li>
+              <p>
+               ID: Use an easily recognizable ID, such as ssh-key-github.
+              </p>
+             </li>
+             <li>
+              <p>
+               Description: Add a description like SSH Key for GitHub.
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Description: Add a description like SSH Key for GitHub." class="img-large" loading="lazy" src="../assets/tutorials/week-5/17-challenge-3-authenticate-a-private-repository-with-ssh-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Update
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+           <strong>
+            Git
+           </strong>
+           <strong>
+            Host
+           </strong>
+           <strong>
+            Key
+           </strong>
+           <strong>
+            Verification
+           </strong>
+           <strong>
+            Strategy
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Jenkins is enforcing strict host key verification, and you need to configure it appropriately to make it work for the purpose of testing!
+            </p>
+           </li>
+           <li>
+            <p>
+             Go to
+             <strong>
+              Manage
+             </strong>
+             <strong>
+              Jenkins
+             </strong>
+             &gt;
+             <strong>
+              Security
+             </strong>
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Go to Manage Jenkins &gt; Security" class="img-large" loading="lazy" src="../assets/tutorials/week-5/17-challenge-3-authenticate-a-private-repository-with-ssh-005.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Choose
+           <strong>
+            No
+           </strong>
+           <strong>
+            host
+           </strong>
+           <strong>
+            key
+           </strong>
+           <strong>
+            verification
+           </strong>
+           temporarily for testing (not recommended for production environments).
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating production environments)." class="img-large" loading="lazy" src="../assets/tutorials/week-5/17-challenge-3-authenticate-a-private-repository-with-ssh-006.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Configure
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+           <strong>
+            Job
+           </strong>
+           <strong>
+            with
+           </strong>
+           <strong>
+            SSH-based
+           </strong>
+           <strong>
+            GitHub
+           </strong>
+           <strong>
+            Repository
+           </strong>
+           <strong>
+            URL
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Go to your Jenkins job settings.
+            </p>
+           </li>
+           <li>
+            <p>
+             Under Source Code Management, select Git.
+            </p>
+           </li>
+           <li>
+            <p>
+             Enter the repository URL in SSH format:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               git@github.com:username/private-repo.git
+              </p>
+             </li>
+            </ul>
+           </li>
+           <li>
+            <p>
+             In the Credentials field, select the SSH credentials (ssh-key-github) you added earlier.
+            </p>
+           </li>
+          </ul>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Test
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            Configuration
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Save the Jenkins job configuration.
+            </p>
+           </li>
+           <li>
+            <p>
+             Trigger a build for the job.
+            </p>
+           </li>
+           <li>
+            <p>
+             Verify in the build logs that Jenkins successfully clones the private repository.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Verify in the build logs that Jenkins successfully clones the private repository." class="img-large" loading="lazy" src="../assets/tutorials/week-5/17-challenge-3-authenticate-a-private-repository-with-ssh-007.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Troubleshooting
+           </strong>
+           <strong>
+            Tips
+           </strong>
+           <strong>
+            (if
+           </strong>
+           <strong>
+            something
+           </strong>
+           <strong>
+            goes
+           </strong>
+           <strong>
+            wrong)
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             If the build fails with permission errors:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               Ensure the SSH key is correctly added to your GitHub account.
+              </p>
+             </li>
+             <li>
+              <p>
+               Verify that the GitHub repository URL uses the git@github.com format.
+              </p>
+             </li>
+            </ul>
+           </li>
+           <li>
+            <p>
+             Test the connection from the Jenkins server to GitHub:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               ssh -T git@github.com
+              </p>
+             </li>
+             <li>
+              <p>
+               You should see a success message indicating a successful authentication.
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <p class="callout">
+         <strong>
+          [Question]
+         </strong>
+         Why is SSH key-based authentication preferred over Personal Access Tokens (PATs) for Jenkins in
+         <code>
+          CI/CD
+         </code>
+         <code>
+          pipelines
+         </code>
+         ?
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="challenge-4-test-failure">
+    <h2 class="collapsible-header">
+     🧪 Challenge 4: Stop deployment when tests fail
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         <strong>
+          Objective
+         </strong>
+         : Ensure that the
+         <code>
+          CI/CD
+         </code>
+         <code>
+          pipeline
+         </code>
+         halts the deployment process if a critical test (such as verifying the presence of an HTML component) fails. This challenge demonstrates how to add automated validation as a gatekeeper in your
+         <code>
+          Jenkins
+         </code>
+         pipeline and prevent faulty code from being deployed to production.
+        </p>
+        <p>
+         <strong>
+          Problem
+         </strong>
+         <strong>
+          Statement:
+         </strong>
+         In a typical CI/CD pipeline, automated testing ensures code quality before deployment. If a test fails, the deployment process should stop to prevent incomplete or faulty features from reaching the server. Your task is to:
+        </p>
+        <p class="callout">
+         <strong>Quality-gate checkpoint:</strong> At exactly which stage should a failed test stop the pipeline, and what diagnostic evidence should Jenkins preserve for the developer?
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Integrate a test step into the Jenkins pipeline to validate the presence of an expected HTML component in the
+           <code>
+            index.html
+           </code>
+           file (e.g.,
+           <code>
+            &lt;h1&gt;
+           </code>
+           DevOps&lt;/h1&gt;).
+          </p>
+         </li>
+         <li>
+          <p>
+           Stop the deployment to a
+           <code>
+            Tomcat
+           </code>
+           server if the test fails.
+          </p>
+         </li>
+         <li>
+          <p>
+           Notify the development team when the deployment is blocked due to a failed test.
+          </p>
+         </li>
+        </ul>
+        <p>
+         <strong>
+          Steps
+         </strong>
+         <strong>
+          to
+         </strong>
+         <strong>
+          Complete
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          Challenge
+         </strong>
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Modify
+           </strong>
+           <strong>
+            your
+           </strong>
+           <strong>
+            existing
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+           <strong>
+            job
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            include
+           </strong>
+           <strong>
+            a
+           </strong>
+           <strong>
+            testing
+           </strong>
+           <strong>
+            stage
+           </strong>
+           <strong>
+            before
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            deployment
+           </strong>
+           <strong>
+            stage:
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Add a Test Step: Build Step &gt; Execute Shell.
+            </p>
+           </li>
+           <li>
+            <p>
+             Enter the following script to test if an HTML component exists:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               This script checks for a title element in the
+               <code>
+                index.html
+               </code>
+               file. Adjust the search term in the grep command as needed.
+              </p>
+             </li>
+             <li>
+              <p>
+               exit 1 ensures the build step fails if the HTML component is not found or the
+               <code>
+                index.jsp
+               </code>
+               file is missing. Jenkins interprets any non-zero exit code as a failure, which marks the build as FAILED, which will prevent subsequent stages like deployment.
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="code-legend">
+         <span class="legend-item"><span class="legend-swatch hl-new"></span> New validation</span>
+         <span class="legend-item"><span class="legend-swatch hl-focus"></span> Failure gate</span>
+        </div>
+        <pre><code class="language-bash"><span class="hl-new"># Work from the repository checked out by Jenkins</span>
+<span class="hl-new">cd "$WORKSPACE"</span>
+<span class="hl-new"># Fail immediately when the expected JSP file is missing</span>
+<span class="hl-new">if [ ! -f src/main/webapp/index.jsp ]; then</span>
+<span class="hl-new">  echo "Error: index.jsp not found!"</span>
+<span class="hl-focus">  exit 1</span>
+<span class="hl-new">fi</span></code></pre>
+        <pre><code class="language-bash"><span class="hl-new"># Require the expected title before deployment</span>
+<span class="hl-new">if grep -q "&lt;title&gt;Hello DevOps Students!&lt;/title&gt;" src/main/webapp/index.jsp; then</span>
+<span class="hl-new">  echo "HTML component found!"</span>
+<span class="hl-new">else</span>
+<span class="hl-new">  echo "Error: HTML component not found!"</span>
+<span class="hl-focus">  exit 1</span>
+<span class="hl-new">fi</span></code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            [Optional]
+           </strong>
+           Configure a notification system (e.g., email or Slack) to alert the team about the failure. Use the Email Notification Plugin or Slack Plugin for this purpose.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Test
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            Pipeline:
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Modify the
+             <code>
+              index.jsp
+             </code>
+             file in your
+             <code>
+              GitHub
+             </code>
+             repository to intentionally miss the required HTML component.
+            </p>
+           </li>
+           <li>
+            <p>
+             Commit and push the changes to your GitHub repository.
+            </p>
+           </li>
+           <li>
+            <p>
+             Trigger the pipeline and verify:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               The pipeline stops at the testing stage with a failure.
+              </p>
+             </li>
+             <li>
+              <p>
+               Notifications are sent to the team about the failure.
+              </p>
+             </li>
+            </ul>
+           </li>
+           <li>
+            <p>
+             Restore the correct
+             <code>
+              index.jsp
+             </code>
+             file, commit, and push again. Ensure the deployment proceeds successfully.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating proceeds successfully." class="img-large" loading="lazy" src="../assets/tutorials/week-5/18-challenge-4-stop-deployment-when-tests-fail-001.png"/>
+        </div>
+        <p>
+         <strong>
+          Success
+         </strong>
+         <strong>
+          build
+         </strong>
+         <strong>
+          log
+         </strong>
+         <strong>
+          screenshot:
+         </strong>
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Success build log screenshot:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/18-challenge-4-stop-deployment-when-tests-fail-002.png"/>
+        </div>
+        <p>
+         <strong>
+          Fail
+         </strong>
+         <strong>
+          build
+         </strong>
+         <strong>
+          log
+         </strong>
+         <strong>
+          screenshot:
+         </strong>
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Fail build log screenshot:" class="img-large" loading="lazy" src="../assets/tutorials/week-5/18-challenge-4-stop-deployment-when-tests-fail-003.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="jenkins-security-notes">
+    <h2 class="collapsible-header">
+     📝 Jenkins security and networking notes
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         This is a
+         <strong>
+          naive
+         </strong>
+         <strong>
+          example
+         </strong>
+         of testing, intended purely for learning purposes. While the simple grep command demonstrates how to implement basic validations in
+         <code>
+          Jenkins
+         </code>
+         , it is not sufficient for real-world web application testing. For robust and scalable testing in real-world applications, consider the following:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Selenium
+           </strong>
+           : For browser-based automation and end-to-end testing.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            <code>
+             JUnit
+            </code>
+            /
+            <code>
+             TestNG
+            </code>
+           </strong>
+           : For unit and integration testing in Java applications.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Mockito
+           </strong>
+           : For mocking dependencies during Java tests.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Spring
+           </strong>
+           <strong>
+            Boot
+           </strong>
+           <strong>
+            Test
+           </strong>
+           <strong>
+            Tools
+           </strong>
+           : For REST API and service layer testing.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            JaCoCo
+           </strong>
+           : For code coverage analysis.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Cypress/Playwright
+           </strong>
+           : Modern alternatives to Selenium for end-to-end testing.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            Jenkins
+           </strong>
+           <strong>
+            Plugins
+           </strong>
+           : Use plugins like JUnit, Selenium, and JaCoCo to integrate test results into your
+           <code>
+            pipeline
+           </code>
+           .
+          </p>
+         </li>
+        </ul>
+        <p>
+         These tools enhance testing for web applications, ensuring reliability and production-readiness.
+        </p>
+        <p>
+         <strong>
+          Extra
+         </strong>
+         <strong>
+          Reading:
+         </strong>
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Setup
+           <code>
+            CI/CD
+           </code>
+           Pipeline with Jenkins by using
+           <code>
+            AWS
+           </code>
+           CodeBuild and AWS CodeDeploy
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Setup CI/CD Pipeline with Jenkins by using AWS CodeBuild and AWS CodeDeploy" class="img-large" loading="lazy" src="../assets/tutorials/week-5/19-jenkins-security-and-networking-notes-001.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="whats-next">
+    <h2 class="collapsible-header start-open">
+     📚 Continue the course
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--home">
+      <a class="card" href="week-4-java-maven-tomcat-lab.html">
+       <h3>
+        ☕ Week 4: Java, Maven and Tomcat
+       </h3>
+       <p>
+        Continue through the COSC2767 learning path.
+       </p>
+       <span class="go-to-link">
+        Previous lab
+       </span>
+      </a>
+      <a class="card" href="week-6-docker-lab.html">
+       <h3>
+        🐳 Week 6: Docker
+       </h3>
+       <p>
+        Continue through the COSC2767 learning path.
+       </p>
+       <span class="go-to-link">
+        Next lab
+       </span>
+      </a>
+      <a class="card" href="../index.html">
+       <h3>
+        🗓️ All weekly labs
+       </h3>
+       <p>
+        Return to the course map and review every weekly tutorial.
+       </p>
+       <span class="go-to-link">
+        Course home
+       </span>
+      </a>
+     </div>
+    </div>
+   </section>
+  </main>
+  <footer>
+   <p>
+    © Created by Tom Huynh with love ❤️
+   </p>
+  </footer>
+ </body>
+</html>
+

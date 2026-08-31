@@ -1,0 +1,116 @@
+/* =============================================================================
+   Design tokens
+   The single source of truth for colour, spacing, radii and shadows.
+   Nothing in this file selects an element: it only declares custom properties.
+   Change a value here and every component follows.
+   ========================================================================== */
+
+:root {
+    /* --- Surfaces & text ------------------------------------------------- */
+    --bg-color: #f4f7f9;
+    --card-bg-color: #ffffff;
+    --text-color: #2c3e50;
+    --heading-color: #1a2533;
+    --border-color: #e0e6ed;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+
+    /* --- Brand accent ----------------------------------------------------- */
+    --accent-color: #e67e22;
+    /* Tinted accent used by callouts and highlighted panels. */
+    --accent-color-soft: color-mix(in srgb, var(--accent-color) 12%, transparent);
+    --accent-color-line: color-mix(in srgb, var(--accent-color) 45%, transparent);
+    /* Readable text/background pair for solid accent surfaces (pills, buttons). */
+    --on-accent-color: #ffffff;
+
+    /* --- Code surfaces ---------------------------------------------------- */
+    --code-bg-color: #2d3748;
+    --code-text-color: #e2e8f0;
+    --output-bg-color: #f0f2f5;
+    --output-border-color: #d1d9e6;
+
+    /* --- Syntax palette ---------------------------------------------------
+       Code blocks stay dark in both themes, but the palette is still themed so
+       a future light code theme only needs new values here. */
+    --code-comment: #9ca3af;
+    --code-keyword: #5a9ddf;
+    --code-string: #6a9955;
+    --code-number: #b5cea8;
+    --code-type: #4ec9b0;
+    --code-function: #dcdcaa;
+    --code-variable: #9cdcfe;
+    --code-property: #9cdcfe;
+    --code-literal: #569cd6;
+    --code-operator: #d4d4d4;
+    --code-property-wrapper: #dcc682;
+    --code-macro: #c586c0;
+    --code-preprocessor: var(--accent-color);
+
+    /* --- Step-by-step code annotations ------------------------------------ */
+    --hl-new-color: #68d391;
+    --hl-edit-color: #f6ad55;
+    --hl-focus-color: #82aaff;
+    --hl-tint: 26%;
+
+    /* --- Spacing scale ----------------------------------------------------- */
+    --space-1: 5px;
+    --space-2: 10px;
+    --space-3: 15px;
+    --space-4: 20px;
+    --space-5: 25px;
+    --space-6: 30px;
+    --space-8: 40px;
+
+    /* --- Radii ------------------------------------------------------------- */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-pill: 999px;
+
+    /* --- Elevation --------------------------------------------------------- */
+    --shadow-card: 0 4px 6px var(--shadow-color);
+    --shadow-card-hover: 0 10px 15px var(--shadow-color);
+    --shadow-media: 0 2px 4px var(--shadow-color);
+    --shadow-floating: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+    /* --- Motion ------------------------------------------------------------ */
+    --transition-fast: 0.2s ease;
+    --transition-base: 0.3s ease;
+
+    /* --- Layout ------------------------------------------------------------ */
+    --container-max-width: 1500px;
+    --intro-max-width: 700px;
+    /* Consumed by .grid-container; page modifiers override just this value. */
+    --grid-min: 450px;
+
+    /* University branding in the page header. */
+    --logo-height: 84px;
+    --university-name-size: 2.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #1a202c;
+        --card-bg-color: #2d3748;
+        --text-color: #e2e8f0;
+        --heading-color: #ffffff;
+        --border-color: #4a5568;
+        --accent-color: #f0984a;
+
+        --code-bg-color: #1e293b;
+        --code-text-color: #e2e8f0;
+        --output-bg-color: #1c2635;
+        --output-border-color: #3a455a;
+
+        --code-comment: #a0aec0;
+        --code-keyword: #82aaff;
+        --code-string: #c3e88d;
+        --code-number: #f78c6c;
+        --code-type: #89ddff;
+        --code-function: #ffcb6b;
+        --code-variable: #eeffff;
+        --code-property: #b2ccd6;
+        --code-literal: #82aaff;
+        --code-property-wrapper: #ffcb6b;
+        --code-macro: #c792ea;
+    }
+}

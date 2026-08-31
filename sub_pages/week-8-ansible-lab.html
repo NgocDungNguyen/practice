@@ -1,0 +1,2332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Automate repeatable infrastructure configuration and deployment with inventories and playbooks.">
+<title>Week 8: Ansible - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="week-8" data-stage="automation" data-root="../" style="--stage-accent: var(--stage-automation)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Automation</span><span class="crumb-sep">/</span><span>Week 08</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Week 08</span><span class="chip">Automation</span><span class="chip">Lab guide</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">🤖</span>Ansible</h1>
+<p class="page-hero__intro">Automate repeatable infrastructure configuration and deployment with inventories and
+     <code>
+      playbooks
+     </code>
+     .</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>11</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 15.5l-4.2-4.2L7 21"/></svg><strong>93</strong>&nbsp;screenshots</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>79</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>55</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="objective">
+<h2 class="collapsible-header start-open">
+     🎯 Objective
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Ansible logo on the title page of the lab" class="img-large" height="303" loading="lazy" src="../assets/tutorials/week-8/01-objective-001.png" width="607"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Understand the concepts and usage of <code>Ansible</code>.
+          </p>
+</li>
+<li>
+<p>
+           Integrate Ansible to the existing <code>CI/CD</code> pipeline to improve the continuous delivery of our application. Thus, our CI/CD pipeline will be robust and smooth for continuous delivery even for the complex setup of multiple target systems.
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Illustration of an Ansible 101 classroom introducing playbooks to students" class="img-large" height="531" loading="lazy" src="../assets/tutorials/week-8/01-objective-002.png" width="531"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="ansible-pipeline-overview">
+<h2 class="collapsible-header">
+     🧭 The setup of the CI/CD pipeline for this week
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+         So far, we have used <code>Jenkins</code> as a Continuous Integration and Continuous Deployment tool.
+        </p>
+<p>
+         However, Jenkins works best as a Continuous Integration only as it has problems dealing with more complex set up of multiple target deployment environments of servers.
+        </p>
+<p>
+         ➜ So we need to introduce <strong><code>Ansible</code>, which is a Configuration Management tool</strong>, which is the best practice of handling updates and changes of target system requirements.
+        </p>
+<p>
+         So here is the setup for our <code>CI/CD</code> pipeline this week:
+        </p>
+<div class="tutorial-image-group">
+<img alt="Diagram of this week's pipeline: GitHub and Jenkins build the WAR, Ansible builds and pushes the image to Docker Hub, and the Docker server runs the Tomcat container" class="img-large" height="402" loading="lazy" src="../assets/tutorials/week-8/02-ansible-ci-cd-pipeline-overview-001.png" width="904"/>
+</div>
+<p class="callout callout--note">
+<strong>Note:</strong> To proceed with the lab, we should have already set up our <strong>Jenkins Server</strong> and <strong><code>Docker</code> Server</strong> in the previous lab. If you do not have the Jenkins Server or Docker Server (because you have already deleted those <code>EC2</code> instances) then please try to set them up again by following the tutorial instructions in previous weeks.
+        </p>
+<p>
+         Let's create a new EC2 server to be our Ansible Server.
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-ansible-server">
+<h2 class="collapsible-header">
+     🖥️ 1. Setup the Ansible server
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+         The outline for this section:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>Setup a Linux <code>EC2</code> instance “<code>Ansible_Server</code>”.</strong>
+</p>
+</li>
+<li>
+<p>
+           Setup hostname for convenience (as we have many servers to manage now).
+          </p>
+</li>
+<li>
+<p>
+<strong>Create <code>ansibleadmin</code> user.</strong>
+</p>
+</li>
+<li>
+<p>
+           Add the user to sudoers file.
+          </p>
+</li>
+<li>
+<p>
+           Generate <code>SSH</code> keys to a quick authenticate (for the <code>Ansible</code> server to communicate/control <code>Docker</code> Server).
+          </p>
+</li>
+<li>
+<p>
+           Enable password based login.
+          </p>
+</li>
+<li>
+<p>
+           Authorise the Jenkins server's public key for the <code>ansibleadmin</code> user (so Jenkins can reach this server with the SSH Agent plugin).
+          </p>
+</li>
+<li>
+<p>
+           Install ansible.
+          </p>
+</li>
+</ul>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        ☁️ 1a. Create the Ansible Server on EC2
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Let’s setup the <code>EC2</code> instance for “<code>Ansible</code>” Server like so:
+         </p>
+<div class="tutorial-image-group">
+<img alt="EC2 console row showing the Ansible_Server instance in the Running state" class="img-large" height="41" loading="lazy" src="../assets/tutorials/week-8/03-1a-create-the-ansible-server-on-ec2-001.png" width="775"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Here are the settings of the <code>Docker</code> Server for EC2:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Name: <code>Ansible_Server</code>
+</p>
+</li>
+<li>
+<p>
+              OS: default Amazon Linux 2023 AMI
+             </p>
+</li>
+<li>
+<p>
+              Instance Type: t3.micro (Free-tier)
+             </p>
+</li>
+<li>
+<p>
+              Key pair: select and reuse your old key in other labs (<code>devops_project_key</code>)
+             </p>
+</li>
+<li>
+<p>
+              Storage: Default 8 GB is plenty enough!
+             </p>
+</li>
+<li>
+<p>
+              Security Group:
+             </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                Optional Name: <code>Ansible_Security_Group</code>
+</p>
+</li>
+<li>
+<p>
+                Source Type: Anywhere
+               </p>
+</li>
+<li>
+<p>
+                Open two ports:
+               </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                  22 for <code>SSH</code>
+</p>
+</li>
+<li>
+<p>
+                  8080-8090 (as we might want to create/test some docker images)
+                 </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>
+            After launching the instance then, in the EC2 dashboard you should see the <code>Ansible_Server</code> EC2 running:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="EC2 dashboard listing Jenkins_Server, Docker_Server and Ansible_Server all running" class="img-large" height="160" loading="lazy" src="../assets/tutorials/week-8/03-1a-create-the-ansible-server-on-ec2-002.png" width="713"/>
+</div>
+<p>
+          We need these above EC2 instances for our pipeline in this lab!
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            After that, let’s SSH to the Ansible Server on EC2:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="SSH login banner on the new Ansible server, showing the default ip-172-31-94-133 hostname" class="img-large" height="221" loading="lazy" src="../assets/tutorials/week-8/03-1a-create-the-ansible-server-on-ec2-003.png" width="904"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        ⚙️ 1b. Setup configuration before installing Ansible on EC2
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            To keep things simple without dealing with permission, let’s login as a <code>root</code> user and change our current directory to <code>/root</code>:
+           </p>
+</li>
+</ul>
+<pre><code>sudo su -</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now, you are now a <code>root</code> user with the highest permission privilege to install anything you want. You can check your current directory, which should tell you that you are at <code>root</code> directory:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Terminal showing the root prompt and pwd printing /root" class="img-large" height="48" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-001.png" width="359"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Everytime, we login to an <code>EC2</code> server, we can only see the private public address as a host name (server name) of the EC2 which could be confusing when we need to login multiple different EC2 servers (like <code>Jenkins</code> server, <code>Ansible</code> server, <code>Docker</code> server).
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Terminal prompt showing the default hostname built from the private IP address" class="img-large" height="47" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-002.png" width="514"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's change the hostname of each EC2 server so next time, when we login into that EC2 server, there will be no confusion about which server we are currently login to.
+           </p>
+</li>
+</ul>
+<pre><code>nano /etc/hostname</code></pre>
+<div class="tutorial-image-group">
+<img alt="Editing /etc/hostname in nano and setting the name to ansible-server" class="img-large" height="287" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-003.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Save the hostname file and reboot the server by typing “reboot”:
+           </p>
+</li>
+</ul>
+<pre><code>reboot</code></pre>
+<div class="tutorial-image-group">
+<img alt="Terminal running reboot and the SSH session closing" class="img-large" height="116" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-004.png" width="899"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now, wait for a few minutes and let's <code>SSH</code> into the <code>Ansible_Server</code> again then you will see the hostname has changed like so:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Reconnected SSH session showing the new ansible-server hostname in the prompt" class="img-large" height="300" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-005.png" width="904"/>
+</div>
+<p class="callout callout--note">
+<strong>From now on, whenever you work on a new server, please take your time to change the hostname so it's easier to check if you have SSH into the correct server.</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Alright, let’s login as a <code>root</code> user and change our current directory to <code>/root</code>:
+           </p>
+</li>
+</ul>
+<pre><code>sudo su -</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's create a new user “<code>ansibleadmin</code>”:
+           </p>
+</li>
+</ul>
+<pre><code>useradd ansibleadmin</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let's add a password for that new user “<code>ansibleadmin</code>”:
+           </p>
+</li>
+</ul>
+<pre><code>passwd ansibleadmin</code></pre>
+<div class="tutorial-image-group">
+<img alt="Terminal creating the ansibleadmin user and setting its password" class="img-large" height="167" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-006.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Alright, to keep things simple, <strong>we want the <code>ansibleadmin</code> user to be able to execute any command without password so let’s grant the user sudo privileges by editing Sudoers file</strong> and save the file. This file defines which users have sudo privileges and the level of access they have:
+           </p>
+</li>
+</ul>
+<pre><code>nano /etc/sudoers</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Locate the section in the file where it mentions configurations for users or groups to execute commands without entering a password.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The sudoers file open in nano at the section for passwordless sudo" class="img-large" height="92" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-007.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Add the following line to grant <code>ansibleadmin</code> permission to execute all commands as sudo without needing a password:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>ALL=(ALL):</strong> Allows <code>ansibleadmin</code> to act as all users and groups.
+             </p>
+</li>
+<li>
+<p>
+<strong><code>NOPASSWD</code>: ALL</strong>: Removes the requirement for a password when using sudo.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ansibleadmin ALL=(ALL) NOPASSWD: ALL</code></pre>
+<div class="tutorial-image-group">
+<img alt="The new ansibleadmin ALL=(ALL) NOPASSWD: ALL line added to the sudoers file" class="img-large" height="94" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-008.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            By default, <code>EC2</code> server will not allow users to login with the password so we need to enable that:
+           </p>
+</li>
+</ul>
+<pre><code>nano /etc/ssh/sshd_config</code></pre>
+<div class="tutorial-image-group">
+<img alt="Searching for the word password inside sshd_config with Ctrl+W in nano" class="img-large" height="176" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-009.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Enable Password Authentication like so, then save and exit from nano:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="sshd_config after the change, with PasswordAuthentication set to yes" class="img-large" height="162" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-010.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Alright, let’s restart the ssh service for our change to take effective:
+           </p>
+</li>
+</ul>
+<pre><code>service sshd reload</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now, please exit to be back to your own laptop terminal and open a new terminal to SSH into the Ansible Server as <code>ansibleadmin</code> user with the password:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Logging in over SSH as ansibleadmin using the password that was just set" class="img-large" height="292" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-011.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now, let's generate SSH keys for authentication for this <code>ansibleadmin</code> user:
+           </p>
+</li>
+</ul>
+<pre><code>ssh-keygen</code></pre>
+<div class="tutorial-image-group">
+<img alt="ssh-keygen generating the id_rsa key pair for the ansibleadmin user" class="img-large" height="378" loading="lazy" src="../assets/tutorials/week-8/04-1b-setup-configuration-before-installing-ansible-on-ec2-012.png" width="904"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📦 1c. Install Ansible on EC2
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Now, we are ready to install <code>Ansible</code> on this server!
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Alright, let’s login as a <code>root</code> user and change our current directory to <code>/root</code>:
+           </p>
+</li>
+</ul>
+<pre><code>sudo su -</code></pre>
+<div class="tutorial-image-group">
+<img alt="Switching to the root user on the Ansible server" class="img-large" height="100" loading="lazy" src="../assets/tutorials/week-8/05-1c-install-ansible-on-ec2-001.png" width="744"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            For other CentOS servers, to install ansible, we can just run “yum install ansible”. However, this package is not available on <code>AWS</code> <code>EC2</code> server:
+           </p>
+</li>
+</ul>
+<pre><code>yum install ansible</code></pre>
+<div class="tutorial-image-group">
+<img alt="yum install ansible resolving the package and installing Ansible on Amazon Linux" class="img-large" height="333" loading="lazy" src="../assets/tutorials/week-8/05-1c-install-ansible-on-ec2-002.png" width="738"/>
+</div>
+<p>
+          Alright, ansible has been installed now!
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            We can double check by checking the version of ansible:
+           </p>
+</li>
+</ul>
+<pre><code>ansible --version</code></pre>
+<div class="tutorial-image-group">
+<img alt="ansible --version printing the Ansible core version and the Python version it runs on" class="img-large" height="169" loading="lazy" src="../assets/tutorials/week-8/05-1c-install-ansible-on-ec2-003.png" width="904"/>
+</div>
+<p>
+          As you can see, ansible is built on the top of python so that's why you see the python version there as well!
+         </p>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="manage-docker-with-ansible">
+<h2 class="collapsible-header">
+     🐳 2. Manage Docker Server with Ansible Server
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Ansible plus Docker logos introducing this section" class="img-large" height="159" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-001.png" width="528"/>
+</div>
+<p>
+         The outline what you need to do:
+        </p>
+<p class="callout callout--checkpoint">
+<strong>Connection checkpoint:</strong> Ansible is agentless. What must still be true about SSH connectivity, the remote user, and privilege escalation before a playbook can manage the Docker server?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           On the docker server:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Create <code>ansibleadmin</code>
+</p>
+</li>
+<li>
+<p>
+             Add <code>ansibleadmin</code> to sudoers files
+            </p>
+</li>
+<li>
+<p>
+             Enable password login
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+           On the ansible server:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Add to hosts file.
+            </p>
+</li>
+<li>
+<p>
+             Copy ssh the public key from ansible server to docker server.
+            </p>
+</li>
+<li>
+<p>
+             Test the connection from ansible server to docker server.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<p>
+         Let's go!
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>Let's <code>SSH</code> into the <code>Docker</code> Server:</strong>
+</p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The Docker_Server instance selected in the EC2 console (1 of 2)" class="img-large" height="42" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-002.png" width="904"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="SSH login banner on the Docker server, still showing the default ip-172-31-94-164 hostname (2 of 2)" class="img-large" height="326" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-003.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>If you have not changed the hostname for the docker server, then please change the hostname of this server to be “<code>docker-server</code>”, reboot and ssh again:</strong>
+</p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Setting the Docker server hostname to docker-server and reconnecting after a reboot" class="img-large" height="332" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-004.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Alright, let’s login as a <code>root</code> user and change our current directory to <code>/root</code>:
+          </p>
+</li>
+</ul>
+<pre><code>sudo su -</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's create a new user “<code>ansibleadmin</code>”:
+          </p>
+</li>
+</ul>
+<pre><code>useradd ansibleadmin</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's add a password for that new user “<code>ansibleadmin</code>”:
+          </p>
+</li>
+</ul>
+<pre><code>passwd ansibleadmin</code></pre>
+<div class="tutorial-image-group">
+<img alt="Creating the ansibleadmin user and its password on the Docker server" class="img-large" height="167" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-005.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s add the <code>ansibleadmin</code> to be in the <code>docker</code> group:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             This is necessary to run Docker commands as the <code>ansibleadmin</code> user without typing sudo every time.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>sudo usermod -aG docker ansibleadmin</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We can double check if the <code>ansibleadmin</code> is now in the <code>docker</code> group:
+          </p>
+</li>
+</ul>
+<pre><code>id ansibleadmin</code></pre>
+<div class="tutorial-image-group">
+<img alt="id ansibleadmin showing the docker group in the user's group list" class="img-large" height="30" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-006.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Alright, to keep things simple, I want the <code>ansibleadmin</code> user to be able to execute any command without password so let's modify Sudoers file and save the file:
+          </p>
+</li>
+</ul>
+<pre><code>nano /etc/sudoers</code></pre>
+<div class="tutorial-image-group">
+<img alt="The sudoers file on the Docker server before the change (1 of 2)" class="img-large" height="91" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-007.png" width="904"/>
+<img alt="The ansibleadmin NOPASSWD line added to the Docker server sudoers file (2 of 2)" class="img-large" height="94" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-008.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           By default, <code>EC2</code> server will not allow users to login with the password so we need to enable that:
+          </p>
+</li>
+</ul>
+<pre><code>nano /etc/ssh/sshd_config</code></pre>
+<div class="tutorial-image-group">
+<img alt="Searching sshd_config on the Docker server for the password setting" class="img-large" height="176" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-009.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Enable Password Authentication like so, then save and exit from nano:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="PasswordAuthentication set to yes in the Docker server sshd_config" class="img-large" height="159" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-010.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Alright, let’s restart the ssh service for our change to take effective:
+          </p>
+</li>
+</ul>
+<pre><code>service sshd reload</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Nice, let's check the IP address of our Docker Server so we can add the IP address of Docker Server to our <code>Ansible</code> Inventory in the Ansible Server:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Keep in mind that, the highlighted is the private IP address so only EC2 within the same network will be able to communicate with it.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ifconfig</code></pre>
+<div class="tutorial-image-group">
+<img alt="ifconfig output with the Docker server private IP address highlighted" class="img-large" height="402" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-011.png" width="814"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>[Switch to Ansible Server Terminal] Now, let's switch to the terminal that controls Ansible server.</strong>
+</p>
+</li>
+<li>
+<p>
+           The default location for the <code>inventory file</code> (<code>/etc/ansible/hosts</code>) may vary based on how Ansible was installed. To confirm the location of the default inventory file, check the Ansible configuration:
+          </p>
+</li>
+</ul>
+<pre><code>ansible-config dump | grep DEFAULT_HOST_LIST</code></pre>
+<div class="tutorial-image-group">
+<img alt="ansible-config dump confirming DEFAULT_HOST_LIST points at /etc/ansible/hosts" class="img-large" height="58" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-012.png" width="903"/>
+</div>
+<p>
+         The screenshot confirms that the default location of the ansible hosts is indeed at <code>/etc/ansible/hosts</code>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's modify the Ansible host file (Ansible Inventory):
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>This file is the "address book" of Ansible</strong>. Every machine you want Ansible to manage needs to be listed here.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>nano /etc/ansible/hosts</code></pre>
+<div class="tutorial-image-group">
+<img alt="Opening /etc/ansible/hosts in nano on the Ansible server" class="img-large" height="44" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-013.png" width="875"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="The private IP address of the Docker Server added to the Ansible inventory" class="img-large" height="116" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-014.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           That's good! Let's switch back to the <code>ansibleadmin</code> user on the Ansible Server:
+          </p>
+</li>
+</ul>
+<pre><code>sudo su - ansibleadmin</code></pre>
+<div class="tutorial-image-group">
+<img alt="Switching from root to the ansibleadmin user on the Ansible server" class="img-large" height="84" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-015.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's change the current working directory to <code>.ssh</code> to see our public and private keys:
+          </p>
+</li>
+</ul>
+<pre><code>cd .ssh
+ls -la</code></pre>
+<div class="tutorial-image-group">
+<img alt="Listing the .ssh directory showing id_rsa and id_rsa.pub" class="img-large" height="179" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-016.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We can inspect further the public key of Ansible Server by printing it out:
+          </p>
+</li>
+</ul>
+<pre><code>cat id_rsa.pub</code></pre>
+<div class="tutorial-image-group">
+<img alt="cat id_rsa.pub printing the ansibleadmin public key" class="img-large" height="89" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-017.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's copy the public key of <code>ansibleadmin</code> on the Ansible Server to the Docker Server:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             So the <code>ansibleadmin</code> user can connect without a password. This sets up passwordless SSH, allowing Ansible to run commands and <code>playbooks</code> on the Docker Server automatically without needing manual password input every time as this is the core of automation.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ssh-copy-id [the-ip-address-of-docker-server]</code></pre>
+<div class="tutorial-image-group">
+<img alt="ssh-copy-id installing the ansibleadmin public key on the Docker server" class="img-large" height="223" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-018.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>[Switch back to Docker Server Terminal] Let's switch back to terminal of Docker Server</strong> and check if the public key has been copied over:
+          </p>
+</li>
+<li>
+<p>
+           First, let's change from <code>root</code> to <code>ansibleadmin</code>:
+          </p>
+</li>
+</ul>
+<pre><code>sudo su - ansibleadmin</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Then, need to change current working directory to <code>.ssh</code>:
+          </p>
+</li>
+</ul>
+<pre><code>cd .ssh</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Print out the <code>authorized_keys</code>:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             You should see the same content of the public key of <code>ansibleadmin</code> on the Ansible Server that we copied over in Docker Server.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>cat authorized_keys</code></pre>
+<div class="tutorial-image-group">
+<img alt="cat authorized_keys on the Docker server showing the copied Ansible public key" class="img-large" height="287" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-019.png" width="904"/>
+</div>
+<p>
+<strong>Now, it's time to test the connection between Ansible Server and Docker Server:</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>[Switch back to Ansible Server Terminal] In the Ansible Server</strong>, we can use Ansible to ping the target server in the <code>inventory</code> like so:
+          </p>
+</li>
+</ul>
+<pre><code>ansible all -m ping</code></pre>
+<div class="tutorial-image-group">
+<img alt="ansible all -m ping returning a successful pong from the Docker server" class="img-large" height="190" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-020.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Similarly, we can use ansible from Ansible Server to run the bash command like “uptime” on Docker Server like so:
+          </p>
+</li>
+</ul>
+<pre><code>ansible all -m command -a uptime</code></pre>
+<div class="tutorial-image-group">
+<img alt="ansible all -m command -a uptime returning the uptime of the Docker server" class="img-large" height="102" loading="lazy" src="../assets/tutorials/week-8/06-2-manage-the-docker-server-with-ansible-021.png" width="904"/>
+</div>
+<p>
+<strong>This is like how Ansible Server (master) can control everything on the Docker Server (slave) with any credentials or password authentication. Image, you can have ten different target servers in the Ansible Inventory file so one Ansible server can control all target servers easily.</strong>
+</p>
+<p>
+<strong>Extra Note:</strong> you might wonder that while the manual setup of each server (e.g., creating a user, enabling SSH password authentication, etc.) works for a small number of servers, it quickly becomes cumbersome and error-prone when scaling to manage 10, 100, or more target servers. However, in the challenge exercise, you can use Ansible itself to automate the onboarding of new target servers (slaves) to make the process repeatable and scalable.
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="integrate-ansible-jenkins">
+<h2 class="collapsible-header">
+     🔗 3. Integrate Ansible with Jenkins
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Jenkins plus Ansible logos introducing this section" class="img-large" height="200" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-001.png" width="354"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>Let's <code>SSH</code> into the <code>Jenkins</code> Server:</strong>
+</p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The Jenkins_Server instance running in the EC2 console (1 of 2)" class="img-large" height="42" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-002.png" width="798"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="SSH login banner on the Jenkins server, still showing the default ip-172-31-94-229 hostname (2 of 2)" class="img-large" height="318" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-003.png" width="870"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           In case you have not changed the hostname of Jenkins server, let’s change the hostname of this server to be “<code>jenkins-server</code>”, reboot and ssh again:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Setting the Jenkins server hostname to jenkins-server and reconnecting after a reboot" class="img-large" height="305" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-004.png" width="857"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Alright, let’s login as a <code>root</code> user and change our current directory to <code>/root</code>:
+          </p>
+</li>
+</ul>
+<pre><code>sudo su -</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s start Jenkins service if you need to:
+          </p>
+</li>
+</ul>
+<pre><code>service jenkins start</code></pre>
+<div class="tutorial-image-group">
+<img alt="Starting the Jenkins service on the Jenkins server" class="img-large" height="62" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-005.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>[On the Jenkins server, as root] Authorise the existing Jenkins key on the Ansible server.</strong> You are reusing the key pair you generated in the Docker lab so do not generate a new one.
+          </p>
+</li>
+<li>
+<p>
+           First confirm the key is still there (it was created as <code>/root/jenkins_deploy_key</code> in the Docker lab):
+          </p>
+<pre><code>ls -l /root/jenkins_deploy_key /root/jenkins_deploy_key.pub</code></pre>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>[Only missing]</strong> If those two files are missing (for example you rebuilt the Jenkins server), re-create the pair and re-authorise it on the Docker server exactly as you did in the Docker lab before continuing:
+            </p>
+<pre><code>ssh-keygen -t rsa -b 4096 -m PEM -f /root/jenkins_deploy_key -N ""
+ssh-copy-id -i /root/jenkins_deploy_key.pub dockeradmin@&lt;Docker-Server-Private-IP&gt;</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Now authorise the same public key for <code>ansibleadmin</code> on the Ansible server. Use the Ansible server's private IP (<code>172.31.x.x</code>) so both instances are in the same VPC, and unlike the public IP it will not change when you stop and start the instance. You will be prompted for the <code>ansibleadmin</code> password you set in section 1b; this works because you enabled password login there.
+          </p>
+<pre><code>ssh-copy-id -i /root/jenkins_deploy_key.pub ansibleadmin@&lt;Ansible-Server-Private-IP&gt;</code></pre>
+<div class="tutorial-image-group">
+<img alt="ssh-copy-id installing the Jenkins public key for ansibleadmin on the Ansible server" class="img-large" height="217" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-006.png" width="812"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Verify before touching Jenkins. This should log in with no password and print the hostname and the Ansible version:
+            </p>
+<pre><code>ssh -i /root/jenkins_deploy_key ansibleadmin@&lt;Ansible-Server-Private-IP&gt; 'hostname &amp;&amp; ansible --version'</code></pre>
+<div class="tutorial-image-group">
+<img alt="Passwordless SSH from Jenkins to the Ansible server printing ansible-server and the Ansible version" class="img-large" height="187" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-007.png" width="903"/>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's add the <code>ansibleadmin</code> authentication as a Jenkins credential. Go to <strong>Manage Jenkins → Credentials → System → Global credentials (unrestricted) → + Add Credentials</strong>:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>Kind:</strong> SSH Username with private key
+            </p>
+</li>
+<li>
+<p>
+<strong>ID:</strong> <code>ansibleadmin-key</code>
+</p>
+</li>
+<li>
+<p>
+<strong>Description:</strong> ansibleadmin on ansible-server
+            </p>
+</li>
+<li>
+<p>
+<strong>Username:</strong> <code>ansibleadmin</code>
+</p>
+</li>
+<li>
+<p>
+<strong>Private Key:</strong> Enter directly → paste the entire contents of <code>/root/jenkins_deploy_key</code>, including the <code>-----BEGIN RSA PRIVATE KEY-----</code> and <code>-----END RSA PRIVATE KEY-----</code> lines. This is the same private key as the <code>dockeradmin-key</code> credential — one key pair, two credentials, because the username differs.
+            </p>
+</li>
+<li>
+<p>
+<strong>Passphrase:</strong> leave empty
+            </p>
+</li>
+<li>
+<p>
+<strong>Click Create</strong>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+           Let’s create a new Jenkins job:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             To save time, you can copy the configuration settings from the <strong>“BuildAndDeployOnDockerContainer”</strong> job from last week.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Creating the Copy_Artifacts_on_Ansible_Server job by copying from BuildAndDeployOnDockerContainer" class="img-large" height="696" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-008.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We keep everything the same (git, github, maven, …) apart from two things in the copied job.
+          </p>
+</li>
+<li>
+<p>
+<strong>First, scroll up to Build Environment, and in the SSH Agent → Credentials dropdown change the selection</strong> from dockeradmin (<code>dockeradmin on docker-server</code>) to ansibleadmin (<code>ansibleadmin on ansible-server</code>).
+          </p>
+</li>
+<li>
+<p>
+           Second, scroll down to <strong>Post Steps → Execute shell</strong> and replace the script inherited from last week's job with just the copy step for now. We will add the Ansible playbook commands later in Section 6:
+          </p>
+</li>
+</ul>
+<pre><code>ANSIBLE_SERVER=ansibleadmin@&lt;Ansible-Server-Private-IP&gt;
+SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+# Copy the war artifact to the Ansible server's home directory
+scp $SSH_OPTS target/*.war $ANSIBLE_SERVER:/home/ansibleadmin/</code></pre>
+<p class="callout callout--note">
+<strong>Note</strong> the destination is <code>/home/ansibleadmin</code>, not <code>/home/dockeradmin</code>.
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s save the job for now! And run the job to test if the job can run correctly and copy the artifacts over to the Ansible Server!
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The Copy_Artifacts_on_Ansible_Server job page with Build Now and the first successful build" class="img-large" height="582" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-009.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The result looks good! It should show build success and successfully connect to the Ansible Server to copy the artifact WAR file over that server.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Note that the WAR file is sent to Ansible instead of directly to <code>Docker</code> because <strong>Ansible is becoming the "deployment manager" in the pipeline.</strong>
+</p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Jenkins console output showing the scp of simpleWebProject.war to ansibleadmin and Finished: SUCCESS" class="img-large" height="274" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-010.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>[Switch to the Ansible Server Terminal]</strong> In the Ansible Server, you can check if the WAR artifact file has been transferred from Jenkins server to Ansible Server like so:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Keep in mind, you might need to <code>cd ~</code> to change the working directory to the home directory of <code>ansibleadmin</code> user first before listing the files inside it.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Listing the ansibleadmin home directory on the Ansible server showing simpleWebProject.war" class="img-large" height="120" loading="lazy" src="../assets/tutorials/week-8/07-3-integrate-ansible-with-jenkins-011.png" width="742"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="build-push-docker-image">
+<h2 class="collapsible-header">
+     📤 4. Push the Docker image to Docker Hub
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+<strong>Alright, so far so good! Now, let’s install docker on the Ansible server so we can push the docker</strong> image of our web application to <code>Dockerhub</code>!
+        </p>
+<p>
+         We can sudo into the <code>root</code> user or in this case, we can stay as <code>ansibleadmin</code> user and add “<code>sudo</code>” at the beginning of every command to execute them as a <code>root</code> user like so:
+        </p>
+<pre><code>sudo yum install docker -y</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s add the <code>ansibleadmin</code> to be in the <code>docker</code> group:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             This is necessary to run Docker commands as the <code>ansibleadmin</code> user without typing sudo every time.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>sudo usermod -aG docker ansibleadmin</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           For this to take effect, please logout and login in as <code>ansibleadmin</code> again:
+          </p>
+</li>
+</ul>
+<pre><code>exit
+sudo su - ansibleadmin</code></pre>
+<div class="tutorial-image-group">
+<img alt="Logging out and back in as ansibleadmin so the docker group membership takes effect" class="img-large" height="120" loading="lazy" src="../assets/tutorials/week-8/08-4-build-and-push-the-docker-image-001.png" width="881"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We can double check if the <code>ansibleadmin</code> is now in the <code>docker</code> group:
+          </p>
+</li>
+</ul>
+<pre><code>id ansibleadmin</code></pre>
+<div class="tutorial-image-group">
+<img alt="id ansibleadmin on the Ansible server showing the docker group" class="img-large" height="46" loading="lazy" src="../assets/tutorials/week-8/08-4-build-and-push-the-docker-image-002.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s start the docker service:
+          </p>
+</li>
+</ul>
+<pre><code>sudo service docker start</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s start the docker status:
+          </p>
+</li>
+</ul>
+<pre><code>sudo service docker status</code></pre>
+<div class="tutorial-image-group">
+<img alt="sudo service docker status reporting that the Docker daemon is active on the Ansible server" class="img-large" height="101" loading="lazy" src="../assets/tutorials/week-8/08-4-build-and-push-the-docker-image-003.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s create a Dockerfile to build an image from war artifact file:
+          </p>
+</li>
+</ul>
+<pre><code>nano Dockerfile</code></pre>
+<pre><code class="language-dockerfile">FROM tomcat:latest
+RUN cp -R /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps
+COPY ./*.war /usr/local/tomcat/webapps</code></pre>
+<div class="tutorial-image-group">
+<img alt="The Dockerfile open in nano on the Ansible server" class="img-large" height="215" loading="lazy" src="../assets/tutorials/week-8/08-4-build-and-push-the-docker-image-004.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s test if you can build a docker image from this Dockerfile:
+          </p>
+</li>
+</ul>
+<pre><code>docker build -t myapp:v1 .</code></pre>
+<div class="tutorial-image-group">
+<img alt="docker build output creating the myapp:v1 image" class="img-large" height="497" loading="lazy" src="../assets/tutorials/week-8/08-4-build-and-push-the-docker-image-005.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s list all docker images to check if our new image is there:
+          </p>
+</li>
+</ul>
+<pre><code>docker images</code></pre>
+<div class="tutorial-image-group">
+<img alt="docker images listing myapp with the v1 tag" class="img-large" height="126" loading="lazy" src="../assets/tutorials/week-8/08-4-build-and-push-the-docker-image-006.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We can even test further by creating a container from this image and access this image via the browser:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             The website should be available on the browser via the Ansible Public IP address with the <code>port 8081</code>.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>docker run -d --name myapp-container -p 8081:8080 myapp:v1</code></pre>
+<div class="tutorial-image-group">
+<img alt="Browser showing the web application served from the Ansible server on port 8081" class="img-large" height="276" loading="lazy" src="../assets/tutorials/week-8/08-4-build-and-push-the-docker-image-007.png" width="684"/>
+</div>
+<p>
+         It means that our Docker image is healthy!
+        </p>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🔄 [Next step explanation] Add both servers to the inventory
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          We need to ensure the <code>Ansible</code> server adds both itself and the <code>docker-server</code> to its <code>inventory file</code> (<strong><code>/etc/ansible/hosts</code></strong>) for these reasons:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>Self-Management</strong>: The Ansible server needs to manage itself to execute tasks like building <code>Docker</code> images and pushing them to <code>DockerHub</code>. Adding itself to the <code>inventory</code> allows it to act as a target node and execute <code>playbooks</code> seamlessly. This makes the Ansible server both a controller and a worker node, which is common in small setups but in production, roles are usually separated.
+           </p>
+</li>
+<li>
+<p>
+<strong>Automation</strong>: Configuration tasks on the Ansible server (e.g., installing Docker, managing services) can be automated via playbooks, ensuring consistency and efficiency.
+           </p>
+</li>
+<li>
+<p>
+<strong><code>CI/CD</code> Role</strong>: The Ansible server is integral to the CI/CD pipeline:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Builds Docker images locally.
+             </p>
+</li>
+<li>
+<p>
+              Pushes images to DockerHub.
+             </p>
+</li>
+<li>
+<p>
+              Hosts playbooks for managing other servers (e.g., the <code>docker-server</code>).
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<p>
+          Including itself in the inventory ensures <code>Jenkins</code> can trigger tasks like building and tagging <strong>Docker images locally, following the principle of "automate everything, even the automation server." This approach enhances consistency, reusability, and ease of management in the pipeline.</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s modify the Ansible host file (Inventory)
+           </p>
+</li>
+</ul>
+<pre><code>sudo nano /etc/ansible/hosts</code></pre>
+<div class="tutorial-image-group">
+<img alt="Opening the Ansible inventory file for editing on the Ansible server" class="img-large" height="43" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-001.png" width="875"/>
+</div>
+<pre><code>[dockerserver]
+private-ip-address-of-docker-server
+
+[ansibleserver]
+private-ip-address-of-ansible-server</code></pre>
+<div class="tutorial-image-group">
+<img alt="The inventory file containing the dockerserver and ansibleserver groups with their private IP addresses" class="img-large" height="209" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-002.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now add the Ansible server's own public key to itself, so Ansible can manage the <code>ansible-server</code> as a target node too.
+           </p>
+</li>
+<li>
+<p>
+            This must be run as <code>ansibleadmin</code>, not as root. If your prompt still shows <code>[root@ansible-server ~]#</code>, switch user first:
+           </p>
+</li>
+</ul>
+<pre><code>sudo su - ansibleadmin</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Confirm your prompt now reads <code>[ansibleadmin@ansible-server ~]$</code>, then run:
+           </p>
+</li>
+</ul>
+<pre><code>ssh-copy-id ansibleadmin@&lt;Ansible-Server-Private-IP&gt;</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Enter the <code>ansibleadmin</code> password when prompted. Answer <code>yes</code> to the host authenticity question.
+           </p>
+</li>
+<li>
+<p>
+<strong>By doing this you have copied the same public key onto both the docker server and the ansible server.</strong>
+</p>
+</li>
+<li>
+<p>
+            Let’s test the connection by running this command:
+           </p>
+</li>
+</ul>
+<pre><code>ansible all -a uptime</code></pre>
+<div class="tutorial-image-group">
+<img alt="ansible all -a uptime returning uptime output from both the docker server and the ansible server" class="img-large" height="174" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-003.png" width="904"/>
+</div>
+<p class="callout callout--note">
+<strong>If you see the output of the uptime command from two servers like this, it means you have set up the correct IP addresses in the inventory so Ansible now can run commands on both servers (<code>ansible-server</code> - itself and <code>docker-server</code> - slave).</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s create an ansible <code>playbook</code>:
+           </p>
+</li>
+</ul>
+<pre><code>nano buildAndPush.yml</code></pre>
+<pre><code class="language-ansible">---
+- hosts: ansibleserver
+
+  tasks:
+  - name: create docker image
+    command: docker build -t myapp:latest .</code></pre>
+<p>
+          Note, please notice that, we will use the tag: <code>latest</code> to separate this docker image compared to the test image with the tag <code>v1</code>.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            To run this Ansible Playbooks:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              You should see that the playbook runs on the private IP address of ansible server (<code>ansibleserver</code>), gathers system facts, and successfully builds the Docker image <code>myapp:latest</code>, completing without errors.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ansible-playbook buildAndPush.yml</code></pre>
+<div class="tutorial-image-group">
+<img alt="ansible-playbook buildAndPush.yml gathering facts and building the myapp:latest image" class="img-large" height="239" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-004.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s list all docker images:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              You should see the new Docker image “myapp” with tag “latest” is created as the result of that playbook execution.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>docker images</code></pre>
+<div class="tutorial-image-group">
+<img alt="docker images listing both myapp:v1 and the new myapp:latest image" class="img-large" height="150" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-005.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Login in DockerHub (<a href="https://hub.docker.com/" rel="noopener" target="_blank">https://hub.docker.com/</a>) (create an account if you haven’t created one) and create a repository on DockerHub:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The Docker Hub dashboard with the Create repository button" class="img-large" height="187" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-006.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Create a new Docker repo with the name “myapp” with visibility “Public”:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The Docker Hub create repository form filled in with the name myapp and Public visibility" class="img-large" height="423" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-007.png" width="750"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You should be able to confirm that repo is created correctly on Docker Hub page:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The empty myapp repository listed on the Docker Hub repositories page" class="img-large" height="163" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-008.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>Now, we just need to change the docker image name to match with the pattern “<code>your-dockerhub-username/myapp:latest</code>”.</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>Explanation:</strong> The image name must include your Docker Hub username (or organization name) as the namespace. This ensures the image is associated with your account. Without your Docker Hub username, Docker won’t know which account the image belongs to when you push it.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>docker tag [image-id] [new-image-repo-name]</code></pre>
+<div class="tutorial-image-group">
+<img alt="Tagging the local myapp image with the Docker Hub username namespace" class="img-large" height="280" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-009.png" width="914"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s authenticate the docker hub with your username and password once:
+           </p>
+</li>
+</ul>
+<pre><code>docker login</code></pre>
+<div class="tutorial-image-group">
+<img alt="docker login authenticating against Docker Hub from the Ansible server" class="img-large" height="150" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-010.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Now, we are ready to push the docker image to the DockerHub:
+           </p>
+</li>
+</ul>
+<pre><code>docker push tomhuynhsg/myapp:latest</code></pre>
+<div class="tutorial-image-group">
+<img alt="docker push uploading the image layers to the Docker Hub repository" class="img-large" height="224" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-011.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You can check if your image has been pushed to DockerHub by just open your repo on DockerHub:
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The myapp repository on Docker Hub showing the latest tag that was just pushed" class="img-large" height="356" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-012.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s modify our Ansible Playbooks to add a task to push the image to Dockerhub:
+           </p>
+</li>
+</ul>
+<pre><code>nano buildAndPush.yml</code></pre>
+<div class="code-legend">
+<span class="legend-item"><span class="legend-swatch hl-new"></span> Already in the playbook</span>
+<span class="legend-item"><span class="legend-swatch hl-focus"></span> Added in this step</span>
+</div>
+<pre><code class="language-ansible"><span class="hl-new">---</span>
+<span class="hl-new">- hosts: ansibleserver</span>
+
+<span class="hl-new">  tasks:</span>
+<span class="hl-new">  - name: create docker image</span>
+<span class="hl-new">    command: docker build -t myapp:latest .</span>
+
+<span class="hl-focus">  - name: create tag to push the image to dockerhub</span>
+<span class="hl-focus">    command: docker tag myapp:latest tomhuynhsg/myapp:latest</span>
+
+<span class="hl-focus">  - name: push the docker image to dockerhub</span>
+<span class="hl-focus">    command: docker push tomhuynhsg/myapp:latest</span></code></pre>
+<p>
+          Note, keep in mind, you need to change <code>tomhuynhsg</code> to be your DockerHub username.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Let’s test our Ansible Playbooks which create a docker image then push it to dockerhub:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              You should see that the playbook runs on the private IP address of ansible server, gathers system facts, builds the Docker image <code>myapp:latest</code>, tags it for Docker Hub, and pushes it successfully, completing with no errors.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ansible-playbook buildAndPush.yml</code></pre>
+<div class="tutorial-image-group">
+<img alt="Playbook run showing the build, tag and push tasks all reporting changed with no failures" class="img-large" height="326" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-013.png" width="904"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Docker Hub repository page confirming the image was pushed a couple of minutes ago" class="img-large" height="593" loading="lazy" src="../assets/tutorials/week-8/09-deployment-workflow-explanation-014.png" width="904"/>
+</div>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="deploy-with-ansible-playbook">
+<h2 class="collapsible-header">
+     🤖 5. Create a container on Docker Server using Ansible Playbook
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s create a new <code>Ansible</code> Playbooks to create a container by pulling it from <code>DockerHub</code>:
+          </p>
+</li>
+</ul>
+<pre><code>nano pullToCreateContainer.yml</code></pre>
+<pre><code class="language-ansible">---
+- hosts: dockerserver
+
+  tasks:
+  - name: create docker container by using the image on Dockerhub
+    command: docker run -d --name mywebapp-container -p 8082:8080 tomhuynhsg/myapp:latest</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>[Switch to Docker Server Terminal] Before running this playbook on Ansible Server, make sure Docker service is running on Docker Server:</strong>
+</p>
+</li>
+</ul>
+<pre><code>sudo service docker start</code></pre>
+<div class="tutorial-image-group">
+<img alt="Starting the Docker service on the Docker server before running the playbook" class="img-large" height="65" loading="lazy" src="../assets/tutorials/week-8/10-5-deploy-a-container-with-an-ansible-playbook-001.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>[Switch to Ansible Server Terminal] Let’s run this Playbooks on Ansible Server:</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             The website should be available to access on the browser on the public IP address of the Docker server with the <code>port 8082</code>.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ansible-playbook pullToCreateContainer.yml</code></pre>
+<div class="tutorial-image-group">
+<img alt="Playbook run creating the mywebapp-container on the Docker server" class="img-large" height="254" loading="lazy" src="../assets/tutorials/week-8/10-5-deploy-a-container-with-an-ansible-playbook-002.png" width="904"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Browser showing the deployed website on the Docker server public IP address on port 8082" class="img-large" height="365" loading="lazy" src="../assets/tutorials/week-8/10-5-deploy-a-container-with-an-ansible-playbook-003.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           It's pretty good! However, to keep running the same playbook over and over again! We need:
+          </p>
+<p class="callout callout--checkpoint">
+<strong>Idempotency checkpoint:</strong> On a second playbook run, which tasks should report <code>changed</code> and which should report <code>ok</code>? What would repeated destructive recreation reveal about the playbook design?
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Remove existing container
+            </p>
+</li>
+<li>
+<p>
+             Remove existing image
+            </p>
+</li>
+<li>
+<p>
+             Create new container
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+           Let’s modify the playbook:
+          </p>
+</li>
+</ul>
+<pre><code>nano pullToCreateContainer.yml</code></pre>
+<div class="code-legend">
+<span class="legend-item"><span class="legend-swatch hl-new"></span> Already in the playbook</span>
+<span class="legend-item"><span class="legend-swatch hl-focus"></span> Added in this step to make the rerun safe</span>
+</div>
+<pre><code class="language-ansible"><span class="hl-new">---</span>
+<span class="hl-new">- hosts: dockerserver</span>
+
+<span class="hl-new">  tasks:</span>
+<span class="hl-focus">  - name: stop the existing container</span>
+<span class="hl-focus">    command: docker stop mywebapp-container</span>
+<span class="hl-focus">    ignore_errors: yes</span>
+
+<span class="hl-focus">  - name: remove the existing container</span>
+<span class="hl-focus">    command: docker rm mywebapp-container</span>
+<span class="hl-focus">    ignore_errors: yes</span>
+
+<span class="hl-focus">  - name: remove the existing image</span>
+<span class="hl-focus">    command: docker rmi tomhuynhsg/myapp:latest</span>
+<span class="hl-focus">    ignore_errors: yes</span>
+
+<span class="hl-focus">  - name: pull the latest image from dockerhub</span>
+<span class="hl-focus">    command: docker pull tomhuynhsg/myapp:latest</span>
+
+<span class="hl-new">  - name: create docker container by using the image on Dockerhub</span>
+<span class="hl-new">    command: docker run -d --name mywebapp-container -p 8082:8080 tomhuynhsg/myapp:latest</span></code></pre>
+<p class="callout callout--note">
+<strong>[Explanation]</strong> <code>ignore_errors: yes</code> is needed on the stop/remove tasks in case there is no existing container or image yet as this keeps the playbook idempotent (safe to run multiple times). The <code>docker pull</code> task deliberately has no <code>ignore_errors</code>: it is the step that guarantees we are deploying the image that was just pushed. If the pull fails, we want the playbook and therefore the Jenkins build to fail loudly, rather than silently re-running yesterday's image.
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s run this Playbooks on Ansible Server again:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             You should see that the playbook runs on the ansible server, gathers system facts, stops and removes the existing container, removes the old image, and then creates a new Docker container from the image on Docker Hub, completing successfully with no errors.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ansible-playbook pullToCreateContainer.yml</code></pre>
+<div class="tutorial-image-group">
+<img alt="Rerun of the playbook stopping and removing the old container and image, pulling the latest image from Docker Hub, then creating a new container, ending with ok=6 and changed=5 and no failures" class="img-large" height="380" loading="lazy" src="../assets/tutorials/week-8/10-5-deploy-a-container-with-an-ansible-playbook-004.png" width="904"/>
+</div>
+<p>
+         Alright, it’s perfect! Now, both of our Ansible Playbooks are ready for <code>Jenkins</code> to use!
+        </p>
+<p class="callout callout--note">
+<strong>Note:</strong> you can try to run this playbook <code>pullToCreateContainer.yml</code> many times to ensure this playbook can run multiple times without any issue. Also, the first time you run it and the next time you run it, then you might see something interesting in those runs.
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-ansible-pipeline">
+<h2 class="collapsible-header">
+     🏗️ 6. Jenkins CI/CD Pipeline to deploy on a container using Ansible Playbooks
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Open the configuration page of the <code>Jenkins</code> job again and replace the contents of the <strong>Execute shell</strong> box (which currently holds only the <code>scp</code> line from section 3) with the full script below.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>First <code>playbook</code></strong> → Builds a new container image and pushes it to the Docker Hub repo registry.
+            </p>
+</li>
+<li>
+<p>
+<strong>Sleep</strong> → Pushing images to DockerHub isn’t instant, so this wait briefly (15 seconds) ensures DockerHub has the new image available before trying to pull it.
+            </p>
+</li>
+<li>
+<p>
+<strong>Second playbook</strong> → Pulls the image from the Docker Hub repo registry and creates (or updates) the running container. <code>set -e</code> → makes the shell abort at the first failing command. Without it, a failing <code>buildAndPush.yml</code> would not stop the pipeline: <code>sleep</code> and the second playbook would still run, <code>ssh</code> would return the exit code of the last command only, and Jenkins would mark a broken deployment as SUCCESS. The inner <code>set -e</code> protects the remote command list; the outer one protects the <code>scp</code>.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<p class="callout callout--note">
+<strong>Note</strong>: this separation (build &amp; push vs pull &amp; run) mirrors real-world pipelines as it builds artifacts in one stage and deploys in another.
+        </p>
+<p class="callout callout--checkpoint">
+<strong>Release checkpoint:</strong> If deployment fails after an image is pushed, which immutable artifact lets you roll back reliably? Why is reusing only the <code>latest</code> tag risky?
+        </p>
+<div class="code-legend">
+<span class="legend-item"><span class="legend-swatch hl-new"></span> Already in the Execute shell box from Section 3</span>
+<span class="legend-item"><span class="legend-swatch hl-focus"></span> Added in this step</span>
+</div>
+<pre><code class="language-bash"><span class="hl-new">ANSIBLE_SERVER=ansibleadmin@&lt;Ansible-Server-Private-IP&gt;</span>
+<span class="hl-new">SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"</span>
+
+<span class="hl-focus">set -e</span>
+
+<span class="hl-new"># Copy the war artifact to the Ansible server's home directory</span>
+<span class="hl-new">scp $SSH_OPTS target/*.war $ANSIBLE_SERVER:/home/ansibleadmin/</span>
+
+<span class="hl-focus"># Run the two Ansible playbooks remotely</span>
+<span class="hl-focus">ssh $SSH_OPTS $ANSIBLE_SERVER '</span>
+<span class="hl-focus">set -e</span>
+<span class="hl-focus">cd /home/ansibleadmin</span>
+<span class="hl-focus">ansible-playbook /home/ansibleadmin/buildAndPush.yml</span>
+<span class="hl-focus">sleep 15</span>
+<span class="hl-focus">ansible-playbook /home/ansibleadmin/pullToCreateContainer.yml</span>
+<span class="hl-focus">'</span></code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Try to run the Jenkins job to test if our configuration is all good!
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The Jenkins job page after triggering Build Now, with the latest build succeeding" class="img-large" height="475" loading="lazy" src="../assets/tutorials/week-8/11-6-build-the-jenkins-ansible-deployment-pipeline-001.png" width="726"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Jenkins console output showing all five playbook tasks changed and Finished: SUCCESS" class="img-large" height="671" loading="lazy" src="../assets/tutorials/week-8/11-6-build-the-jenkins-ansible-deployment-pipeline-002.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Please confirm that the website is available to access on the browser via the public IP address of <code>Docker</code> Server via the <code>port 8082</code> (as defined in the <code>pullToCreateContainer.yml</code> playbook so feel free to change the port if you want to)
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Browser showing the deployed website served by the container on the Docker server" class="img-large" height="365" loading="lazy" src="../assets/tutorials/week-8/11-6-build-the-jenkins-ansible-deployment-pipeline-003.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Also, if you want to do further testing, you could try to push some changes to trigger the Jenkins job to see if the <code>Ansible</code> <code>playbooks</code> execute correctly to show the website with the new changes or not!
+          </p>
+</li>
+</ul>
+<p>
+         Awesome, you have completed this <code>CI/CD</code> Pipeline for this week! Please continue to test this pipeline further by making a change to the website and push it to Github to see the full automation in action!
+        </p>
+<p>
+         Congratulations! You have successfully created this CI/CD Pipeline with Ansible Playbooks! Now, by adding more IP addresses/domain names into the Ansible Inventory, you can easily manage to deploy this web application to hundreds of different target servers!
+        </p>
+<div class="tutorial-image-group">
+<img alt="The completed pipeline diagram: Jenkins builds, Ansible builds and pushes the image, and the Docker server serves the website" class="img-large" height="390" loading="lazy" src="../assets/tutorials/week-8/11-6-build-the-jenkins-ansible-deployment-pipeline-004.png" width="881"/>
+</div>
+<p>
+<strong>You are now ready to receive a DevOps champion award in automation 🏆!</strong>
+</p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-ec2-user-data">
+<h2 class="collapsible-header">
+     🧪 Challenge Exercise: Automating Ansible Slave EC2 Node Setup with AWS EC2 User Data
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+<strong>Using <code>AWS</code> <code>EC2</code> User Data, you can automate the initial setup of an Ansible Slaves EC2 instance when it is launched.</strong> This allows you to configure servers without manual intervention with the benefits:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>Repeatability</strong>: Every instance launched with the script has a consistent configuration.
+          </p>
+</li>
+<li>
+<p>
+<strong>Scalability</strong>: The same script can initialize dozens or hundreds of servers.
+          </p>
+</li>
+<li>
+<p>
+<strong>Automation</strong>: Reduces manual setup, saving time and minimizing errors.
+          </p>
+</li>
+</ul>
+<p>
+         Here's a step-by-step guide:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>Launch an Ansible Slaves EC2 Instance with User Data</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>OS:</strong> default Amazon Linux 2023 AMI (Free-tier)
+            </p>
+</li>
+<li>
+<p>
+<strong>Instance Type:</strong> t3.micro (Free-tier)
+            </p>
+</li>
+<li>
+<p>
+<strong>Key pair:</strong> select and reuse your old key in other labs (<code>devops_project_key</code>)
+            </p>
+</li>
+<li>
+<p>
+<strong>Storage:</strong> Default 8 GB is plenty enough!
+            </p>
+</li>
+<li>
+<p>
+<strong>Security Group:</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               Optional Name: <code>Jenkins_Slave_Security_Group</code>
+</p>
+</li>
+<li>
+<p>
+               Source Type: Anywhere
+              </p>
+</li>
+<li>
+<p>
+               Open ports:
+              </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                 22 for <code>SSH</code>
+</p>
+</li>
+<li>
+<p>
+                 Open other necessary ports (e.g., 8080 for <code>Docker</code>).
+                </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>Add User data</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               Click on Advanced details
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The Advanced details section of the EC2 launch wizard" class="img-large" height="78" loading="lazy" src="../assets/tutorials/week-8/12-challenge-provision-an-ansible-node-with-ec2-user-data-001.png" width="282"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Upload or paste in the User data:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The User data box in the EC2 launch wizard (1 of 2)" class="img-large" height="148" loading="lazy" src="../assets/tutorials/week-8/12-challenge-provision-an-ansible-node-with-ec2-user-data-002.png" width="475"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="The user-data bash script that sets the hostname, installs Docker, creates ansibleadmin, grants passwordless sudo, installs the master's public key and enables SSH password authentication (2 of 2)" class="img-large" height="471" loading="lazy" src="../assets/tutorials/week-8/12-challenge-provision-an-ansible-node-with-ec2-user-data-003.png" width="714"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>Note:</strong> remember that the public key of the Ansible master server should be at <code>/home/ansibleadmin/.ssh/id_rsa.pub</code>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             After setting up the User data, you can launch the Ansible slave instance.
+            </p>
+</li>
+<li>
+<p>
+             Wait for the instance is ready:
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The EC2 console showing the new Ansible slave instance reaching the running state" class="img-large" height="40" loading="lazy" src="../assets/tutorials/week-8/12-challenge-provision-an-ansible-node-with-ec2-user-data-004.png" width="662"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>[Optional]</strong> For testing if your user data script working correctly, you can choose to ssh to the Ansible slave to run these commands:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Check the hostname is correct:
+            </p>
+<div class="tutorial-image-group">
+<img alt="Terminal on the slave showing the ansible-slave hostname set by the user-data script" class="img-large" height="46" loading="lazy" src="../assets/tutorials/week-8/12-challenge-provision-an-ansible-node-with-ec2-user-data-005.png" width="285"/>
+</div>
+</li>
+<li>
+<p>
+<strong>Test Docker: <code>docker --version</code></strong>
+</p>
+</li>
+<li>
+<p>
+<strong>Test Ansible user login: <code>su - ansibleadmin</code></strong>
+</p>
+<div class="tutorial-image-group">
+<img alt="Checking the Docker version and switching to the ansibleadmin user on the slave" class="img-large" height="114" loading="lazy" src="../assets/tutorials/week-8/12-challenge-provision-an-ansible-node-with-ec2-user-data-006.png" width="551"/>
+</div>
+</li>
+<li>
+<p>
+<strong>Confirm SSH keys to match the public key in User data: <code>cat /home/ansibleadmin/.ssh/authorized_keys</code></strong>
+</p>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>[Back to the Ansible Master]</strong> Add the Ansible Slave instance to the Ansible <code>inventory</code> in the Ansible master (<code>/etc/ansible/hosts</code>)
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="The Ansible inventory with a new ansibleslaves group holding the private IP address of the slave" class="img-large" height="190" loading="lazy" src="../assets/tutorials/week-8/12-challenge-provision-an-ansible-node-with-ec2-user-data-007.png" width="359"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Test if the master can connect to the slave
+          </p>
+</li>
+</ul>
+<pre><code>ansible ansibleslave -m ping</code></pre>
+<div class="tutorial-image-group">
+<img alt="ansible ansibleslave -m ping returning pong from the new slave node" class="img-large" height="207" loading="lazy" src="../assets/tutorials/week-8/12-challenge-provision-an-ansible-node-with-ec2-user-data-008.png" width="697"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Test if the master can run commands on the slave:
+          </p>
+</li>
+</ul>
+<pre><code>ansible ansibleslaves -a uptime</code></pre>
+<div class="tutorial-image-group">
+<img alt="ansible ansibleslaves -a uptime returning the uptime of the slave node" class="img-large" height="106" loading="lazy" src="../assets/tutorials/week-8/12-challenge-provision-an-ansible-node-with-ec2-user-data-009.png" width="801"/>
+</div>
+<p>
+         Success! Using EC2 User Data is very efficient to quickly set up multiple Ansible slave EC2 instances for Ansible master to manage them.
+        </p>
+<p>
+<strong>[Extra thoughts]</strong>
+</p>
+<p>
+         If you would like to be more efficient to launch EC2 instances without GUI, you might consider:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>You can launch an EC2 instance directly from the AWS CLI by passing the User Data script.</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Save the User Data script to a file, e.g., <code>user-data.sh</code>.
+            </p>
+</li>
+<li>
+<p>
+             Use the following CLI command to launch the instance:
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="An aws ec2 run-instances command passing the user-data.sh file when launching the instance" class="img-large" height="165" loading="lazy" src="../assets/tutorials/week-8/12-challenge-provision-an-ansible-node-with-ec2-user-data-010.png" width="677"/>
+</div>
+<p>
+         This approach aligns with real-world industry practices, enabling efficient and scalable infrastructure management.
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="advanced-automation-challenge">
+<h2 class="collapsible-header">
+     🚀 Advanced Challenge: Expand Your Automation Skills
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+         Now that you have a solid understanding of <code>AWS</code> CLI, <code>EC2</code> User Data, and <code>Ansible</code>, here are some advanced tasks to further enhance your skills:
+        </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>Scale Up with Multiple Ansible Groups:</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Use the AWS CLI to quickly launch multiple EC2 instances, for example:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               A group for <strong>test-servers</strong> (staging environment).
+              </p>
+</li>
+<li>
+<p>
+               A group for <strong>production-servers</strong>.
+              </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+             Configure your <strong><code>/etc/ansible/hosts</code></strong> file to manage these groups separately:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+<strong>Note</strong>: your groups can have more ip addresses for more EC2 instances if you want to.
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>[test-servers]
+192.168.x.x
+
+[production-servers]
+192.168.y.y</code></pre>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             This separation enables precise control and testing before deploying changes to production.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>Deploy Applications with <code>Jenkins</code> and Ansible:</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Use Jenkins to integrate your <code>CI/CD</code> pipeline with Ansible's <code>inventory</code> groups:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               First, deploy your application to <strong>test-servers</strong>.
+              </p>
+</li>
+<li>
+<p>
+               Run some basic front-end tests using tools like <strong>curl</strong> to ensure the deployment is functional.
+              </p>
+</li>
+<li>
+<p>
+               Once tests pass, automate the deployment to <strong>production-servers</strong>.
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>Automate Testing:</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Implement Ansible tasks or <code>playbooks</code> to:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               Verify that the application is running on test servers.
+              </p>
+</li>
+<li>
+<p>
+               Use simple health checks (<strong>curl</strong> or HTTP status checks) to confirm that the deployed app responds as expected.
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>Leverage AWS CLI for Instance Management:</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Automate instance creation with the following AWS CLI command:
+            </p>
+</li>
+</ul>
+<pre><code>aws ec2 run-instances --image-id ami-xxxxxx --count 3 --instance-type t3.micro --key-name devops_project_key --security-group-ids sg-xxxxxx --user-data file://user-data.sh</code></pre>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             This ensures repeatable infrastructure setup and avoids reliance on manual GUI interactions.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>End-to-End Pipeline Simulation:</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Push a new version of your web app to GitHub.
+            </p>
+</li>
+<li>
+<p>
+             Trigger a Jenkins pipeline that:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               Builds and pushes a <code>Docker</code> image.
+              </p>
+</li>
+<li>
+<p>
+               Deploys the image to <strong>test-servers</strong> via Ansible.
+              </p>
+</li>
+<li>
+<p>
+               Runs tests on <strong>test-servers</strong>.
+              </p>
+</li>
+<li>
+<p>
+               Upon successful tests, deploy to <strong>production-servers</strong>.
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>[Optional - Thoughts] Experiment with Advanced Tools</strong> to <strong>Simulate Real-World Scenarios:</strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Practice a <strong>blue-green deployment strategy</strong>:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               Deploy the new version of the app to a group (e.g., <strong>test-servers</strong> or a subset of <strong>production-servers</strong>).
+              </p>
+</li>
+<li>
+<p>
+               Perform tests before switching traffic over to the updated servers with AWS Elastic Load Balancer (ELB) which we will learn later in later weeks.
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p>
+         By practicing these advanced challenges, you'll gain deeper insights into DevOps workflows and be well-prepared for real-world scenarios involving scalable infrastructure and efficient automation. Keep pushing boundaries, and you'll be ready to tackle increasingly complex projects with confidence! 🏆
+        </p>
+<div class="tutorial-image-group">
+<img alt="Illustration of RMIT students celebrating the completed Ansible lab" class="img-large" height="690" loading="lazy" src="../assets/tutorials/week-8/13-advanced-challenge-extend-the-automation-001.png" width="690"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="whats-next">
+<h2 class="collapsible-header start-open">
+     📚 Continue the course
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--home">
+<a class="card" href="week-6-docker-lab.html">
+<h3>
+        🐳 Week 6: Docker
+       </h3>
+<p>
+        Continue through the COSC2767 learning path.
+       </p>
+<span class="go-to-link">
+        Previous lab
+       </span>
+</a>
+<a class="card" href="week-9-docker-compose-swarm-lab.html">
+<h3>
+        🧩 Week 9: Docker Compose and Docker Swarm
+       </h3>
+<p>
+        Continue through the COSC2767 learning path.
+       </p>
+<span class="go-to-link">
+        Next lab
+       </span>
+</a>
+<a class="card" href="../index.html">
+<h3>
+        🗓️ All weekly labs
+       </h3>
+<p>
+        Return to the course map and review every weekly tutorial.
+       </p>
+<span class="go-to-link">
+        Course home
+       </span>
+</a>
+</div>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-automation)" href="../sub_pages/week-6-docker-lab.html"><span class="pager__dir">← Previous</span><span class="pager__title">Docker</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-automation)" href="../sub_pages/week-9-docker-compose-swarm-lab.html"><span class="pager__dir">Next →</span><span class="pager__title">Docker Compose and Swarm</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="objective"><a class="toc__link" href="#objective"><span>Objective</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="ansible-pipeline-overview"><a class="toc__link" href="#ansible-pipeline-overview"><span>The setup of the CI/CD pipeline for this week</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-ansible-server"><a class="toc__link" href="#setup-ansible-server"><span>1. Setup the Ansible server</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="manage-docker-with-ansible"><a class="toc__link" href="#manage-docker-with-ansible"><span>2. Manage Docker Server with Ansible Server</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="integrate-ansible-jenkins"><a class="toc__link" href="#integrate-ansible-jenkins"><span>3. Integrate Ansible with Jenkins</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="build-push-docker-image"><a class="toc__link" href="#build-push-docker-image"><span>4. Push the Docker image to Docker Hub</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="deploy-with-ansible-playbook"><a class="toc__link" href="#deploy-with-ansible-playbook"><span>5. Create a container on Docker Server using Ansible Playbook</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-ansible-pipeline"><a class="toc__link" href="#jenkins-ansible-pipeline"><span>6. Jenkins CI/CD Pipeline to deploy on a container using Ansible Playbooks</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-ec2-user-data"><a class="toc__link" href="#challenge-ec2-user-data"><span>Challenge Exercise: Automating Ansible Slave EC2 Node Setup with AWS EC2 User Data</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="advanced-automation-challenge"><a class="toc__link" href="#advanced-automation-challenge"><span>Advanced Challenge: Expand Your Automation Skills</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="whats-next"><a class="toc__link" href="#whats-next"><span>Continue the course</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 11 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

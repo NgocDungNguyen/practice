@@ -1,0 +1,2744 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="Deploy, expose, inspect, scale, and troubleshoot containerised workloads using Kubernetes." name="description"/>
+  <title>
+   Week 10: Kubernetes - COSC2767
+  </title>
+  <link href="../assets/images/rmit-logo.png" rel="icon" type="image/png"/>
+  <link href="../css/main.css" rel="stylesheet"/>
+  <script src="../js/main.js" type="module">
+  </script>
+ </head>
+ <body>
+  <header>
+   <div class="container">
+    <div class="back-to-home-container">
+     <a class="back-to-home-button" href="../index.html">
+      ← Back to Home
+     </a>
+    </div>
+    <div class="university-branding">
+     <img alt="RMIT University Logo" class="logo" src="../assets/images/rmit-logo.png"/>
+     <span class="university-name">
+      RMIT University
+     </span>
+    </div>
+    <p class="course-kicker">
+     COSC2767 · Systems
+     <code>
+      Deployment
+     </code>
+     and Operations
+    </p>
+    <h1>
+     ☸️ Week 10: Kubernetes
+     <span>
+      Lab Guide
+     </span>
+    </h1>
+    <p class="intro">
+     Deploy, expose, inspect, scale, and troubleshoot containerised workloads using
+     <code>
+      Kubernetes
+     </code>
+     .
+    </p>
+   </div>
+  </header>
+  <main class="container">
+   <section class="cheatsheet-section" id="objective">
+    <h2 class="collapsible-header start-open">
+     🎯 Objective
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Week tutorial screenshot from page 1" class="img-large" loading="lazy" src="../assets/tutorials/week-10/01-objective-001.png"/>
+        </div>
+        <p>
+         In this lab, we will apply what we have learned about
+         <code>
+          Kubernetes
+         </code>
+         (K8s) to create a cluster in cloud environments.
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating environments." class="img-large" loading="lazy" src="../assets/tutorials/week-10/01-objective-002.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="kubernetes-lab-overview">
+    <h2 class="collapsible-header">
+     🧭 Kubernetes lab overview
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         Let's get started! Let's go through a few exercises to practice commands of
+         <code>
+          Kubernetes
+         </code>
+         , specifically
+         <code>
+          kubectl
+         </code>
+         and minikube.
+        </p>
+        <p class="callout">
+         <strong>Mental-model checkpoint:</strong> How would you map a Docker image and container to Kubernetes Pods, Deployments, and Services? Which Kubernetes object maintains replicas, and which provides a stable network endpoint?
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="kubernetes-reading">
+    <h2 class="collapsible-header">
+     📚 1. Recommended reading: Kubernetes basics
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating 1. [Recommended Reading] Learning the basic of Kubernetes from Google" class="img-large" loading="lazy" src="../assets/tutorials/week-10/02-1-recommended-reading-kubernetes-basics-001.png"/>
+        </div>
+        <p>
+         One of the best materials to start learning
+         <code>
+          Kubernetes
+         </code>
+         is from Google.
+        </p>
+        <p>
+         Open this link:
+         <a href="https://kubernetes.io/docs/tutorials/kubernetes-basics/" rel="noopener" target="_blank">
+          https://kubernetes.io/docs/tutorials/kubernetes-basics/
+         </a>
+         . Please read through six of these basic Kubernetes modules!
+        </p>
+        <ol class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Create a Kubernetes cluster
+          </p>
+         </li>
+         <li>
+          <p>
+           Deploy an app
+          </p>
+         </li>
+         <li>
+          <p>
+           Explore your app
+          </p>
+         </li>
+         <li>
+          <p>
+           Expose your app publicly
+          </p>
+         </li>
+         <li>
+          <p>
+           Scale up your app
+          </p>
+         </li>
+         <li>
+          <p>
+           Update your app
+          </p>
+         </li>
+        </ol>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Update your app" class="img-large" loading="lazy" src="../assets/tutorials/week-10/02-1-recommended-reading-kubernetes-basics-002.png"/>
+        </div>
+        <p>
+         After completing the reading, let's up our game and set up some projects like a to-do list app or a voting app examples with Kubernetes in the next lab section.
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="minikube-todo-app">
+    <h2 class="collapsible-header">
+     🚀 2. Deploy a to-do application with Minikube
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating 2. Play around with Minikube to deploy a to-do list application:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/03-2-deploy-a-to-do-application-with-minikube-001.png"/>
+        </div>
+        <p>
+         This second section will focus around
+         <strong>
+          minikube
+         </strong>
+         , which is a single-node
+         <code>
+          Kubernetes
+         </code>
+         local cluster, focusing on making it easy to learn and practice Kubernetes.
+        </p>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        ☁️ Create the Minikube server on EC2
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          <strong>
+           <code>
+            Minikube
+           </code>
+          </strong>
+          has
+          <strong>
+           specific
+          </strong>
+          <strong>
+           system
+          </strong>
+          <strong>
+           requirements
+          </strong>
+          . At a minimum, it requires
+          <strong>
+           2
+          </strong>
+          <strong>
+           CPUs
+          </strong>
+          and
+          <strong>
+           2GB
+          </strong>
+          <strong>
+           of
+          </strong>
+          <strong>
+           memory
+          </strong>
+          , but for more comfortable operation and to run actual workloads, you should aim for at least 2 CPUs and 4GB of memory.
+         </p>
+         <p class="callout">
+          <strong>Troubleshooting checkpoint:</strong> If this EC2 instance has too little memory, which symptoms might look like an application bug? Which <code>kubectl</code> observations could reveal resource pressure instead?
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating and 4GB of memory." class="img-large" loading="lazy" src="../assets/tutorials/week-10/04-create-the-minikube-server-on-ec2-001.png"/>
+         </div>
+         <p>
+          Let’s set up the
+          <code>
+           EC2
+          </code>
+          instance for “minikube" Server like so.
+          <strong>
+           Here
+          </strong>
+          <strong>
+           are
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           settings
+          </strong>
+          <strong>
+           of
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           Minikube
+          </strong>
+          <strong>
+           for
+          </strong>
+          <strong>
+           EC2:
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Name: Minikube
+           </p>
+          </li>
+          <li>
+           <p>
+            OS: default Amazon Linux AMI (Free-tier)
+           </p>
+          </li>
+          <li>
+           <p>
+            Instance Type:
+            <strong>
+             t3.medium
+            </strong>
+            <strong>
+             (2
+            </strong>
+            <strong>
+             vCPU
+            </strong>
+            <strong>
+             +
+            </strong>
+            <strong>
+             4GB
+            </strong>
+            <strong>
+             RAM)
+            </strong>
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <strong>
+               Important:
+              </strong>
+              This instance type is required to meet Minikube's system requirements but is not part of the
+              <code>
+               AWS
+              </code>
+              Free Tier. Running this EC2 instance will incur costs on your AWS account.
+             </p>
+            </li>
+           </ul>
+          </li>
+          <li>
+           <p>
+            Key pair: select and reuse your old key in other labs (
+            <code>
+             devops_project_key
+            </code>
+            )
+           </p>
+          </li>
+          <li>
+           <p>
+            Storage: Default 8 GB is plenty enough!
+           </p>
+          </li>
+          <li>
+           <p>
+            Security Group:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Optional Name:
+              <code>
+               Minikube_Security_Group
+              </code>
+             </p>
+            </li>
+            <li>
+             <p>
+              Source Type: Anywhere
+             </p>
+            </li>
+            <li>
+             <p>
+              Open two ports:
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                22 for SSH
+               </p>
+              </li>
+              <li>
+               <p>
+                3000-32767:
+               </p>
+               <ul class="tutorial-list tutorial-list--level-4">
+                <li>
+                 <p>
+                  30000-32767 for Minikube (In
+                  <code>
+                   Kubernetes
+                  </code>
+                  , a
+                  <code>
+                   NodePort
+                  </code>
+                  <code>
+                   service
+                  </code>
+                  is a way to expose a service on a port of the node (a machine running Kubernetes). The default port range for NodePort
+                  <code>
+                   services
+                  </code>
+                  is 30000 -
+                 </p>
+                </li>
+               </ul>
+               <ol class="tutorial-list tutorial-list--level-4">
+                <li>
+                 <p>
+                  A NodePort service can use any port in that range.
+                 </p>
+                </li>
+               </ol>
+              </li>
+             </ul>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <p>
+          Minikube follows the same NodePort convention.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            In this lab, the explicit port-forward examples use only ports 3000, 3001, and 3002. Restrict security-group sources to your own IP whenever possible instead of exposing this entire range publicly.
+           </p>
+          </li>
+         </ul>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        📦 Install Minikube, kubectl, and dependencies
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             [Optional]
+            </strong>
+            For some general ideas how we can get these installation done, please read through these guides:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <a href="https://minikube.sigs.k8s.io/docs/start/" rel="noopener" target="_blank">
+               https://minikube.sigs.k8s.io/docs/start/
+              </a>
+              (
+              <code>
+               Minikube
+              </code>
+              installation)
+             </p>
+            </li>
+            <li>
+             <p>
+              <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/" rel="noopener" target="_blank">
+               https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+              </a>
+              (
+              <code>
+               kubectl
+              </code>
+              installation)
+             </p>
+            </li>
+            <li>
+             <p>
+              <a href="https://minikube.sigs.k8s.io/docs/drivers/docker/" rel="noopener" target="_blank">
+               https://minikube.sigs.k8s.io/docs/drivers/docker/
+              </a>
+              (docker installation)
+             </p>
+            </li>
+           </ul>
+          </li>
+          <li>
+           <p>
+            To keep things simple without dealing with permission, let’s login as a root user and change our current directory to /root:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo su -</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You are now the root user and have unrestricted system privileges. You can check your current directory, which should tell you that you are at root directory:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating directory:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Installing
+            </strong>
+            <strong>
+             kubectl
+            </strong>
+            <strong>
+             is
+            </strong>
+            <strong>
+             essential
+            </strong>
+            <strong>
+             for
+            </strong>
+            <strong>
+             learning
+            </strong>
+            <strong>
+             Minikube
+            </strong>
+            <strong>
+             because
+            </strong>
+            <strong>
+             it
+            </strong>
+            <strong>
+             provides
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             necessary
+            </strong>
+            <strong>
+             command
+            </strong>
+            <strong>
+             line
+            </strong>
+            <strong>
+             tool
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             interact
+            </strong>
+            <strong>
+             with
+            </strong>
+            <strong>
+             your
+            </strong>
+            <strong>
+             Minikube
+            </strong>
+            <strong>
+             <code>
+              Kubernetes
+             </code>
+            </strong>
+            <strong>
+             cluster,
+            </strong>
+            <strong>
+             allowing
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             deploy
+            </strong>
+            <strong>
+             and
+            </strong>
+            <strong>
+             manage
+            </strong>
+            <strong>
+             applications
+            </strong>
+            <strong>
+             effectively.
+            </strong>
+           </p>
+          </li>
+          <li>
+           <p>
+            Let’s Install kubectl binary with curl. It does so by first retrieving the version number from the stable release URL, then using it to compose the download URL for the specific kubectl binary needed for Linux:
+           </p>
+          </li>
+         </ul>
+         <pre><code>curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"</code></pre>
+         <div class="tutorial-image-group">
+          <img alt='Screenshot illustrating curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"' class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Installs the kubectl program with owner and group set to root, and permissions set to 0755, placing it in the
+            <code>
+             /usr/local/bin
+            </code>
+            directory for system-wide use:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Test if the installation is done correctly by checking the version information of the kubectl:
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl version --client</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl version --client" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Minikube is a tool that creates a local Kubernetes cluster on your machine, and it requires
+            <code>
+             Docker
+            </code>
+            to run the containers that make up the nodes of the cluster. Therefore, we need to install docker first!
+           </p>
+          </li>
+         </ul>
+         <pre><code>yum install docker -y</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Start docker!
+           </p>
+          </li>
+         </ul>
+         <pre><code>service docker start</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating service docker start" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-004.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Check if docker has started:
+           </p>
+          </li>
+         </ul>
+         <pre><code>service docker status</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating service docker status" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Uses curl to fetch the latest Minikube release for Linux and saves it with its original name:
+           </p>
+          </li>
+         </ul>
+         <pre><code>curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Install the Minikube binary as 'minikube' in the '
+            <code>
+             /usr/local/bin
+            </code>
+            ' directory, granting it system-wide access for all users:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo install minikube-linux-amd64 /usr/local/bin/minikube</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now, we are ready! Let's start a local Kubernetes cluster (Minikube):
+           </p>
+          </li>
+         </ul>
+         <pre><code>minikube start --force</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating minikube start --force" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-007.png"/>
+         </div>
+         <p>
+          The reason we use “
+          <code>
+           --force
+          </code>
+          ” is because we want to run minikube as a root user!
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            minikube status:
+           </p>
+          </li>
+         </ul>
+         <pre><code>minikube status</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating minikube status" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-008.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           [Explanation]
+          </strong>
+          The Control Plane, host, kubelet, and apiserver components are all active, and the kubectl configuration is properly set up, meaning the cluster is ready to be used for Kubernetes operations.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Lists all the
+            <code>
+             pods
+            </code>
+            in all
+            <code>
+             namespaces
+            </code>
+            of a Kubernetes cluster. :
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl get po -A</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl get po -A" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-009.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           [Explanation]
+          </strong>
+          The
+          <code>
+           -A
+          </code>
+          flag (short for
+          <code>
+           --all-namespaces
+          </code>
+          ) tells kubectl to list pods from all namespaces in the cluster. In a new Minikube cluster, the only pods running are the essential system components, which reside in the
+          <code>
+           kube-system
+          </code>
+          <code>
+           namespace
+          </code>
+          . The output confirms that core components like CoreDNS, etcd, the API server, and the scheduler are all in a healthy Running state, with their containers ready (1/1). This means our cluster is operational.
+         </p>
+         <p>
+          The output shows the core components of the Kubernetes control plane.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s initiates a new Kubernetes
+            <code>
+             pod
+            </code>
+            named 'todolistapp' using the 'tomhuynhsg/react-todo-list-app'
+            <code>
+             Docker Hub
+            </code>
+            image to deploy a React-based to-do list application:
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl run todolistapp --image=tomhuynhsg/react-todo-list-app</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl run todolistapp --image=tomhuynhsg/react-todo-list-app" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-010.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            View the Pod:
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl get pods</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl get pods" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-011.png"/>
+         </div>
+         <p>
+          A Kubernetes Pod is a group of one or more Containers, tied together for the purposes of administration and networking. The Pod in this tutorial has only one Container.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            View cluster events:
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl get events</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl get events" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-012.png"/>
+         </div>
+         <p>
+          This shows a list of system pods in the 'kube-system' namespace, all of which are currently in a 'Running' status, indicating a healthy state for these core components of the cluster.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            By default, the Pod is reachable only by its internal cluster IP address. To make the to-do application accessible from outside the Kubernetes virtual network, you have to expose the Pod as a Kubernetes
+            <code>
+             Service
+            </code>
+            .
+           </p>
+          </li>
+          <li>
+           <p>
+            Expose the Pod using the kubectl expose command. Let’s create a new service named 'todolistapp-service' that exposes the 'todolistapp' pod on a network, accessible via a
+            <code>
+             NodePort
+            </code>
+            at
+            <code>
+             port 80
+            </code>
+            , allowing external access to the application:
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl expose pod todolistapp --type=NodePort --port=80 --name=todolistapp-service</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl expose pod todolistapp --type=NodePort --port=80 --name=todolistapp-service" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-013.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           [Explanation]
+          </strong>
+          <strong>
+           NodePort:
+          </strong>
+          This type makes your service accessible on a static port on each node's IP in the Kubernetes cluster. It allocates a port from a range (default is 30000-32767), and any traffic sent to this port on any node is forwarded to the service. In short, NodePort is a simple way to get external traffic into your cluster, typically for development or small-scale environments.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s retrieve the list of
+            <code>
+             services
+            </code>
+            you created:
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl get services</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl get services" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-014.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           [Explanation]
+          </strong>
+          It shows
+          <strong>
+           80:
+           <code>
+            32449/TCP
+           </code>
+          </strong>
+          , meaning the service is listening on
+          <strong>
+           port
+          </strong>
+          <strong>
+           80
+          </strong>
+          <strong>
+           within
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           cluster
+          </strong>
+          , and it has been mapped to
+          <strong>
+           port
+          </strong>
+          <strong>
+           32449
+          </strong>
+          <strong>
+           on
+          </strong>
+          <strong>
+           all
+          </strong>
+          <strong>
+           nodes'
+          </strong>
+          <strong>
+           IP
+          </strong>
+          <strong>
+           addresses
+          </strong>
+          . External traffic that hits any node on
+          <code>
+           port 32449
+          </code>
+          will be forwarded to this service on
+          <code>
+           port 80
+          </code>
+          .
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Similarly, you can use “kubectl get svc” instead of “kubectl get services” as “svc” is simply an alias or shorthand for services in the kubectl command:
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl get svc</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl get svc" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-015.png"/>
+         </div>
+         <p>
+          Let’s focus on the todolistapp-service only!
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let's list the service of todolistapp-service:
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl get services todolistapp-service</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl get services todolistapp-service" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-016.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s retrieve the URL of the 'todolistapp-service' service running in your local Minikube environment, allowing you to interact with your app via a URL:
+           </p>
+          </li>
+         </ul>
+         <pre><code>minikube service todolistapp-service --url</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating minikube service todolistapp-service --url" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-017.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let’s make an HTTP request to a web service running on a Minikube cluster to test if the website is actually working:
+           </p>
+          </li>
+         </ul>
+         <pre><code>curl &lt;the-website-url&gt;</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating curl &lt;the-website-url&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-018.png"/>
+         </div>
+         <p>
+          The HTML code displayed is the actual content of the homepage that a web browser would render for a user.
+         </p>
+         <p>
+          <strong>
+           The
+          </strong>
+          <strong>
+           Problem
+          </strong>
+          : Even though you can fetch the website content via curl command internally, you would not be able to access the website via the public IP address of
+          <code>
+           EC2
+          </code>
+          via the expose
+          <code>
+           port 32449
+          </code>
+          on the browser. You can try to do that by opening the URL:
+          <code>
+           &lt;your-public-ip-of-ec2&gt;
+          </code>
+          :
+          <code>
+           &lt;export-port-of-service&gt;
+          </code>
+          on your browser then you will realize it will not respond to any website unlike the result of curl.
+         </p>
+         <p class="callout">
+          <strong>
+           Explanation:
+          </strong>
+          A successful local <code>curl</code> request does not guarantee that the same NodePort is reachable from outside the EC2 instance:
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Minikube
+            </strong>
+            <strong>
+             Environment
+            </strong>
+            : Minikube is designed to be a local Kubernetes environment. When you expose a service in Minikube, it's typically only accessible within the VM or the environment where Minikube is running. The service todolistapp-service is exposed on a NodePort within the Minikube's virtual network, which is not directly accessible from the public internet.
+           </p>
+          </li>
+          <li>
+           <p>
+            <strong>
+             Public
+            </strong>
+            <strong>
+             IP
+            </strong>
+            <strong>
+             Address
+            </strong>
+            : Your EC2 instance has a public IP, but the Minikube cluster and its services have their own set of private IPs that are not directly exposed to the internet. Even though you've opened the appropriate ports in your security group, the traffic has nowhere to go because the Minikube service isn't listening on the EC2 instance's network interface.
+           </p>
+          </li>
+         </ul>
+         <p>
+          <strong>
+           The
+          </strong>
+          <strong>
+           Solution
+          </strong>
+          : By using kubectl port-forward, you are creating a tunnel from your EC2 instance's network (which has the public IP) to the Minikube network. The
+          <code>
+           --address
+          </code>
+          <code>
+           0.0.0.0
+          </code>
+          flag is crucial here because it tells kubectl to listen on all network interfaces, including the public one. This effectively exposes the Minikube service to the internet via your EC2's public IP address and makes your application accessible.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Forward requests from local
+            <code>
+             port 3000
+            </code>
+            to
+            <code>
+             port 80
+            </code>
+            on the todolistapp-service, accessible from all network interfaces:
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl port-forward svc/todolistapp-service 3000:80 --address 0.0.0.0 &amp;</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl port-forward svc/todolistapp-service 3000:80 --address 0.0.0.0 &amp;" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-019.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can see the website via the port number 3000 from the public IP EC2 instance:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating You can see the website via the port number 3000 from the public IP EC2 instance:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-020.png"/>
+         </div>
+         <p>
+          Please spend some time playing around with this simple To Do List App to celebrate your progress so 🎉🥳 far!
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Let's list all events happening inside
+            <code>
+             hello-node
+            </code>
+            pod which provides details about the specific events associated with the Kubernetes pod :
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl describe pod todolistapp</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl describe pod todolistapp" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-021.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           [Explanation]
+          </strong>
+          The events show that Kubernetes scheduled the <code>todolistapp</code> Pod, pulled its image, created the container, and started it without errors.
+         </p>
+         <p>
+          <strong>
+           Optional
+          </strong>
+          <strong>
+           Minikube
+          </strong>
+          <strong>
+           Dashboard
+          </strong>
+          <strong>
+           Setup:
+          </strong>
+          The Minikube Dashboard is a graphical interface for managing and monitoring Kubernetes clusters, included with Minikube to simplify local development.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Open the Kubernetes dashboard in a browser:
+           </p>
+          </li>
+         </ul>
+         <pre><code>minikube dashboard --url</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating minikube dashboard --url" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-022.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           [Explanation]
+          </strong>
+          Minikube starts up the Kubernetes Dashboard and prints out a URL like “
+          <a href="http://127.0.0.1:43149/" rel="noopener" target="_blank">
+           http://127.0.0.1:43149/
+          </a>
+          … ”
+          <code>
+           .This
+          </code>
+          indicates that the
+          <strong>
+           dashboard
+          </strong>
+          <strong>
+           is
+          </strong>
+          <strong>
+           listening
+          </strong>
+          <strong>
+           on
+          </strong>
+          <strong>
+           port
+          </strong>
+          <strong>
+           43149
+          </strong>
+          on the remote VM/EC2 instance.
+          <strong>
+           Minikube
+          </strong>
+          <strong>
+           randomly
+          </strong>
+          <strong>
+           chooses
+          </strong>
+          <strong>
+           this
+          </strong>
+          <strong>
+           port
+          </strong>
+          every time the dashboard is started.
+         </p>
+         <p>
+          Since the dashboard is only exposed on
+          <code>
+           127.0.0.1
+          </code>
+          inside the remote VM (the EC2 instance), you can’t just open your local browser and go to http://
+          <code>
+           &lt;EC2 IP&gt;
+          </code>
+          :43149. To access the K8s dashboard, you need to choose
+          <strong>
+           either
+          </strong>
+          <strong>
+           option
+          </strong>
+          <strong>
+           A
+          </strong>
+          <strong>
+           (kubectl
+          </strong>
+          <strong>
+           proxy
+          </strong>
+          <strong>
+           method)
+          </strong>
+          <strong>
+           or
+          </strong>
+          <strong>
+           option
+          </strong>
+          <strong>
+           B
+          </strong>
+          <strong>
+           (SSH
+          </strong>
+          <strong>
+           port
+          </strong>
+          <strong>
+           forwarding
+          </strong>
+          <strong>
+           method)
+          </strong>
+         </p>
+         <h5 class="collapsible-header collapsible-header--chip">
+          🌐 Option A: Exposing the Dashboard with kubectl proxy
+          <span class="collapse-icon">
+          </span>
+         </h5>
+         <div class="collapsible-content">
+         <p>
+          ⚠ Important Security Warning: The following method is easier for a lab environment but is highly insecure. It exposes your entire Kubernetes cluster's control API to the network where the EC2 instance resides. Never use this method in a production environment. We are using it here strictly for learning purposes to avoid the complexity of SSH tunnels.
+         </p>
+         <p>
+          The kubectl proxy command can start a web server that allows us to access the Kubernetes API, including the dashboard. By default, it only listens on localhost, but we will tell it to listen on all network interfaces.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Start kubectl proxy on the EC2 Instance
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <code>
+               --address
+              </code>
+              ='
+              <code>
+               0.0.0.0
+              </code>
+              ' makes the proxy listen on all network interfaces, not just localhost.
+             </p>
+            </li>
+            <li>
+             <p>
+              <code>
+               --accept-hosts
+              </code>
+              ='.*' allows your browser's hostname to connect.
+             </p>
+            </li>
+            <li>
+             <p>
+              The &amp; at the end will run it in the background so you can continue using the terminal.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>kubectl proxy --address='0.0.0.0' --accept-hosts='.*' &amp;</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Open Port 8001 in your EC2 Security Group
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              The proxy runs on
+              <code>
+               port 8001
+              </code>
+              by default. You must open this port to access it from your browser.
+             </p>
+            </li>
+            <li>
+             <p>
+              If you follow the instruction carefully, you should have already opened this
+              <code>
+               port 8081
+              </code>
+              (within 3000-32767 range)
+             </p>
+            </li>
+           </ul>
+          </li>
+          <li>
+           <p>
+            Access the Dashboard
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Now, you can access the dashboard by combining your EC2 instance's public IP with the special dashboard URL:
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>http://&lt;Your-EC2-Public-IP&gt;:8001/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            This will open the Kubernetes Dashboard directly. Note that the URL in your browser will now show your public IP, not localhost or
+            <code>
+             127.0.0.1
+            </code>
+            .
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating will now show your public IP, not localhost or 127.0.0.1." class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-023.png"/>
+         </div>
+         </div>
+         <h5 class="collapsible-header collapsible-header--chip">
+          🔐 Option B: Exposing the Dashboard with SSH Port Forwarding
+          <span class="collapse-icon">
+          </span>
+         </h5>
+         <div class="collapsible-content">
+         <p>
+          Alternatively, you can use an SSH tunnel to “forward” a local port on your own computer to that remote port on the VM.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             [Open
+            </strong>
+            <strong>
+             another
+            </strong>
+            <strong>
+             terminal
+            </strong>
+            <strong>
+             window]
+            </strong>
+            Try to create a SSH Tunnel using this command:
+           </p>
+          </li>
+         </ul>
+         <pre><code>ssh -i [private key.pem] -L [local port]:localhost:[remote port of minikube dashboard] ec2-user@[ec2-public ip]</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating ssh -i [private key.pem] -L [local port]:localhost:[remote port of minikube dashboard] ec2-user@[ec2-public ip]" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-024.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           [Explanation]
+          </strong>
+          This command will forward any connections made to localhost:8081 (on your laptop) over SSH to localhost:43149 (on the remote EC2 instance).
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now, you can access to the dashboard by pasting the full dashboard url in your browser:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Now, you can access to the dashboard by pasting the full dashboard url in your browser:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-025.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           [Explanation]
+          </strong>
+          Everything you do on localhost:8081 will be securely tunneled over SSH and mapped to
+          <code>
+           port 43149
+          </code>
+          on the remote EC2 instance, which is where the Minikube Dashboard is actually running.
+         </p>
+         </div>
+         <h5 class="collapsible-header collapsible-header--chip">
+          🔎 After completing Option A or Option B to access the Kubernetes dashboard
+          <span class="collapse-icon">
+          </span>
+         </h5>
+         <div class="collapsible-content">
+         <p>
+          Here are quite a lot of information you can learn more about your Minikube or Kubernetes nodes, services and
+          <code>
+           deployments
+          </code>
+          :
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating services and deployments:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-026.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating services and deployments:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-027.png"/>
+         </div>
+         <p>
+          Please spend your time playing around with the dashboard before proceeding to the next steps!
+         </p>
+         <p>
+          <strong>
+           Time
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           clean
+          </strong>
+          <strong>
+           up
+          </strong>
+          <strong>
+           everything
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           move
+          </strong>
+          <strong>
+           on
+          </strong>
+          <strong>
+           to
+          </strong>
+          <strong>
+           the
+          </strong>
+          <strong>
+           next
+          </strong>
+          <strong>
+           project!
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             [Switching
+            </strong>
+            <strong>
+             back
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             first
+            </strong>
+            <strong>
+             terminal]
+            </strong>
+            <strong>
+             Now
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             can
+            </strong>
+            <strong>
+             clean
+            </strong>
+            <strong>
+             up
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             resources
+            </strong>
+            <strong>
+             you
+            </strong>
+            <strong>
+             created
+            </strong>
+            <strong>
+             in
+            </strong>
+            <strong>
+             your
+            </strong>
+            <strong>
+             cluster:
+            </strong>
+           </p>
+          </li>
+         </ul>
+         <pre><code>kubectl delete service todolistapp-service
+kubectl delete pod todolistapp</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating kubectl delete service todolistapp-service kubectl delete pod todolistapp" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-028.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Stop the Minikube virtual machine (VM):
+           </p>
+          </li>
+         </ul>
+         <pre><code>minikube stop</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating minikube stop" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-029.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can delete the whole cluster of Minikube by running this command:
+           </p>
+          </li>
+         </ul>
+         <pre><code>minikube delete</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating minikube delete" class="img-large" loading="lazy" src="../assets/tutorials/week-10/05-install-minikube-kubectl-and-dependencies-030.png"/>
+         </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="kubernetes-voting-app">
+    <h2 class="collapsible-header">
+     🗳️ 3. Deploy the voting application with Kubernetes manifests
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating 3. Setup the Voting App Example with Kubernetes with manifest files" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-001.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating 3. Setup the Voting App Example with Kubernetes with manifest files" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-002.png"/>
+        </div>
+        <p>
+         I hope you have fun so far! Let's recreate the voting application which we have practiced with
+         <code>
+          Docker
+         </code>
+         swarm in the previous lab. This time, we're gonna use
+         <code>
+          Kubernetes
+         </code>
+         manifest files to deploy this application.
+        </p>
+        <p>
+         The manifest is a specification of a Kubernetes API object in JSON or
+         <code>
+          YAML
+         </code>
+         format. A Kubernetes Manifest file is the heart of Kubernetes. These plaintext configuration files describe how a
+         <code>
+          pod
+         </code>
+         ’s containers should be run and connected to other objects, such as
+         <code>
+          services
+         </code>
+         or replication controllers. You can learn about it here.
+        </p>
+        <p class="callout">
+         <strong>Manifest prediction:</strong> Before applying the YAML files, identify how Pod labels and Service selectors connect traffic to workloads. What result would you expect from a selector that matches no Pods?
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's start a local Kubernetes cluster with minikube:
+          </p>
+         </li>
+        </ul>
+        <pre><code>minikube start --force</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating minikube start --force" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-003.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Next, clone the voting application from GitHub:
+          </p>
+         </li>
+        </ul>
+        <pre><code>yum install git -y
+git clone https://github.com/TomHuynhSG/simple-voting-application.git</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating yum install git -y git clone https://github.com/TomHuynhSG/simple-voting-application.git" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's change the current directory to the “kubernetes" directory in the GitHub repo:
+          </p>
+         </li>
+        </ul>
+        <pre><code>cd simple-voting-application/kubernetes</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list the YAML manifests needed to set up the voting app in Kubernetes:
+          </p>
+         </li>
+        </ul>
+        <pre><code>ls</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating ls" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-005.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating ls" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-006.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's launch the pod of the voting app website in the cluster using “
+           <code>
+            voting-app-pod.yml
+           </code>
+           " file:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl create -f voting-app-pod.yml</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl create -f voting-app-pod.yml" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-007.png"/>
+        </div>
+        <p>
+         <strong>
+          [Investigation]
+         </strong>
+         Read the contents of
+         <code>
+          voting-app-pod.yml
+         </code>
+         manifest file for your learning:
+        </p>
+        <div class="code-legend">
+         <span class="legend-item"><span class="legend-swatch hl-new"></span> Resource definition</span>
+         <span class="legend-item"><span class="legend-swatch hl-focus"></span> Identity or connection</span>
+        </div>
+        <pre><code class="language-kubernetes"><span class="hl-new">apiVersion: v1</span>
+<span class="hl-new">kind: Pod</span>
+<span class="hl-new">metadata:</span>
+<span class="hl-new">  name: voting-app-pod</span>
+<span class="hl-focus">  labels:</span>
+<span class="hl-focus">    name: voting-app-pod</span>
+<span class="hl-focus">    app: demo-voting-app</span>
+<span class="hl-new">spec:</span>
+<span class="hl-new">  containers:</span>
+<span class="hl-new">    - name: voting-app</span>
+<span class="hl-new">      image: dockersamples/examplevotingapp_vote</span>
+<span class="hl-new">      ports:</span>
+<span class="hl-focus">        - containerPort: 80</span></code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           List all
+           <code>
+            pods
+           </code>
+           in the cluster:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get pods</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get pods" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-008.png"/>
+        </div>
+        <p>
+         You can see there is a
+         <code>
+          voting-app
+         </code>
+         -pod which is created and running.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Describe the activity of all pods:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl describe pods</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl describe pods" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-009.png"/>
+        </div>
+        <p>
+         The event sequence shows that Kubernetes:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           The task of creating pod “
+           <code>
+            voting-app
+           </code>
+           -pod" is assigned to the minikube.
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Pulling the dockersamples/
+             <code>
+              examplevotingapp_vote
+             </code>
+             from the Docker Hub.
+            </p>
+           </li>
+           <li>
+            <p>
+             Created and started the container
+             <code>
+              voting-app
+             </code>
+             in the cluster.
+            </p>
+           </li>
+          </ul>
+         </li>
+         <li>
+          <p>
+           List all nodes in the cluster:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get nodes</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get nodes" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-010.png"/>
+        </div>
+        <p>
+         The Minikube control-plane node is running and ready.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's continue to create a
+           <code>
+            service
+           </code>
+           to expose the
+           <code>
+            voting-app
+           </code>
+           -pod which we just created to a public port number from the inner
+           <code>
+            port 80
+           </code>
+           of the node:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl create -f voting-app-service.yml</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl create -f voting-app-service.yml" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-011.png"/>
+        </div>
+        <p>
+         <strong>
+          [Investigation]
+         </strong>
+         Read the contents of
+         <code>
+          voting-app-pod.yml
+         </code>
+         manifest file for your learning:
+        </p>
+        <pre><code class="language-kubernetes"><span class="hl-new">apiVersion: v1</span>
+<span class="hl-new">kind: Service</span>
+<span class="hl-new">metadata:</span>
+<span class="hl-new">  name: voting-service</span>
+<span class="hl-new">spec:</span>
+<span class="hl-focus">  type: LoadBalancer</span>
+<span class="hl-new">  ports:</span>
+<span class="hl-new">    - port: 80</span>
+<span class="hl-focus">      targetPort: 80</span>
+<span class="hl-focus">  selector:</span>
+<span class="hl-focus">    name: voting-app-pod</span>
+<span class="hl-focus">    app: demo-voting-app</span></code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all the services:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get services</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get services" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-012.png"/>
+        </div>
+        <p>
+         As you can see our new voting-service is a type of Load Balancer and open to the port number
+        </p>
+        <p>
+         <strong>
+          [Extra
+         </strong>
+         <strong>
+          Info]
+         </strong>
+         <strong>
+          Service
+         </strong>
+         <strong>
+          Types:
+         </strong>
+         <strong>
+          <code>
+           NodePort
+          </code>
+         </strong>
+         <strong>
+          vs.
+         </strong>
+         <strong>
+          LoadBalancer
+         </strong>
+        </p>
+        <p>
+         In this lab, you will encounter two types of Kubernetes Services to expose your applications:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            NodePort
+           </strong>
+           : Exposes the service on a static port on each Node's IP address. It's a straightforward way to get external traffic into your cluster, making it great for development environments like the to-do list app.
+          </p>
+         </li>
+         <li>
+          <p>
+           <strong>
+            LoadBalancer
+           </strong>
+           : This is the standard method for exposing a service to the internet on a cloud provider (like
+           <code>
+            AWS
+           </code>
+           or GCP). When you create a service of this type, the cloud platform automatically provisions an external load balancer and assigns it a public IP.
+          </p>
+         </li>
+        </ul>
+        <p class="callout">
+         <strong>
+          [Extra
+         </strong>
+         <strong>
+          Info]
+         </strong>
+         <strong>
+          Why
+         </strong>
+         <strong>
+          is
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          <code>
+           EXTERNAL-IP
+          </code>
+         </strong>
+         <strong>
+          <code>
+           &lt;pending&gt;
+          </code>
+          ?
+         </strong>
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p class="callout">
+           <code>
+            Minikube
+           </code>
+           runs as a local, self-contained cluster and is not integrated with a cloud provider's infrastructure. Therefore, it cannot automatically provision an external load balancer. This is why the
+           <code>
+            EXTERNAL-IP
+           </code>
+           status remains
+           <code>
+            &lt;pending&gt;
+           </code>
+           .
+          </p>
+         </li>
+         <li>
+          <p class="callout">
+           To get around this, Minikube provides a handy command: minikube service
+           <code>
+            &lt;service-name&gt;
+           </code>
+           . This command creates a tunnel directly to the service inside the cluster, allowing you to access it.
+          </p>
+         </li>
+        </ul>
+        <p>
+         Let’s continue!
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s retrieve the URL of the 'todolistapp-service' service running in your local Minikube environment, allowing you to interact with your voting app via a URL:
+          </p>
+         </li>
+        </ul>
+        <pre><code>minikube service voting-service --url</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating minikube service voting-service --url" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-013.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s make an HTTP request to a web service running on a Minikube cluster to test if the voting website is actually working:
+          </p>
+         </li>
+        </ul>
+        <pre><code>curl &lt;the-voting-website-url&gt;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating curl &lt;the-voting-website-url&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-014.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Forward requests from local
+           <code>
+            port 3001
+           </code>
+           to
+           <code>
+            port 80
+           </code>
+           on the voting-service, accessible from all network interfaces:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl port-forward svc/voting-service 3001:80 --address 0.0.0.0 &amp;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl port-forward svc/voting-service 3001:80 --address 0.0.0.0 &amp;" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-015.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           You can see the voting app website is running, which is hosted inside the
+           <code>
+            voting-app
+           </code>
+           -pod in our cluster:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating our cluster:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-016.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           However, when you tried to click on the button “Dog" or “Cat" to vote, there would be an error “Internal Service Error" as the
+           <code>
+            voting-app
+           </code>
+           -node tried to communicate with the redis container and failed to do so. This is just like the exact problem of our previous lab:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating container and failed to do so. This is just like the exact problem of our previous lab:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-017.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating container and failed to do so. This is just like the exact problem of our previous lab:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-018.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's resolve that problem so let's create the redis-pod using
+           <code>
+            redis-pod.yml
+           </code>
+           file:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl create -f redis-pod.yml</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl create -f redis-pod.yml" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-019.png"/>
+        </div>
+        <p>
+         [Optional] Here is the content of
+         <code>
+          redis-pod.yml
+         </code>
+         manifest file for your learning:
+        </p>
+        <pre><code class="language-kubernetes">apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-pod
+  labels:
+    name: redis-pod
+    app: demo-voting-app
+spec:
+  containers:
+    - name: redis
+      image: redis:latest
+      ports:
+        - containerPort: 6379</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's create a service for redis-pod to expose the node to an external port number:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl create -f redis-service.yml</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl create -f redis-service.yml" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-020.png"/>
+        </div>
+        <p>
+         [Optional] Here is the content of
+         <code>
+          redis-service.yml
+         </code>
+         manifest file for your learning:
+        </p>
+        <pre><code class="language-kubernetes">apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    name: redis-service
+    app: demo-voting-app
+spec:
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+  selector:
+    name: redis-pod
+    app: demo-voting-app</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating apiVersion: v1 kind: Service metadata: name: redis labels: name: redis-service app: demo-voting-app spec: ports: - port: 6379 name: redis-something targetPort: 6379 selec" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-021.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's continue the routine and create the database postgres pod using
+           <code>
+            postgres-pod.yml
+           </code>
+           :
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl create -f postgres-pod.yml</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl create -f postgres-pod.yml" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-022.png"/>
+        </div>
+        <p>
+         <strong>
+          [Optional]
+         </strong>
+         Here is the content of
+         <code>
+          postgres-pod.yml
+         </code>
+         manifest file for your learning:
+        </p>
+        <pre><code class="language-kubernetes">apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres-pod
+  labels:
+    name: postgres-pod
+    app: demo-voting-app
+spec:
+  containers:
+    - name: postgres
+      image: postgres:9.4
+      env:
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "postgres"
+        - name: POSTGRES_HOST_AUTH_METHOD
+          value: "trust"
+      ports:
+        - containerPort: 5432</code></pre>
+        <div class="text-note"><strong>Lab-only configuration:</strong> <code>POSTGRES_HOST_AUTH_METHOD=trust</code> disables password checks for matching connections. Do not use it in production; use a Kubernetes Secret and password authentication instead.</div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's create a Service for the Postgres Pod so other components can reach it:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl create -f postgres-service.yml</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl create -f postgres-service.yml" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-023.png"/>
+        </div>
+        <p>
+         <strong>
+          [Optional]
+         </strong>
+         Here is the content of
+         <code>
+          postgres-service.yml
+         </code>
+         manifest file for your learning:
+        </p>
+        <pre><code class="language-kubernetes">apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  labels:
+    name: db-service
+    app: demo-voting-app
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    name: postgres-pod
+    app: demo-voting-app</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating selector: name: postgres-pod app: demo-voting-app" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-024.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's continue the routine and create the worker app pod using
+           <code>
+            worker-app-pod.yml
+           </code>
+           :
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl create -f worker-app-pod.yml</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl create -f worker-app-pod.yml" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-025.png"/>
+        </div>
+        <p>
+         [Optional] Here is the content of
+         <code>
+          worker-app-pod.yml
+         </code>
+         manifest file for your learning:
+        </p>
+        <pre><code class="language-kubernetes">apiVersion: v1
+kind: Pod
+metadata:
+  name: worker-app-pod
+  labels:
+    name: worker-app-pod
+    app: demo-voting-app
+spec:
+  containers:
+    - name: worker-app
+      image: dockersamples/examplevotingapp_worker</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating apiVersion: v1 kind: Pod metadata: name: worker-app-pod labels: name: worker-app-pod app: demo-voting-app spec: containers: - name: worker-app image: dockersamples/exampl" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-026.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's create the result app pod using
+           <code>
+            result-app-pod.yml
+           </code>
+           :
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl create -f result-app-pod.yml</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl create -f result-app-pod.yml" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-027.png"/>
+        </div>
+        <p>
+         [Optional] Here is the content of
+         <code>
+          result-app-pod.yml
+         </code>
+         manifest file for your learning:
+        </p>
+        <pre><code class="language-kubernetes">apiVersion: v1
+kind: Pod
+metadata:
+  name: result-app-pod
+  labels:
+    name: result-app-pod
+    app: demo-voting-app
+spec:
+  containers:
+    - name: result-app
+      image: dockersamples/examplevotingapp_result
+      ports:
+        - containerPort: 80</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's create a service for
+           <code>
+            result-app
+           </code>
+           -pod to expose the node to an external port number so we can access the result app website via a public port number:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl create -f result-app-service.yml</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl create -f result-app-service.yml" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-028.png"/>
+        </div>
+        <p>
+         <strong>
+          [Optional]
+         </strong>
+         Here is the content of
+         <code>
+          result-app-service.yml
+         </code>
+         manifest file for your learning:
+        </p>
+        <pre><code class="language-kubernetes">apiVersion: v1
+kind: Service
+metadata:
+  name: result-service
+  labels:
+    name: result-service
+    app: demo-result-app
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    name: result-app-pod
+    app: demo-voting-app</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all pods and repeat this command until all of the pods are running:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get pods</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get pods" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-029.png"/>
+        </div>
+        <p>
+         As you can see all five pods are up and running in the cluster.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all services in the cluster:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get services</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get services" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-030.png"/>
+        </div>
+        <p>
+         As you can see, we have two services result-service and voting-service which expose the result app website and the voting app website to be accessible via port numbers. We can use those port numbers to access the websites on the browser.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Forward requests from local
+           <code>
+            port 3002
+           </code>
+           to
+           <code>
+            port 80
+           </code>
+           on the result-service, accessible from all network interfaces:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl port-forward svc/result-service 3002:80 --address 0.0.0.0 &amp;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl port-forward svc/result-service 3002:80 --address 0.0.0.0 &amp;" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-031.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           The result application should now be available on the forwarded port:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating The result application should now be available on the forwarded port:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-032.png"/>
+        </div>
+        <p>
+         That is a great success of deploying the voting application in the Kubernetes cluster!
+        </p>
+        <p class="callout">
+         <strong>
+          [Question]
+         </strong>
+         However, now you might ask if there is any easy way to deploy all of the nodes in one go instead of running the yaml file one by one.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s clean up all pods and services. First, you can delete all pods:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl delete pods --all</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl delete pods --all" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-033.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all pods, and you should see if all five pods have been deleted:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get pods</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get pods" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-034.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Then delete all services:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl delete services --all</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl delete services --all" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-035.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all services, and you should see if all services have been deleted:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get services</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get services" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-036.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           For a multi-component application like this, applying each manifest file individually is inefficient. A much better practice is to apply all manifest files in a directory at once. Let's deploy the entire voting application with a single command:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Now, to quickly deploy all nodes in one go again without running each yaml file, you can use this command to for
+             <code>
+              kubectl
+             </code>
+             to run all yaml files in the current directory and execute all yaml files in one go to create all five pods and their services:
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>kubectl create -f .</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl create -f ." class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-037.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all pods, and you should see all five pods up and running:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get pods</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get pods" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-038.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all pods, and you should see all five services up and running:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get services</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get services" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-039.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           You can try to redo the steps (option A or option B) to launch the Kubernetes dashboard again to investigate more about those pods:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating again to investigate more about those pods:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-040.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating again to investigate more about those pods:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-041.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating again to investigate more about those pods:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-042.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           In a similar manner, you can delete all pods by running this command by telling kubectl to find all yaml files in the current directory and remove all pods mentioned in them:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl delete -f .</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl delete -f ." class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-043.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all pods again, and you should see all pods have been removed:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get pods</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get pods" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-044.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all services again, and you should see all services have been removed except kubernetes service:
+          </p>
+         </li>
+        </ul>
+        <pre><code>kubectl get services</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating kubectl get services" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-045.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Feel free to stop the Minikube virtual machine (VM):
+          </p>
+         </li>
+        </ul>
+        <pre><code>minikube stop</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating minikube stop" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-046.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           You can also delete the whole cluster of Minikube to wrap up this tutorial lab:
+          </p>
+         </li>
+        </ul>
+        <pre><code>minikube delete</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating minikube delete" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-047.png"/>
+        </div>
+        <p>
+         <strong>
+          Nicely
+         </strong>
+         <strong>
+          done!
+         </strong>
+         <strong>
+          Amazingly
+         </strong>
+         <strong>
+          good
+         </strong>
+         <strong>
+          job!
+         </strong>
+         <strong>
+          You
+         </strong>
+         <strong>
+          have
+         </strong>
+         <strong>
+          learned
+         </strong>
+         <strong>
+          one
+         </strong>
+         <strong>
+          of
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          most
+         </strong>
+         <strong>
+          difficult
+         </strong>
+         <strong>
+          topics
+         </strong>
+         <strong>
+          in
+         </strong>
+         <strong>
+          DevOps!
+         </strong>
+         <strong>
+          This
+         </strong>
+         🏆🥇🎉👏
+         <strong>
+          is
+         </strong>
+         <strong>
+          just
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          basics
+         </strong>
+         <strong>
+          of
+         </strong>
+         <strong>
+          Kubernetes
+         </strong>
+         <strong>
+          with
+         </strong>
+         <strong>
+          Minikube
+         </strong>
+         <strong>
+          !
+         </strong>
+         In the next lab, we will up our game and learn about EKS (Elastic Kubernetes Service) in AWS, which will manage our Kubernetes cluster with more ease in the real production!
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating with more ease in the real production!" class="img-large" loading="lazy" src="../assets/tutorials/week-10/06-3-deploy-the-voting-application-with-kubernetes-manifests-048.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="bonus-kubernetes-labs">
+    <h2 class="collapsible-header">
+     🌐 4. Bonus: Kubernetes online labs
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating 4. [Bonus] Kubernetes Online Lab &amp; Lessons from Docker" class="img-large" loading="lazy" src="../assets/tutorials/week-10/07-4-bonus-kubernetes-online-labs-001.png"/>
+        </div>
+        <p>
+         Play with
+         <code>
+          Kubernetes
+         </code>
+         is a labs site provided by
+         <code>
+          Docker
+         </code>
+         and created by Tutorius.
+        </p>
+        <ol class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Open this link:
+           <a href="https://labs.play-with-k8s.com/" rel="noopener" target="_blank">
+            https://labs.play-with-k8s.com/
+           </a>
+           .
+          </p>
+         </li>
+         <li>
+          <p>
+           You can log in with either a GitHub or Docker account. Then press the “Start” button!
+          </p>
+         </li>
+         <li>
+          <p>
+           Start the interactive session and follow this Kubernetes tutorial:
+           <a href="https://training.play-with-kubernetes.com/kubernetes-workshop/" rel="noopener" target="_blank">
+            https://training.play-with-kubernetes.com/kubernetes-workshop/
+           </a>
+          </p>
+         </li>
+        </ol>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating https://training.play-with-kubernetes.com/kubernetes-workshop/" class="img-large" loading="lazy" src="../assets/tutorials/week-10/07-4-bonus-kubernetes-online-labs-002.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="bonus-docker-swarm">
+    <h2 class="collapsible-header">
+     🌐 5. Bonus: Docker Swarm online lab
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating 5. [Bonus] Docker Swarm Online Lab from Docker" class="img-large" loading="lazy" src="../assets/tutorials/week-10/08-5-bonus-docker-swarm-online-lab-001.png"/>
+        </div>
+        <p>
+         In case you want to revise and work on your docker swarm skills for assignment 3, please follow this very short fun learning labs for
+         <code>
+          Docker
+         </code>
+         swarm from Docker:
+        </p>
+        <ol class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Open this link:
+           <a href="https://training.play-with-docker.com/ops-s1-swarm-intro/" rel="noopener" target="_blank">
+            https://training.play-with-docker.com/ops-s1-swarm-intro/
+           </a>
+          </p>
+         </li>
+        </ol>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Have fun! Always be learning!
+          </p>
+         </li>
+        </ul>
+        <p>
+         Here are some fun memes about
+         <code>
+          Kubernetes
+         </code>
+         to reward yourself after a long day of learning Kubernetes:
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Kubernetes: (1 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-10/08-5-bonus-docker-swarm-online-lab-002.png"/>
+         <img alt="Screenshot illustrating Kubernetes: (2 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-10/08-5-bonus-docker-swarm-online-lab-003.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Kubernetes:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/08-5-bonus-docker-swarm-online-lab-004.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Kubernetes:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/08-5-bonus-docker-swarm-online-lab-005.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Kubernetes:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/08-5-bonus-docker-swarm-online-lab-006.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Kubernetes:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/08-5-bonus-docker-swarm-online-lab-007.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Kubernetes:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/08-5-bonus-docker-swarm-online-lab-008.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Kubernetes:" class="img-large" loading="lazy" src="../assets/tutorials/week-10/08-5-bonus-docker-swarm-online-lab-009.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="whats-next">
+    <h2 class="collapsible-header start-open">
+     📚 Continue the course
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--home">
+      <a class="card" href="week-9-docker-compose-swarm-lab.html">
+       <h3>
+        🧩 Week 9: Docker Compose and Docker Swarm
+       </h3>
+       <p>
+        Continue through the COSC2767 learning path.
+       </p>
+       <span class="go-to-link">
+        Previous lab
+       </span>
+      </a>
+      <a class="card" href="week-11-eks-aws-lab.html">
+       <h3>
+        ☁️ Week 11: Elastic Kubernetes Service (EKS) on AWS
+       </h3>
+       <p>
+        Continue through the COSC2767 learning path.
+       </p>
+       <span class="go-to-link">
+        Next lab
+       </span>
+      </a>
+      <a class="card" href="../index.html">
+       <h3>
+        🗓️ All weekly labs
+       </h3>
+       <p>
+        Return to the course map and review every weekly tutorial.
+       </p>
+       <span class="go-to-link">
+        Course home
+       </span>
+      </a>
+     </div>
+    </div>
+   </section>
+  </main>
+  <footer>
+   <p>
+    © Created by Tom Huynh with love ❤️
+   </p>
+  </footer>
+ </body>
+</html>
+

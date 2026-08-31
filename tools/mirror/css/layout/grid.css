@@ -1,0 +1,65 @@
+/* =============================================================================
+   Card grid
+   One responsive grid with modifiers. Each modifier changes the --grid-min
+   token rather than restating grid-template-columns, so a new density is a
+   one-line addition.
+
+   The min(…, 100%) guard stops a fixed track minimum from overflowing the
+   viewport on narrow phones.
+   ========================================================================== */
+
+.grid-container {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--grid-min), 100%), 1fr));
+}
+
+/* Home page: many short cards. */
+.grid-container--home {
+    --grid-min: 280px;
+    gap: var(--space-5);
+}
+
+/* Link/resource tiles. */
+.grid-container--compact {
+    --grid-min: 240px;
+}
+
+/* Reference pages that pair prose with a code sample. */
+.grid-container--wide {
+    --grid-min: 400px;
+}
+
+/* One full-width column, used for long walkthrough steps. */
+.grid-container--single {
+    grid-template-columns: 1fr;
+}
+
+/* Fixed three-up layout for the asset gallery previews. */
+.grid-container--gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 700px) {
+    .grid-container--gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* A child that should span the full width of whatever grid it sits in. */
+.grid-span-all {
+    grid-column: 1 / -1;
+}
+
+/* Two equal columns side by side inside a card. */
+.sub-grid-container {
+    display: flex;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.sub-grid-container > .card {
+    flex: 1;
+    min-width: min(280px, 100%);
+}

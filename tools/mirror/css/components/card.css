@@ -1,0 +1,71 @@
+/* =============================================================================
+   Card
+   The base surface for every block of content on the site. Works as a <div>
+   and as an <a> (the home page uses whole-card links).
+   ========================================================================== */
+
+.card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-card);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    text-decoration: none;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-card-hover);
+}
+
+.card h3 {
+    font-size: 1.2rem;
+    color: var(--heading-color);
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+}
+
+/* Body copy absorbs spare height so the call-to-action of every card in a grid
+   row lines up along the bottom edge. */
+.card p {
+    margin-bottom: var(--space-3);
+    flex-grow: 1;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.card ul,
+.card ol {
+    padding-left: var(--space-4);
+    margin-bottom: var(--space-2);
+}
+
+.card ul {
+    list-style-type: disc;
+}
+
+/* Inline code inside body copy — distinct from a <pre> block. */
+.card code:not(pre code) {
+    background-color: var(--bg-color);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    color: var(--text-color);
+}
+
+/* Cards used as whole-card links keep their heading colour after a visit. */
+a.card,
+a.card:hover {
+    text-decoration: none;
+}
+
+/* --- Card variants --------------------------------------------------------- */
+
+/* Draws attention to work-in-progress or locked content. */
+.card--placeholder {
+    border: 2px dashed var(--accent-color);
+    background-color: color-mix(in srgb, var(--accent-color) 6%, var(--card-bg-color));
+}

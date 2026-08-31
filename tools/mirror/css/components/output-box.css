@@ -1,0 +1,48 @@
+/* =============================================================================
+   Output box
+   The "what you should see" panel that follows a code sample.
+   ========================================================================== */
+
+.output-container {
+    margin-top: auto;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-color);
+}
+
+.output-container h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+    color: var(--heading-color);
+    opacity: 0.8;
+}
+
+.output-box {
+    background-color: var(--output-bg-color);
+    border: 1px solid var(--output-border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+/* Console-style output where alignment matters. */
+.output-box--console {
+    font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
+    align-items: flex-start;
+}
+
+.output-box--top {
+    align-items: flex-start;
+}
+
+/* Text the user is meant to have typed, shown inside sample output. */
+.user-input {
+    color: #82aaff;
+    font-weight: bold;
+}

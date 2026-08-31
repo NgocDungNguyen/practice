@@ -1,0 +1,21 @@
+/* =============================================================================
+   Lists
+   Modifiers for the list defaults set in components/card.css.
+   ========================================================================== */
+
+/* Assessment / challenge criteria: extra breathing room between items. */
+.challenge-criteria li {
+    margin-bottom: var(--space-2);
+}
+
+/* An indented list outside a card, where `.card ul` does not apply. */
+.padded-list {
+    padding-left: var(--space-4);
+}
+
+/* A numbered list with looser leading, used for long procedures. */
+.steps-list {
+    padding-left: var(--space-4);
+    list-style-type: decimal;
+    line-height: 1.8;
+}

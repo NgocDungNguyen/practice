@@ -1,0 +1,47 @@
+/* =============================================================================
+   Element defaults
+   Bare HTML tags only. No class selectors live in this file.
+   ========================================================================== */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--heading-color);
+}
+
+a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* A visible focus ring is the only keyboard affordance this site has. */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+    outline: 3px solid var(--accent-color-line);
+    outline-offset: 3px;
+}
+
+code,
+kbd,
+samp,
+pre {
+    font-family: "Fira Code", "SFMono-Regular", Consolas, "Courier New", monospace;
+}

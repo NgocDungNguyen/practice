@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Official tools, documentation, downloads, and practice environments supporting the COSC2767 Systems Deployment and Operations labs.">
+<title>Useful DevOps Resources - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="resources" data-stage="resources" data-root="../" style="--stage-accent: var(--stage-resources)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Reference</span><span class="crumb-sep">/</span><span>Useful Resources</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Reference</span>
+</div>
+<h1>Useful DevOps Resources</h1>
+<p class="page-hero__intro">A course-aligned collection of downloads, official documentation, command references, and interactive practice environments. Use these resources when setting up a lab, checking command syntax, or extending an exercise beyond the weekly walkthrough.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>5</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>4</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="environments-cloud-access">
+<h2 class="collapsible-header start-open">
+                🖥️ Environments and cloud access
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--compact">
+<div class="card">
+<h3>VirtualBox</h3>
+<p>Download the hypervisor used in Week 1 to create Ubuntu and Fedora virtual machines on supported host systems.</p>
+<a class="button" href="https://www.virtualbox.org/wiki/Downloads" rel="noopener noreferrer" target="_blank">Open VirtualBox downloads</a>
+</div>
+<div class="card">
+<h3>Ubuntu Server</h3>
+<p>Download Ubuntu Server images and access Canonical's installation and administration guidance.</p>
+<a class="button" href="https://ubuntu.com/server" rel="noopener noreferrer" target="_blank">Open Ubuntu Server</a>
+</div>
+<div class="card">
+<h3>Fedora Server</h3>
+<p>Download Fedora Server for x86_64 or ARM and review the current release, checksum, and installation options.</p>
+<a class="button" href="https://fedoraproject.org/en/server/download/" rel="noopener noreferrer" target="_blank">Open Fedora Server</a>
+</div>
+<div class="card">
+<h3>AWS Academy</h3>
+<p>Sign in to the AWS Academy learning portal and launch the Learner Lab environment used throughout the course.</p>
+<a class="button" href="https://www.awsacademy.com/LMS_Login" rel="noopener noreferrer" target="_blank">Open AWS Academy</a>
+</div>
+<div class="card">
+<h3>Amazon EC2 getting started</h3>
+<p>Review the official workflow for launching, connecting to, and cleaning up an EC2 instance.</p>
+<a class="button" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html" rel="noopener noreferrer" target="_blank">Open EC2 guide</a>
+</div>
+<div class="card">
+<h3>AWS CLI installation</h3>
+<p>Install or update the AWS command-line client used to inspect credentials and connect local tools to AWS services.</p>
+<a class="button" href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html" rel="noopener noreferrer" target="_blank">Open AWS CLI guide</a>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="linux-shell">
+<h2 class="collapsible-header">
+                🐧 Linux, Bash, and command-line references
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--compact">
+<div class="card">
+<h3>GNU Bash manual</h3>
+<p>The authoritative reference for shell syntax, variables, redirection, pipelines, conditionals, loops, and scripts.</p>
+<a class="button" href="https://www.gnu.org/software/bash/manual/" rel="noopener noreferrer" target="_blank">Open Bash manual</a>
+</div>
+<div class="card">
+<h3>Linux manual pages</h3>
+<p>Search Linux system-call, command, configuration, and administration manual pages online.</p>
+<a class="button" href="https://man7.org/linux/man-pages/" rel="noopener noreferrer" target="_blank">Open Linux man-pages</a>
+</div>
+<div class="card">
+<h3>GNU Coreutils</h3>
+<p>Detailed documentation for core commands such as <code>cat</code>, <code>cp</code>, <code>ls</code>, <code>mkdir</code>, <code>mv</code>, <code>rm</code>, and <code>wc</code>.</p>
+<a class="button" href="https://www.gnu.org/software/coreutils/manual/coreutils.html" rel="noopener noreferrer" target="_blank">Open Coreutils manual</a>
+</div>
+<div class="card">
+<h3>ShellCheck</h3>
+<p>Analyse Bash scripts for common quoting, portability, control-flow, and syntax problems before running them on a server.</p>
+<a class="button" href="https://www.shellcheck.net/" rel="noopener noreferrer" target="_blank">Open ShellCheck</a>
+</div>
+<div class="card">
+<h3>curl documentation</h3>
+<p>Reference options for downloading files, following redirects, sending requests, and troubleshooting HTTP transfers.</p>
+<a class="button" href="https://curl.se/docs/" rel="noopener noreferrer" target="_blank">Open curl docs</a>
+</div>
+<div class="card">
+<h3>jq manual</h3>
+<p>Learn how to inspect, filter, and transform JSON output from command-line tools and cloud APIs.</p>
+<a class="button" href="https://jqlang.org/manual/" rel="noopener noreferrer" target="_blank">Open jq manual</a>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="version-control-delivery">
+<h2 class="collapsible-header">
+                🌿 Version control, builds, and continuous delivery
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--compact">
+<div class="card">
+<h3>Git command reference</h3>
+<p>Official documentation for repository setup, commits, branches, merges, remotes, inspection, and recovery commands.</p>
+<a class="button" href="https://git-scm.com/docs" rel="noopener noreferrer" target="_blank">Open Git reference</a>
+</div>
+<div class="card">
+<h3>GitHub SSH authentication</h3>
+<p>Generate an SSH key, add it to the agent and GitHub account, and test authenticated repository access.</p>
+<a class="button" href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh" rel="noopener noreferrer" target="_blank">Open GitHub SSH guide</a>
+</div>
+<div class="card">
+<h3>Learn Git Branching</h3>
+<p>Practise commits, branches, merges, rebases, and remote operations in an interactive visual environment.</p>
+<a class="button" href="https://learngitbranching.js.org/" rel="noopener noreferrer" target="_blank">Start interactive practice</a>
+</div>
+<div class="card">
+<h3>Oh My Git!</h3>
+<p>A game-based Git learning environment included as a bonus activity in the Week 3 tutorial.</p>
+<a class="button" href="https://blinry.itch.io/oh-my-git" rel="noopener noreferrer" target="_blank">Open Oh My Git!</a>
+</div>
+<div class="card">
+<h3>Apache Maven guides</h3>
+<p>Learn Maven's project structure, POM, dependencies, archetypes, build lifecycle, and packaging goals.</p>
+<a class="button" href="https://maven.apache.org/guides/index.html" rel="noopener noreferrer" target="_blank">Open Maven guides</a>
+</div>
+<div class="card">
+<h3>Apache Tomcat 9</h3>
+<p>Reference Tomcat setup, configuration, deployment, Manager application, logging, security, and service operation.</p>
+<a class="button" href="https://tomcat.apache.org/tomcat-9.0-doc/" rel="noopener noreferrer" target="_blank">Open Tomcat documentation</a>
+</div>
+<div class="card">
+<h3>Jenkins user documentation</h3>
+<p>Follow Jenkins installation, administration, credentials, jobs, agents, and continuous-delivery guidance.</p>
+<a class="button" href="https://www.jenkins.io/doc/" rel="noopener noreferrer" target="_blank">Open Jenkins docs</a>
+</div>
+<div class="card">
+<h3>Jenkins Pipeline</h3>
+<p>Understand stages, steps, agents, Declarative syntax, Jenkinsfiles, and pipeline-as-code practices.</p>
+<a class="button" href="https://www.jenkins.io/doc/book/pipeline/" rel="noopener noreferrer" target="_blank">Open Pipeline handbook</a>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="containers-automation">
+<h2 class="collapsible-header">
+                📦 Containers and configuration automation
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--compact">
+<div class="card">
+<h3>Docker documentation</h3>
+<p>Start with container fundamentals, then move into Dockerfiles, images, registries, networking, storage, and CLI reference.</p>
+<a class="button" href="https://docs.docker.com/" rel="noopener noreferrer" target="_blank">Open Docker docs</a>
+</div>
+<div class="card">
+<h3>Docker Hub</h3>
+<p>Find trusted images, inspect tags, create repositories, and publish the custom images built in Weeks 6 and 7.</p>
+<a class="button" href="https://hub.docker.com/" rel="noopener noreferrer" target="_blank">Open Docker Hub</a>
+</div>
+<div class="card">
+<h3>Docker Compose</h3>
+<p>Learn the Compose application model and manage multi-container services, networks, volumes, and lifecycle commands.</p>
+<a class="button" href="https://docs.docker.com/compose/" rel="noopener noreferrer" target="_blank">Open Compose docs</a>
+</div>
+<div class="card">
+<h3>Compose file reference</h3>
+<p>Check valid keys and structures for services, images, builds, ports, dependencies, networks, and volumes.</p>
+<a class="button" href="https://docs.docker.com/reference/compose-file/" rel="noopener noreferrer" target="_blank">Open Compose reference</a>
+</div>
+<div class="card">
+<h3>Ansible getting started</h3>
+<p>Review control nodes, inventories, managed hosts, ad-hoc commands, playbooks, tasks, and repeatable automation.</p>
+<a class="button" href="https://docs.ansible.com/projects/ansible/latest/getting_started/index.html" rel="noopener noreferrer" target="_blank">Open Ansible guide</a>
+</div>
+<div class="card">
+<h3>Docker Swarm workshop</h3>
+<p>Use Docker's interactive lab to practise managers, workers, services, replicas, overlay networking, and scaling.</p>
+<a class="button" href="https://training.play-with-docker.com/ops-s1-swarm-intro/" rel="noopener noreferrer" target="_blank">Start Swarm workshop</a>
+</div>
+<div class="card">
+<h3>Application Load Balancers</h3>
+<p>Understand listeners, rules, target groups, health checks, and multi-instance traffic distribution used in Week 9.</p>
+<a class="button" href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html" rel="noopener noreferrer" target="_blank">Open ALB documentation</a>
+</div>
+<div class="card">
+<h3>Prometheus overview</h3>
+<p>Extend the Compose monitoring challenge with metric collection concepts, exporters, targets, and PromQL.</p>
+<a class="button" href="https://prometheus.io/docs/introduction/overview/" rel="noopener noreferrer" target="_blank">Open Prometheus docs</a>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="kubernetes-eks">
+<h2 class="collapsible-header">
+                ☸️ Kubernetes and Amazon EKS
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--compact">
+<div class="card">
+<h3>Kubernetes Basics</h3>
+<p>Work through the official modules for creating a cluster, deploying, exploring, exposing, scaling, and updating an application.</p>
+<a class="button" href="https://kubernetes.io/docs/tutorials/kubernetes-basics/" rel="noopener noreferrer" target="_blank">Open Kubernetes Basics</a>
+</div>
+<div class="card">
+<h3>kubectl quick reference</h3>
+<p>Find concise examples for contexts, resources, manifests, inspection, logs, updates, services, and cleanup.</p>
+<a class="button" href="https://kubernetes.io/docs/reference/kubectl/quick-reference/" rel="noopener noreferrer" target="_blank">Open kubectl reference</a>
+</div>
+<div class="card">
+<h3>Minikube start guide</h3>
+<p>Create a local learning cluster and review drivers, status checks, services, dashboards, add-ons, and teardown.</p>
+<a class="button" href="https://minikube.sigs.k8s.io/docs/start/" rel="noopener noreferrer" target="_blank">Open Minikube guide</a>
+</div>
+<div class="card">
+<h3>Play with Kubernetes</h3>
+<p>Launch temporary browser-based Kubernetes nodes for hands-on practice without preparing your own server.</p>
+<a class="button" href="https://labs.play-with-k8s.com/" rel="noopener noreferrer" target="_blank">Open Play with Kubernetes</a>
+</div>
+<div class="card">
+<h3>Kubernetes workshop</h3>
+<p>Follow the interactive Kubernetes workshop linked from Week 10 for additional cluster and workload practice.</p>
+<a class="button" href="https://training.play-with-kubernetes.com/kubernetes-workshop/" rel="noopener noreferrer" target="_blank">Start Kubernetes workshop</a>
+</div>
+<div class="card">
+<h3>Amazon EKS setup</h3>
+<p>Install the AWS CLI, <code>kubectl</code>, and <code>eksctl</code>, then review permissions and version compatibility.</p>
+<a class="button" href="https://docs.aws.amazon.com/eks/latest/userguide/setting-up.html" rel="noopener noreferrer" target="_blank">Open EKS setup</a>
+</div>
+<div class="card">
+<h3>EKS with eksctl</h3>
+<p>Follow AWS's cluster lifecycle guide for provisioning nodes, viewing resources, and deleting chargeable infrastructure.</p>
+<a class="button" href="https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html" rel="noopener noreferrer" target="_blank">Open eksctl quickstart</a>
+</div>
+<div class="card">
+<h3>Install kubectl and eksctl</h3>
+<p>Use the version-aware Amazon EKS installation instructions for both command-line clients.</p>
+<a class="button" href="https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html" rel="noopener noreferrer" target="_blank">Open tool setup guide</a>
+</div>
+</div>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-resources)" href="../sub_pages/devops-cheatsheet.html"><span class="pager__dir">← Previous</span><span class="pager__title">DevOps Cheatsheet</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-resources)" href="../sub_pages/setup.html"><span class="pager__dir">Next →</span><span class="pager__title">Practice Environment Setup</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="environments-cloud-access"><a class="toc__link" href="#environments-cloud-access"><span>Environments and cloud access</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="linux-shell"><a class="toc__link" href="#linux-shell"><span>Linux, Bash, and command-line references</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="version-control-delivery"><a class="toc__link" href="#version-control-delivery"><span>Version control, builds, and continuous delivery</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="containers-automation"><a class="toc__link" href="#containers-automation"><span>Containers and configuration automation</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="kubernetes-eks"><a class="toc__link" href="#kubernetes-eks"><span>Kubernetes and Amazon EKS</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 5 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="COSC2767 Systems Deployment and Operations weekly lab guides for Linux, AWS, CI/CD, containers, automation, and Kubernetes.">
+<title>COSC2767 - Systems Deployment and Operations</title>
+<link rel="icon" type="image/png" href="assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="home" data-root="">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="index.html">
+<img src="assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Course home</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<section class="home-hero">
+<div class="container">
+<div class="home-hero__uni"><img src="assets/images/rmit-logo.png" alt="RMIT University logo"><span>RMIT University</span></div>
+<p class="home-hero__kicker">Deployment · Automation · Cloud Operations</p>
+<h1><span class="h1-course-code">COSC2767</span>Systems Deployment <br>and Operations</h1>
+<p class="home-hero__intro">A visual, step-by-step companion for the weekly labs. Build Linux environments,
+                automate delivery pipelines, work with containers, and operate cloud-native systems using the
+                screenshots and instructions from the official course tutorials.</p>
+<p class="home-hero__coordinator">👨‍🏫 <strong>Course Coordinator:</strong> Mr Tom Huynh (tom.huynh@rmit.edu.vn)</p>
+<div class="home-hero__actions">
+<a class="btn-primary" href="sub_pages/week-1-tools-environment-setup-lab.html">Start with Week 1 →</a>
+<button class="btn-ghost" type="button" data-action="open-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg> Search the guides <kbd>⌘K</kbd></button>
+</div>
+</div>
+</section>
+<main class="container" id="main-content">
+<section class="home-section" aria-labelledby="learning-path-title">
+<p class="home-section__eyebrow">Course roadmap</p>
+<h2 class="home-section__title" id="learning-path-title">Your learning path</h2>
+<p class="home-section__intro">Each stage builds on the last: establish dependable Linux foundations, automate application delivery, package and coordinate services, then operate them on Kubernetes in AWS.</p>
+<ol class="roadmap"><li class="roadmap__stage" data-stage="foundations">
+<span class="roadmap__marker">01</span>
+<div class="roadmap__meta"><span>Weeks 1–3</span><span>Foundations</span></div>
+<h3>Linux and cloud foundations</h3>
+<p>Prepare Linux environments, work confidently from the command line, and connect local development to Git and AWS.</p>
+<ul class="roadmap__outcomes"><li>Working Ubuntu and Fedora labs</li><li>Remote administration with SSH</li><li>Version-controlled cloud workflow</li></ul>
+</li><li class="roadmap__stage" data-stage="delivery">
+<span class="roadmap__marker">02</span>
+<div class="roadmap__meta"><span>Weeks 4–5</span><span>Delivery</span></div>
+<h3>Build and delivery automation</h3>
+<p>Turn source code into deployable Java applications, then replace manual delivery steps with a repeatable Jenkins pipeline.</p>
+<ul class="roadmap__outcomes"><li>Build WAR packages with Maven</li><li>Deploy applications to Tomcat</li><li>Automate CI/CD with Jenkins</li></ul>
+</li><li class="roadmap__stage" data-stage="automation">
+<span class="roadmap__marker">03</span>
+<div class="roadmap__meta"><span>Weeks 6, 8–9</span><span>Automation</span></div>
+<h3>Containers and configuration</h3>
+<p>Package applications consistently, automate server configuration, and coordinate multi-service systems across hosts.</p>
+<ul class="roadmap__outcomes"><li>Build and run Docker workloads</li><li>Configure systems with Ansible</li><li>Orchestrate with Compose and Swarm</li></ul>
+</li><li class="roadmap__stage" data-stage="orchestration">
+<span class="roadmap__marker">04</span>
+<div class="roadmap__meta"><span>Weeks 10–11</span><span>Operations</span></div>
+<h3>Container orchestration</h3>
+<p>Apply the complete workflow to clustered applications, first locally with Kubernetes and then in a managed AWS environment.</p>
+<ul class="roadmap__outcomes"><li>Deploy and expose Kubernetes workloads</li><li>Inspect and troubleshoot cluster state</li><li>Operate a managed Amazon EKS cluster</li></ul>
+</li></ol>
+</section>
+<section class="home-section" aria-labelledby="weekly-labs-title">
+<p class="home-section__eyebrow">Weekly tutorial labs</p>
+<h2 class="home-section__title" id="weekly-labs-title">Lab guides, week by week</h2>
+<p class="home-section__intro">Your progress is saved in this browser as you mark sections done — the rings show how far along each lab you are.</p>
+<div class="week-grid"><a class="week-card" data-stage="foundations" href="sub_pages/week-1-tools-environment-setup-lab.html">
+<span class="week-card__top"><span class="week-card__num">WK 01</span><span class="week-card__emoji" aria-hidden="true">🧰</span><span class="week-card__ring" data-page-key="week-1" data-sections="7" role="img" aria-label="progress">
+<svg width="30" height="30" viewBox="0 0 30 30"><circle class="ring-track" cx="15" cy="15" r="12"/><circle class="ring-fill" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="75.4"/><path class="ring-done-tick" d="M10.2 15.4l3.2 3.2 6.4-6.8-1.5-1.4-4.9 5.2-1.8-1.7z"/></svg>
+</span></span>
+<h3>Tools and Environment Setup</h3>
+<p>Install and configure Ubuntu and Fedora virtual machines, enable SSH, account for Apple Silicon, and activate AWS Learner Lab.</p>
+<span class="go-to-link">Open lab guide</span>
+</a><a class="week-card" data-stage="foundations" href="sub_pages/week-2-linux-cli-lab.html">
+<span class="week-card__top"><span class="week-card__num">WK 02</span><span class="week-card__emoji" aria-hidden="true">⌨️</span><span class="week-card__ring" data-page-key="week-2" data-sections="14" role="img" aria-label="progress">
+<svg width="30" height="30" viewBox="0 0 30 30"><circle class="ring-track" cx="15" cy="15" r="12"/><circle class="ring-fill" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="75.4"/><path class="ring-done-tick" d="M10.2 15.4l3.2 3.2 6.4-6.8-1.5-1.4-4.9 5.2-1.8-1.7z"/></svg>
+</span></span>
+<h3>Linux and CLI Commands</h3>
+<p>Practise Bash navigation, files, Nano, permissions, packages, scripting, log analysis, grep, and command pipelines.</p>
+<span class="go-to-link">Open lab guide</span>
+</a><a class="week-card" data-stage="foundations" href="sub_pages/week-3-git-aws-lab.html">
+<span class="week-card__top"><span class="week-card__num">WK 03</span><span class="week-card__emoji" aria-hidden="true">🔀</span><span class="week-card__ring" data-page-key="week-3" data-sections="11" role="img" aria-label="progress">
+<svg width="30" height="30" viewBox="0 0 30 30"><circle class="ring-track" cx="15" cy="15" r="12"/><circle class="ring-fill" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="75.4"/><path class="ring-done-tick" d="M10.2 15.4l3.2 3.2 6.4-6.8-1.5-1.4-4.9 5.2-1.8-1.7z"/></svg>
+</span></span>
+<h3>Git and AWS</h3>
+<p>Use Git for version control and apply repository workflows alongside Amazon Web Services.</p>
+<span class="go-to-link">Open lab guide</span>
+</a><a class="week-card" data-stage="delivery" href="sub_pages/week-4-java-maven-tomcat-lab.html">
+<span class="week-card__top"><span class="week-card__num">WK 04</span><span class="week-card__emoji" aria-hidden="true">☕</span><span class="week-card__ring" data-page-key="week-4" data-sections="20" role="img" aria-label="progress">
+<svg width="30" height="30" viewBox="0 0 30 30"><circle class="ring-track" cx="15" cy="15" r="12"/><circle class="ring-fill" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="75.4"/><path class="ring-done-tick" d="M10.2 15.4l3.2 3.2 6.4-6.8-1.5-1.4-4.9 5.2-1.8-1.7z"/></svg>
+</span></span>
+<h3>Java, Maven and Tomcat</h3>
+<p>Build Java applications with Maven and deploy packaged applications to Apache Tomcat.</p>
+<span class="go-to-link">Open lab guide</span>
+</a><a class="week-card" data-stage="delivery" href="sub_pages/week-5-jenkins-ci-cd-lab.html">
+<span class="week-card__top"><span class="week-card__num">WK 05</span><span class="week-card__emoji" aria-hidden="true">🔧</span><span class="week-card__ring" data-page-key="week-5" data-sections="11" role="img" aria-label="progress">
+<svg width="30" height="30" viewBox="0 0 30 30"><circle class="ring-track" cx="15" cy="15" r="12"/><circle class="ring-fill" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="75.4"/><path class="ring-done-tick" d="M10.2 15.4l3.2 3.2 6.4-6.8-1.5-1.4-4.9 5.2-1.8-1.7z"/></svg>
+</span></span>
+<h3>Jenkins for CI and CD</h3>
+<p>Create Jenkins jobs and pipelines that automate build, test, and deployment stages.</p>
+<span class="go-to-link">Open lab guide</span>
+</a><a class="week-card" data-stage="automation" href="sub_pages/week-6-docker-lab.html">
+<span class="week-card__top"><span class="week-card__num">WK 06</span><span class="week-card__emoji" aria-hidden="true">🐳</span><span class="week-card__ring" data-page-key="week-6" data-sections="16" role="img" aria-label="progress">
+<svg width="30" height="30" viewBox="0 0 30 30"><circle class="ring-track" cx="15" cy="15" r="12"/><circle class="ring-fill" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="75.4"/><path class="ring-done-tick" d="M10.2 15.4l3.2 3.2 6.4-6.8-1.5-1.4-4.9 5.2-1.8-1.7z"/></svg>
+</span></span>
+<h3>Docker</h3>
+<p>Build images, run containers, manage registries, and package applications consistently.</p>
+<span class="go-to-link">Open lab guide</span>
+</a><div class="week-card week-card--locked">
+<span class="week-card__top"><span class="week-card__num">WK 07</span><span class="week-card__emoji" aria-hidden="true">🌱</span></span>
+<h3>Personal Development Week</h3>
+<p>Please check the Canvas course page for this week's reading materials and self-directed learning activities.</p>
+<span class="go-to-link go-to-link--static">Available on Canvas</span>
+</div><a class="week-card" data-stage="automation" href="sub_pages/week-8-ansible-lab.html">
+<span class="week-card__top"><span class="week-card__num">WK 08</span><span class="week-card__emoji" aria-hidden="true">🤖</span><span class="week-card__ring" data-page-key="week-8" data-sections="11" role="img" aria-label="progress">
+<svg width="30" height="30" viewBox="0 0 30 30"><circle class="ring-track" cx="15" cy="15" r="12"/><circle class="ring-fill" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="75.4"/><path class="ring-done-tick" d="M10.2 15.4l3.2 3.2 6.4-6.8-1.5-1.4-4.9 5.2-1.8-1.7z"/></svg>
+</span></span>
+<h3>Ansible</h3>
+<p>Describe infrastructure as code and automate repeatable system configuration with playbooks.</p>
+<span class="go-to-link">Open lab guide</span>
+</a><a class="week-card" data-stage="automation" href="sub_pages/week-9-docker-compose-swarm-lab.html">
+<span class="week-card__top"><span class="week-card__num">WK 09</span><span class="week-card__emoji" aria-hidden="true">🧩</span><span class="week-card__ring" data-page-key="week-9" data-sections="6" role="img" aria-label="progress">
+<svg width="30" height="30" viewBox="0 0 30 30"><circle class="ring-track" cx="15" cy="15" r="12"/><circle class="ring-fill" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="75.4"/><path class="ring-done-tick" d="M10.2 15.4l3.2 3.2 6.4-6.8-1.5-1.4-4.9 5.2-1.8-1.7z"/></svg>
+</span></span>
+<h3>Docker Compose and Docker Swarm</h3>
+<p>Define multi-container applications and explore service orchestration across a Swarm.</p>
+<span class="go-to-link">Open lab guide</span>
+</a><a class="week-card" data-stage="orchestration" href="sub_pages/week-10-kubernetes-lab.html">
+<span class="week-card__top"><span class="week-card__num">WK 10</span><span class="week-card__emoji" aria-hidden="true">☸️</span><span class="week-card__ring" data-page-key="week-10" data-sections="8" role="img" aria-label="progress">
+<svg width="30" height="30" viewBox="0 0 30 30"><circle class="ring-track" cx="15" cy="15" r="12"/><circle class="ring-fill" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="75.4"/><path class="ring-done-tick" d="M10.2 15.4l3.2 3.2 6.4-6.8-1.5-1.4-4.9 5.2-1.8-1.7z"/></svg>
+</span></span>
+<h3>Kubernetes</h3>
+<p>Deploy, expose, inspect, scale, and troubleshoot containerised workloads on Kubernetes.</p>
+<span class="go-to-link">Open lab guide</span>
+</a><a class="week-card" data-stage="orchestration" href="sub_pages/week-11-eks-aws-lab.html">
+<span class="week-card__top"><span class="week-card__num">WK 11</span><span class="week-card__emoji" aria-hidden="true">☁️</span><span class="week-card__ring" data-page-key="week-11" data-sections="7" role="img" aria-label="progress">
+<svg width="30" height="30" viewBox="0 0 30 30"><circle class="ring-track" cx="15" cy="15" r="12"/><circle class="ring-fill" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="75.4"/><path class="ring-done-tick" d="M10.2 15.4l3.2 3.2 6.4-6.8-1.5-1.4-4.9 5.2-1.8-1.7z"/></svg>
+</span></span>
+<h3>Amazon EKS</h3>
+<p>Operate Kubernetes in AWS using Elastic Kubernetes Service and the course cloud environment.</p>
+<span class="go-to-link">Open lab guide</span>
+</a></div>
+</section>
+<section class="home-section" aria-labelledby="resources-title">
+<p class="home-section__eyebrow">Reference shelf</p>
+<h2 class="home-section__title" id="resources-title">Course reference library</h2>
+<div class="week-grid"><a class="week-card" data-stage="resources" href="sub_pages/devops-cheatsheet.html">
+<span class="week-card__top"><span class="week-card__num">CS</span><span class="week-card__emoji" aria-hidden="true">📘</span></span>
+<h3>DevOps Cheatsheet</h3>
+<p>Quickly recall course commands and configuration patterns for Linux, Git, AWS, Maven, Tomcat, Jenkins, Docker, Ansible, Compose, Swarm, Kubernetes, and EKS.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/useful-resources.html">
+<span class="week-card__top"><span class="week-card__num">RX</span><span class="week-card__emoji" aria-hidden="true">📘</span></span>
+<h3>Useful DevOps Resources</h3>
+<p>Find official downloads, documentation, command references, and interactive practice environments aligned with the ten weekly labs.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/setup.html">
+<span class="week-card__top"><span class="week-card__num">SU</span><span class="week-card__emoji" aria-hidden="true">🧰</span></span>
+<h3>Practice Environment Setup</h3>
+<p>Stand up Docker, Maven, Tomcat, and Jenkins from a blank machine, verify every layer, then reset to a clean slate and drill it again.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/challenge-6-setup-script.html">
+<span class="week-card__top"><span class="week-card__num">C6</span><span class="week-card__emoji" aria-hidden="true">🚀</span></span>
+<h3>Challenge 6 Setup Script</h3>
+<p>The Week 4 ultimate challenge, solved: one bash script from blank EC2 instance to a live webapp on port 80 — with the reasoning behind every step.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/debug-jenkins-ssh-agent.html">
+<span class="week-card__top"><span class="week-card__num">DL</span><span class="week-card__emoji" aria-hidden="true">🧯</span></span>
+<h3>Debug Log: Jenkins SSH Agent</h3>
+<p>A real debugging session, written up: the Jenkins SSH Agent wrapper failing on an empty config field — two disproven hypotheses, the root cause, and the habits worth keeping.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/ssh-keys-github.html">
+<span class="week-card__top"><span class="week-card__num">SK</span><span class="week-card__emoji" aria-hidden="true">🔑</span></span>
+<h3>SSH Keys & GitHub Access</h3>
+<p>Key-pair auth from mental model to muscle memory: GitHub over SSH, private repos with a PAT or SSH key in Jenkins, server-to-server keys, and the publickey checklist.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/rmit-store-manual-deploy.html">
+<span class="week-card__top"><span class="week-card__num">A2</span><span class="week-card__emoji" aria-hidden="true">🛒</span></span>
+<h3>RMIT Store: Manual Deploy (A–E)</h3>
+<p>The Assignment 2 store, deployed by hand before any pipeline — following the repo README's own Plan A–E: run it locally, ship it to one EC2 box, split it across servers with S3 and RDS, containerise with Docker, then Docker Compose. Stops before Plan F, the automation pipeline.</p>
+<span class="go-to-link">Open reference</span>
+</a></div>
+</section>
+</main>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

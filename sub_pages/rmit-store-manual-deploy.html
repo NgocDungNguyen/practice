@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Assignment 2 walkthrough: deploy the RMIT Store (Django + Vue) by hand, following the repo README's Plan A–E — run locally, deploy to one EC2, split across servers with S3/RDS, containerise with Docker, then Docker Compose. Stops before Plan F (the automation pipeline).">
+<title>RMIT Store: Manual Deploy (A–E) - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="rmit-manual-deploy" data-stage="resources" data-root="../" style="--stage-accent: var(--stage-resources)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Reference</span><span class="crumb-sep">/</span><span>RMIT Store: Manual Deploy (A–E)</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Reference</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">🛒</span>RMIT Store: Manual Deploy (A–E)</h1>
+<p class="page-hero__intro">Do the Assignment 2 pipeline the right way — <strong>by hand first</strong>. This follows the repo README's own <code>Plan A–E</code> exactly, taking the <code>Django + Vue</code> store from your laptop to Docker Compose. It <strong>stops at Plan E</strong>: Plan F (Jenkins, Ansible, CloudFormation, Kubernetes) is the automation pipeline — a separate job for later.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>8</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>80</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>67</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="deploy-overview">
+<h2 class="collapsible-header start-open">🎯 What you are building, and the A–E map<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>The golden rule</h3>
+<p>The assignment says it plainly: <em>do not automate a process you do not yet understand.</em> Each step is something a pipeline will later do for you — you do it by hand once first, so you know what "good" looks like.</p>
+<pre><code class="language-bash">A  Run it locally             # on your laptop
+B  Deploy to one EC2 by hand  # the whole app on one AWS box
+C  Split across servers       # DB / API / frontend apart, + S3, + RDS
+D  Containerise with Docker   # images; no Node in prod
+E  Docker Compose             # one file describes all three tiers</code></pre>
+<p class="command-purpose"><strong>Then stop.</strong> Plan F (Jenkins, Ansible, CloudFormation, Kubernetes, monitoring) is the automation pipeline — later.</p>
+</div>
+<div class="card">
+<h3>The three tiers</h3>
+<p>Three things you can deploy independently. Remember the ports — each one becomes a security-group rule or a container port later.</p>
+<pre><code class="language-bash">Frontend  Vue 3 (Vite)   -&gt; static files   (nginx, port 80)
+Backend   Django + DRF   -&gt; gunicorn        (port 8000)
+Database  PostgreSQL     -&gt; stateful        (port 5432)
+Images    uploads        -&gt; local disk / S3 (Step C)</code></pre>
+<p class="command-purpose"><strong>Repo:</strong> <code>github.com/TomHuynhSG/COSC2767-RMIT-Store-Django-Vue</code> — read its README. This guide uses the <em>same</em> Plan A–E letters, so an instruction that says "Plan C" means the same thing here.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>The two ideas that make the whole thing work.</strong> (1) The frontend reads its API URL from <code>client/public/config.js</code> at <em>page load</em>, not at build time — so <strong>one built artifact deploys everywhere</strong>, you just edit a text file. (2) <code>python manage.py migrate</code> is a <em>deploy step</em> — it must run, in order, before new code serves traffic. Keep both in mind from Step A; Steps C, D and E are mostly about honouring them across more machines.</p>
+<p class="callout callout--note"><strong>Where the letters lead.</strong> A–B run the whole app on one box. C is the first time it lives on more than one machine — which is exactly when uploaded images break and you need S3. D and E are about packaging so that "more than one machine" stops being a manual chore. Plan F automates all of it.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="step-a-local">
+<h2 class="collapsible-header">🖥️ Step A — Run it locally (Plan A)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>A0 · Install the runtimes</h3>
+<p>You need three things. Install them, then prove they are on your PATH.</p>
+<pre><code class="language-bash"># Python 3.11+, Node 20+, PostgreSQL 14+
+# macOS Postgres: brew install postgresql@16 &amp;&amp; brew services start postgresql@16
+python3 --version
+node --version
+psql --version</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> a fresh machine. If any command errors, fix that before going on.</p>
+</div>
+<div class="card">
+<h3>A1 · Get the code</h3>
+<p>Clone your team's fork of the repo and step into it.</p>
+<pre><code class="language-bash">git clone &lt;your-repository-url&gt;
+cd COSC2767-RMIT-Store-Django-Vue</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> the very start. Use <em>your team's</em> fork — you need push access for the pipeline later.</p>
+</div>
+<div class="card">
+<h3>A2 · Create the database</h3>
+<p>Make a role and a database for the app. macOS/Homebrew can run <code>psql</code> directly.</p>
+<pre><code class="language-bash"># macOS (Homebrew)
+psql -d postgres -c "CREATE ROLE rmit LOGIN PASSWORD 'rmit' CREATEDB;"
+psql -d postgres -c "CREATE DATABASE rmit_store OWNER rmit;"
+
+# Linux: prefix both with  sudo -u postgres
+psql -U rmit -d rmit_store -c "SELECT version();"</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> once per machine. If <code>SELECT version()</code> works, Django will connect.</p>
+</div>
+<div class="card">
+<h3>A3 · Set up the API</h3>
+<p>A virtualenv keeps the Python packages isolated. Copy the example env file — the defaults are fine for local dev.</p>
+<pre><code class="language-bash">cd server
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env             # open it and read the comments</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> read <code>server/.env</code>. Each variable becomes a real deployment decision later.</p>
+</div>
+<div class="card">
+<h3>A4 · Migrate and seed</h3>
+<p><code>migrate</code> builds the tables; <code>seed_demo</code> fills them with a real catalogue and demo accounts. Seeding is idempotent.</p>
+<pre><code class="language-bash">python manage.py migrate
+
+python manage.py seed_demo \
+    --admin-email admin@rmit.edu.au \
+    --admin-password 'RmitStore2767!' \
+    --demo-users</code></pre>
+<p class="command-purpose"><strong>Gives you:</strong> 47 products, an admin, a demo member, a demo seller. Add <code>--no-images</code> to finish in seconds while testing.</p>
+</div>
+<div class="card">
+<h3>A5 · Run the API (terminal 1)</h3>
+<p>This command does <em>not</em> return — it holds the terminal open. Leave it running.</p>
+<pre><code class="language-bash">python manage.py runserver 0.0.0.0:8000
+
+curl http://localhost:8000/healthz/   # {"status": "ok"}
+curl http://localhost:8000/readyz/    # {"database": "ok", "storage": "ok"}</code></pre>
+<p class="command-purpose"><strong>Explore:</strong> <code>http://localhost:8000/api/docs/</code> drives the whole backend with no frontend running.</p>
+</div>
+<div class="card">
+<h3>A6 · Run the frontend (terminal 2)</h3>
+<p>Leave the API running and open a second terminal. Vite serves the SPA and proxies <code>/api</code> to port 8000, so the browser sees one origin.</p>
+<pre><code class="language-bash">cd /path/to/COSC2767-RMIT-Store-Django-Vue/client
+npm install
+cp .env.example .env
+npm run dev                      # open http://localhost:5173</code></pre>
+<p class="command-purpose"><strong>Proof:</strong> product photos load. Grey placeholder boxes = SPA up but API not (check terminal 1).</p>
+</div>
+<div class="card">
+<h3>A7 · Build the real artifact</h3>
+<p><code>npm run dev</code> is not deployment. See what you actually ship: static files in <code>dist/</code>. There is <strong>no Node in production</strong>.</p>
+<pre><code class="language-bash">cd client
+npm run build                    # produces client/dist/
+npx vite preview --port 4173
+
+# the trick — repoint the built artifact WITHOUT rebuilding:
+nano dist/config.js              # set API_BASE_URL to http://localhost:8000/api</code></pre>
+<p class="command-purpose"><strong>The whole lesson:</strong> hard-reload <code>:4173</code> with the network tab open — requests move to the new API, and the hashed bundle filename is byte-for-byte unchanged. This is what Steps C–E lean on.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Done with A when:</strong> the store loads at <code>localhost:5173</code> with real images, and <code>curl /readyz/</code> returns both <code>ok</code>. Walk acceptance journeys A and B from the README so you know what a working deploy looks like.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="step-b-ec2">
+<h2 class="collapsible-header">☁️ Step B — Deploy to one EC2 by hand (Plan B)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<p class="callout callout--note"><strong>Stay as <code>ec2-user</code> the whole way.</strong> Do not <code>sudo su -</code> or <code>sudo -i</code>. If you become <code>root</code>, the clone lands in <code>/root/</code>, nginx cannot traverse into it, and you get a <code>403</code> on every product image with nothing obviously wrong. Check with <code>whoami</code> (should print <code>ec2-user</code>). Use <code>sudo</code> only on the individual commands already written with it.</p>
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>B1 · Launch the instance</h3>
+<p>Amazon Linux 2023. <code>t3.small</code> is comfortable; <code>t3.micro</code> works but the frontend build is memory-hungry.</p>
+<pre><code class="language-bash"># Security group inbound rules
+22    My IP      # SSH
+8000  Anywhere   # API (temporary)
+5173  Anywhere   # dev server (temporary)
+80    Anywhere   # nginx, from Step B9</code></pre>
+<p class="command-purpose"><strong>Never</strong> open 5432 to the world. Scope it to My IP only if you need a GUI client.</p>
+</div>
+<div class="card">
+<h3>B2 · Install the runtimes</h3>
+<p>SSH in, then install git, Python, Postgres and Node.</p>
+<pre><code class="language-bash">sudo dnf update -y
+sudo dnf install -y git python3.11 python3.11-pip postgresql16 postgresql16-server
+
+curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+sudo dnf install -y nodejs
+
+python3.11 --version &amp;&amp; node --version</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> a fresh instance, right after first login.</p>
+</div>
+<div class="card">
+<h3>B3 · Start PostgreSQL</h3>
+<p>Initialise the cluster, start it, and create the same role and database as local.</p>
+<pre><code class="language-bash">sudo postgresql-setup --initdb
+sudo systemctl enable --now postgresql
+
+sudo -u postgres psql -c "CREATE ROLE rmit LOGIN PASSWORD 'rmit' CREATEDB;"
+sudo -u postgres psql -c "CREATE DATABASE rmit_store OWNER rmit;"</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> once per DB instance. One more fix follows — do not skip it.</p>
+</div>
+<div class="card">
+<h3>B3b · Allow password logins (do not skip)</h3>
+<p>Amazon Linux's fresh <code>initdb</code> uses <code>ident</code> auth on <code>127.0.0.1</code>, so Django is refused with <em>"Ident authentication failed"</em>. Switch TCP lines to <code>scram-sha-256</code>.</p>
+<pre><code class="language-bash">sudo sed -i 's/^\(host.*\)ident$/\1scram-sha-256/' /var/lib/pgsql/data/pg_hba.conf
+sudo systemctl reload postgresql
+
+PGPASSWORD=rmit psql -h 127.0.0.1 -U rmit -d rmit_store -c "SELECT 1;"</code></pre>
+<p class="command-purpose"><strong>Why:</strong> Django connects over TCP with a password. If <code>SELECT 1</code> works, every later step can reach the DB.</p>
+</div>
+<div class="card">
+<h3>B4 · Code and dependencies</h3>
+<p>Clone into <code>ec2-user</code>'s home — later paths expect it there.</p>
+<pre><code class="language-bash">cd ~
+git clone &lt;your-repository-url&gt;
+cd COSC2767-RMIT-Store-Django-Vue/server
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+<p class="command-purpose"><strong>Must be:</strong> <code>/home/ec2-user/COSC2767-...</code>. Not <code>/root/</code>.</p>
+</div>
+<div class="card">
+<h3>B5 · Configure the API</h3>
+<p>Copy the env file and set the values that matter for a real host.</p>
+<pre><code class="language-env">SECRET_KEY=&lt;generate a real one&gt;
+ALLOWED_HOSTS=&lt;your-ec2-public-ip&gt;,localhost,127.0.0.1
+CLIENT_URL=http://&lt;your-ec2-public-ip&gt;:5173
+CORS_ALLOWED_ORIGINS=http://&lt;your-ec2-public-ip&gt;:5173
+DATABASE_URL=postgres://rmit:rmit@localhost:5432/rmit_store</code></pre>
+<p class="command-purpose"><strong>Use <code>localhost</code></strong> in <code>DATABASE_URL</code> when the DB is on the same box — routing out to the public IP and back is slower and often blocked. (This changes in Step C.)</p>
+</div>
+<div class="card">
+<h3>B6 · Migrate, seed, run (terminal 1)</h3>
+<p>Same two DB commands, then the dev server. It holds the terminal open — leave it.</p>
+<pre><code class="language-bash">python manage.py migrate
+python manage.py seed_demo --admin-email admin@rmit.edu.au \
+                           --admin-password 'RmitStore2767!' --demo-users
+
+python manage.py runserver 0.0.0.0:8000
+# check http://&lt;your-ec2-public-ip&gt;:8000/healthz/</code></pre>
+<p class="command-purpose"><strong>Leave running.</strong> Open a second SSH terminal for the frontend.</p>
+</div>
+<div class="card">
+<h3>B7 · Run the frontend (terminal 2)</h3>
+<p>Second SSH session. No virtualenv needed — the client is a Node project.</p>
+<pre><code class="language-bash">cd ~/COSC2767-RMIT-Store-Django-Vue/client
+npm install
+cp .env.example .env
+npm run dev -- --host 0.0.0.0
+# open http://&lt;your-ec2-public-ip&gt;:5173</code></pre>
+<p class="command-purpose"><strong>Now:</strong> the app runs on AWS — but it is not a deployment yet (both processes die when SSH closes).</p>
+</div>
+</div>
+<h3>B9 · Serve it properly — nginx + gunicorn + systemd</h3>
+<p>Do it the real way: <strong>nginx owns port 80</strong>, serves the built SPA and images from disk, and reverse-proxies API traffic to gunicorn on <code>127.0.0.1:8000</code>. One origin, so CORS never enters the picture (yet — Step C changes that).</p>
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>B9.1 · Build the SPA, install nginx</h3>
+<pre><code class="language-bash">cd ~/COSC2767-RMIT-Store-Django-Vue/client
+npm run build
+
+sudo dnf install -y nginx
+sudo systemctl enable --now nginx
+sudo cp -r dist/* /usr/share/nginx/html/</code></pre>
+<p class="command-purpose"><strong>Expected:</strong> page loads, nothing works yet — nothing proxies <code>/api/</code> until B9.4. Keep <code>config.js</code> at default <code>API_BASE_URL: "/api"</code>.</p>
+</div>
+<div class="card">
+<h3>B9.2 · Reconfigure the API for prod</h3>
+<p>Same file as B5 — reopen <code>server/.env</code> and change these lines now that you are going to production.</p>
+<pre><code class="language-bash">nano ~/COSC2767-RMIT-Store-Django-Vue/server/.env</code></pre>
+<pre><code class="language-env">DJANGO_SETTINGS_MODULE=config.settings.prod
+ALLOWED_HOSTS=&lt;your-ec2-public-ip&gt;,127.0.0.1,localhost
+CLIENT_URL=http://&lt;your-ec2-public-ip&gt;
+CORS_ALLOWED_ORIGINS=http://&lt;your-ec2-public-ip&gt;
+CSRF_TRUSTED_ORIGINS=http://&lt;your-ec2-public-ip&gt;
+SESSION_COOKIE_SECURE=False
+CSRF_COOKIE_SECURE=False</code></pre>
+<p class="command-purpose"><strong>Gotcha:</strong> on plain HTTP, leaving the cookie flags <code>True</code> makes the admin accept your password then bounce you back to login. Turn them on the day you add TLS.</p>
+</div>
+<div class="card">
+<h3>B9.3 · gunicorn under systemd</h3>
+<pre><code class="language-bash">python manage.py collectstatic --noinput
+sudo nano /etc/systemd/system/rmit-api.service</code></pre>
+<pre><code class="language-ini">[Unit]
+Description=RMIT Store API (gunicorn)
+After=network.target postgresql.service
+
+[Service]
+User=ec2-user
+WorkingDirectory=/home/ec2-user/COSC2767-RMIT-Store-Django-Vue/server
+ExecStart=/home/ec2-user/COSC2767-RMIT-Store-Django-Vue/server/.venv/bin/gunicorn \
+    config.wsgi:application --bind 127.0.0.1:8000 --workers 3 \
+    --env DJANGO_SETTINGS_MODULE=config.settings.prod
+Restart=always
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+<pre><code class="language-bash">sudo systemctl daemon-reload
+sudo systemctl enable --now rmit-api</code></pre>
+<p class="command-purpose"><strong>Bind <code>127.0.0.1</code></strong> — once nginx is in front, gunicorn should not be reachable from outside. Logs: <code>journalctl -u rmit-api -f</code>.</p>
+</div>
+<div class="card">
+<h3>B9.4 · Configure nginx</h3>
+<p>Create a new config file. Everything below goes <em>inside</em> one <code>server { }</code> block — the <code>location</code> lines are not valid on their own.</p>
+<pre><code class="language-bash">sudo nano /etc/nginx/conf.d/rmit-store.conf</code></pre>
+<pre><code class="language-nginx">server {
+    listen       80 default_server;
+    listen  [::]:80 default_server;
+    server_name  _;
+
+    root  /usr/share/nginx/html;   # the built SPA from B9.1
+    index index.html;
+
+    client_max_body_size 10M;      # product images are bigger than the 1M default
+
+    # serve the SPA; unknown paths are Vue routes, so fall back to index.html
+    location / { try_files $uri $uri/ /index.html; }
+    location = /config.js { add_header Cache-Control "no-store"; }
+
+    # forward API-shaped paths to gunicorn
+    location ~ ^/(api|admin|healthz|readyz)(/|$) {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host              $host;     # load-bearing!
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # serve uploaded images and Django static files straight off disk
+    location /media/  { alias /home/ec2-user/COSC2767-RMIT-Store-Django-Vue/server/media/; }
+    location /static/ { alias /home/ec2-user/COSC2767-RMIT-Store-Django-Vue/server/staticfiles/; }
+}</code></pre>
+<p>Save (Ctrl-O, Enter), exit (Ctrl-X), then let nginx reach <code>/media/</code>, test the config, and reload:</p>
+<pre><code class="language-bash">chmod o+x /home/ec2-user      # let nginx traverse to /media/
+sudo nginx -t &amp;&amp; sudo systemctl reload nginx</code></pre>
+<p class="command-purpose"><strong>Why <code>Host $host</code> matters:</strong> without it Django builds every <code>image_url</code> as <code>http://127.0.0.1:8000/...</code>, which resolves to the <em>browser's</em> machine, and every image breaks with a fake "CORS" error.</p>
+</div>
+<div class="card">
+<h3>B9.5 · Verify</h3>
+<pre><code class="language-bash">IP=&lt;your-ec2-public-ip&gt;
+curl -I  http://$IP/                 # 200, text/html
+curl -s  http://$IP/readyz/          # {"database": "ok", "storage": "ok"}
+curl -sI http://$IP/shop             # 200 — SPA fallback works
+curl -s  http://$IP/api/products/ | grep -o '"image_url":"[^"]*"' | head -1</code></pre>
+<p class="command-purpose"><strong>Read the last line:</strong> the image URL must be on your public IP with <strong>no port</strong>. 502 = gunicorn down. 400 = IP missing from <code>ALLOWED_HOSTS</code>. 403 on <code>/media/</code> = the <code>chmod o+x</code> did not happen.</p>
+</div>
+<div class="card">
+<h3>B9.6 · Close the extra ports</h3>
+<pre><code class="language-bash"># in the security group, DELETE inbound 8000 and 5173
+# keep 22 (SSH) and 80 (nginx)</code></pre>
+<p class="command-purpose"><strong>Re-run B9.5 after.</strong> If a check only passed because you were quietly hitting port 8000, this is where you catch it.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Done with B when:</strong> the store works entirely through port 80, images load, and only ports 22 and 80 are open. You have deployed the whole app by hand on one box.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="step-c-split">
+<h2 class="collapsible-header">🌐 Step C — Split across servers (Plan C)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<p class="callout callout--note"><strong>What changes and why.</strong> In Plan B everything shared one box and one origin. Plan C pulls the tiers apart: the database onto managed AWS RDS, the API on one instance, the frontend on another. Two things bite the moment you do — <strong>CORS</strong> (the browser now talks to two origins) and <strong>uploaded images</strong> (they live on one API box, so a second one 404s them). Solving both is the point of this step, and doing it by hand now makes the CloudFormation template in Plan F far easier.</p>
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>C1 · Plan the topology</h3>
+<p>Three roles. The database is <strong>AWS RDS</strong> (managed, no box to run), the other two are EC2. Decide names and private/public reach before launching.</p>
+<pre><code class="language-bash">RDS (PostgreSQL)  # managed database — private, no public access
+api-server        # Django + gunicorn (repeat B2–B9.3 here, minus nginx SPA)
+frontend-server   # nginx serving the built SPA + proxying /api to api-server</code></pre>
+<h4>Security group per box</h4>
+<p>Create <strong>three</strong> security groups: <code>rds-sg</code>, <code>api-server-sg</code>, <code>frontend-server-sg</code>. All rules below are <strong>Inbound rules</strong> — inbound means "who is allowed to connect TO this box." <strong>Leave Outbound at its default</strong> (All traffic → <code>0.0.0.0/0</code>) on all three, or the boxes can't reach GitHub, <code>dnf</code>, or S3.</p>
+<p>The trick for internal traffic: set the <strong>source to another security group</strong>, not an IP — then it keeps working even when private IPs change. (You can only point at an SG that already exists, so make all three empty first, then add rules.)</p>
+<pre><code class="language-bash"># rds-sg — INBOUND        TYPE         PORT   SOURCE               WHY
+  rule 1                  PostgreSQL   5432   api-server-sg        only the API may query the DB
+# Public access on the RDS instance = No. No other inbound rule.</code></pre>
+<pre><code class="language-bash"># api-server-sg — INBOUND TYPE         PORT   SOURCE               WHY
+  rule 1                  SSH          22     My IP                admin only
+  rule 2                  Custom TCP   8000   frontend-server-sg   only the frontend reaches the API
+# nothing else open to the internet</code></pre>
+<pre><code class="language-bash"># frontend-server-sg — INBOUND  TYPE   PORT   SOURCE               WHY
+  rule 1                  SSH          22     My IP                admin only
+  rule 2                  HTTP         80     Anywhere 0.0.0.0/0   public storefront — NOT your IP
+# this is the ONLY box the public can reach</code></pre>
+<p class="callout callout--note"><strong>Common mistake:</strong> adding these under the <em>Outbound</em> tab. They go in <strong>Inbound rules → Edit inbound rules</strong>. Port 80 must be <strong>Anywhere</strong>, not your IP, or no one else can load the store.</p>
+<p class="callout callout--note"><strong>Traffic only flows one way:</strong> public → frontend (80) → api (8000) → db (5432). Each box opens its port <em>only</em> to the box in front of it. That is the whole security model.</p>
+<p class="command-purpose"><strong>Use when:</strong> you are ready to scale or separate concerns. Each box is a smaller blast radius and can be sized independently.</p>
+</div>
+<div class="card">
+<h3>C1b · One SSH key for cloning on every box</h3>
+<p>Your repo is <strong>private</strong>, so every instance needs an SSH key to <code>git clone</code> it. Don't make three keys and register three times — make <strong>one</strong> key, add it to GitHub once, then copy it to the other boxes.</p>
+<h4>1. Make the key on the first box (api-server)</h4>
+<pre><code class="language-bash"># -N ''  = no passphrase, so servers can clone unattended
+ssh-keygen -t ed25519 -C "rmit-store-deploy" -f ~/.ssh/id_ed25519 -N ''
+cat ~/.ssh/id_ed25519.pub          # copy this whole line</code></pre>
+<h4>2. Register the PUBLIC half on GitHub — once</h4>
+<p>Pick one:</p>
+<ul>
+<li><strong>Deploy key (recommended, safest):</strong> your repo → <em>Settings → Deploy keys → Add deploy key</em> → paste the <code>.pub</code> line. Leave <em>"Allow write access"</em> unchecked — clone-only, and it's scoped to this one repo.</li>
+<li><strong>Account SSH key:</strong> <em>github.com → Settings → SSH and GPG keys</em> — works too, but grants access to <em>all</em> your repos, so it's broader than you need.</li>
+</ul>
+<h4>3. Copy the same key onto the other boxes (copy-paste)</h4>
+<p>The key already lives on the api-server (you made it in step 1). You're SSH'd into both boxes from your laptop, so just copy the key text across — no <code>.pem</code> juggling needed.</p>
+<pre><code class="language-bash"># --- on the API-SERVER: print both halves, copy each block ---
+cat ~/.ssh/id_ed25519        # the PRIVATE key (starts -----BEGIN ...)
+cat ~/.ssh/id_ed25519.pub    # the PUBLIC key  (one line, ssh-ed25519 ...)</code></pre>
+<pre><code class="language-bash"># --- on the FRONTEND-SERVER: paste each block into a file ---
+mkdir -p ~/.ssh &amp;&amp; chmod 700 ~/.ssh
+
+nano ~/.ssh/id_ed25519       # paste the PRIVATE block, save
+nano ~/.ssh/id_ed25519.pub   # paste the PUBLIC block, save
+
+# lock the private key down (git/ssh refuses loose perms)
+chmod 600 ~/.ssh/id_ed25519</code></pre>
+<p class="callout callout--note"><strong>Careful:</strong> <code>~/.ssh/id_ed25519</code> is the <em>private</em> key — the secret. Only paste it onto <em>your own</em> instances, never into GitHub, chat, or the report.</p>
+<h4>4. Clone with the SSH URL on each box</h4>
+<pre><code class="language-bash">ssh -T git@github.com     # first time: type "yes"; expect "Hi ...! You've successfully authenticated"
+git clone git@github.com:&lt;your-team&gt;/COSC2767-RMIT-Store-Django-Vue.git</code></pre>
+<p class="command-purpose"><strong>Note the URL form:</strong> use <code>git@github.com:...</code> (SSH), not <code>https://...</code> — only the SSH URL uses the key. <strong>Safer alternative:</strong> skip copying the private key entirely and use agent forwarding — <code>ssh -A</code> — so the key never lands on any server. Mention whichever you chose in the report.</p>
+</div>
+<div class="card">
+<h3>C2 · Database on AWS RDS</h3>
+<p>Move Postgres off the API box and onto managed <strong>AWS RDS</strong> — you get automated backups and a stable endpoint, and there is no database server to patch. State and justify this choice in the report.</p>
+<h4>Create the RDS instance (AWS console, no SSH)</h4>
+<ol>
+<li>RDS → <strong>Create database</strong> → <strong>Standard create</strong> → engine <strong>PostgreSQL</strong>.</li>
+<li>Template <em>Free tier</em> (or Dev/Test). Instance class <code>db.t3.micro</code> is fine.</li>
+<li><strong>DB instance identifier</strong> <code>rmit-store</code> — this is just AWS's name for the box. <strong>Use a hyphen, not an underscore</strong> (underscores are rejected here).</li>
+<li><strong>Master username</strong> <code>rmit</code>, set a master password (write it down — you need it in C3).</li>
+<li>Under <em>Additional configuration</em>, <strong>Initial database name</strong> <code>rmit_store</code> — this is the actual Postgres database, and here an <strong>underscore is fine</strong>. (Skip this and no database is created — Django will fail to connect.)</li>
+<li><strong>Connectivity → Public access: No.</strong> Put it in the <em>same VPC</em> as the api-server.</li>
+<li>VPC security group → create new, or attach <code>rds-sg</code>: inbound <strong>5432</strong>, source = the <em>api-server's security group</em> (not an IP).</li>
+<li>Create it. When status is <em>Available</em>, open the instance and copy the <strong>Endpoint</strong> — e.g. <code>rmit-store.abc123.ap-southeast-2.rds.amazonaws.com</code>. That is your DB host for C3.</li>
+</ol>
+<p class="callout callout--note"><strong>Rule:</strong> the database is <em>never</em> reachable from the internet. Leave <strong>Public access = No</strong>. Only the api-server's security group may reach port 5432.</p>
+</div>
+<div class="card">
+<h3>C2b · Launch &amp; provision the api-server</h3>
+<p>The box that runs Django. It's Plan B's API half — but with <strong>no Postgres server</strong> (that's RDS now) and <strong>no SPA/nginx</strong> (that's the frontend box).</p>
+<pre><code class="language-bash"># 1. Launch EC2 → Amazon Linux 2023, t3.small, security group = api-server-sg, your key pair
+# 2. SSH in. Install runtimes. postgresql16 here is the psql CLIENT only (to test RDS) — no server.
+sudo dnf update -y
+sudo dnf install -y git python3.11 python3.11-pip postgresql16</code></pre>
+<pre><code class="language-bash"># 3. This is the box you MAKE the deploy key on (C1b steps 1–2), then clone over SSH
+cd ~
+git clone git@github.com:&lt;your-team&gt;/COSC2767-RMIT-Store-Django-Vue.git
+cd COSC2767-RMIT-Store-Django-Vue/server
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env</code></pre>
+<p>Now edit <code>server/.env</code>: point <code>DATABASE_URL</code> at RDS (<strong>C3</strong>), turn on S3 (<strong>C6</strong>), and allow the frontend origin (<strong>C5</strong>). Then migrate, seed, collect static, and start gunicorn:</p>
+<pre><code class="language-bash">python manage.py migrate
+python manage.py seed_demo --admin-email admin@rmit.edu.au \
+                           --admin-password 'RmitStore2767!' --demo-users
+python manage.py collectstatic --noinput
+sudo nano /etc/systemd/system/rmit-api.service   # same unit as B9.3, ONE change</code></pre>
+<p>Paste the <strong>whole file</strong> — all four sections. The only change from B9.3 is <code>--bind 0.0.0.0:8000</code> (so the browser reaches gunicorn directly, since there's no nginx on this box).</p>
+<pre><code class="language-ini">[Unit]
+Description=RMIT Store API (gunicorn)
+After=network.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=/home/ec2-user/COSC2767-RMIT-Store-Django-Vue/server
+ExecStart=/home/ec2-user/COSC2767-RMIT-Store-Django-Vue/server/.venv/bin/gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --env DJANGO_SETTINGS_MODULE=config.settings.prod
+Restart=always
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+<p class="callout callout--note"><strong>Cloned into a different folder?</strong> If your <code>git clone</code> made a folder that isn't <code>COSC2767-RMIT-Store-Django-Vue</code> (check with <code>pwd</code>), fix both <code>WorkingDirectory</code> and the <code>ExecStart</code> path to match — e.g. <code>/home/ec2-user/a2/server</code>. Missing the <code>[Install]</code> section is what causes <em>"unit files have no installation config"</em>.</p>
+<pre><code class="language-bash">sudo systemctl daemon-reload
+sudo systemctl enable --now rmit-api
+curl -s http://&lt;api-server-public-dns&gt;:8000/healthz/    # {"status": "ok"}</code></pre>
+<p class="command-purpose"><strong>Difference from Plan B:</strong> gunicorn binds <code>0.0.0.0:8000</code>, not <code>127.0.0.1</code> — there's no nginx in front on this box, the browser talks to it directly. That's why <code>api-server-sg</code> opens <strong>8000 to Anywhere</strong>.</p>
+</div>
+<div class="card">
+<h3>C3 · Configure the api-server .env (for RDS)</h3>
+<p>On the api-server, edit <code>server/.env</code>. These are the only lines you change from the shipped example — everything else (email, JWT, tax, throttles) keeps its default.</p>
+<pre><code class="language-env"># api-server  server/.env  — fill the &lt;...&gt; from your own AWS console
+DJANGO_SETTINGS_MODULE=config.settings.prod
+SECRET_KEY=&lt;generate a real one — see below&gt;
+DEBUG=False
+ALLOWED_HOSTS=&lt;api-public-ip&gt;,&lt;api-private-ip&gt;,127.0.0.1
+CLIENT_URL=http://&lt;frontend-public-ip&gt;
+
+# RDS endpoint + master password from C2:
+DATABASE_URL=postgres://rmit:&lt;master-pw&gt;@&lt;rds-endpoint&gt;:5432/rmit_store
+
+# the FRONTEND's origin (where the browser loads the page), NOT the API's:
+CORS_ALLOWED_ORIGINS=http://&lt;frontend-public-ip&gt;
+CSRF_TRUSTED_ORIGINS=http://&lt;frontend-public-ip&gt;
+
+# shared images — flip on in C6. Region must match YOUR region (e.g. us-east-1):
+USE_S3=False
+AWS_S3_REGION_NAME=&lt;your-region&gt;</code></pre>
+<p><strong>Generate a real SECRET_KEY</strong> (never reuse one you've shared):</p>
+<pre><code class="language-bash">python3 -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'</code></pre>
+<p class="callout callout--note"><strong>No frontend box yet?</strong> You can still bring the API up. Put the <em>api-server's own</em> address in <code>CLIENT_URL</code>/<code>CORS_ALLOWED_ORIGINS</code>/<code>CSRF_TRUSTED_ORIGINS</code> as a placeholder and test with <code>curl</code> — CORS only matters once a browser loads the SPA from the frontend box. Come back and set the real frontend address in C5.</p>
+<pre><code class="language-bash"># prove the API box can reach RDS before migrating:
+PGPASSWORD=&lt;master-pw&gt; psql -h &lt;rds-endpoint&gt; -U rmit -d rmit_store -c "SELECT 1;"
+python manage.py migrate      # run migrations from the api-server</code></pre>
+<h4>Verify the API is really up (and talking to RDS)</h4>
+<p>Restart the service so it picks up the new <code>.env</code>, then hit the health endpoints. Run these <em>from the api-server</em> first (localhost), then from your laptop against the public IP.</p>
+<pre><code class="language-bash">sudo systemctl restart rmit-api
+sudo systemctl status rmit-api --no-pager      # should say: active (running)
+
+# 1. liveness — the process is alive (touches nothing)
+curl -s http://127.0.0.1:8000/healthz/         # {"status": "ok"}
+
+# 2. readiness — THIS proves the RDS + storage connection
+curl -s http://127.0.0.1:8000/readyz/          # {"database": "ok", "storage": "ok"}
+
+# 3. the API actually returns data from the DB you just migrated + seeded
+curl -s http://127.0.0.1:8000/api/products/ | head -c 200
+
+# 4. from your LAPTOP — proves the security group + 0.0.0.0 bind are right
+curl -s http://&lt;api-public-ip&gt;:8000/readyz/</code></pre>
+<p><strong>Read the result:</strong></p>
+<ul>
+<li><code>readyz</code> returns <code>database: ok</code> → green light, the api-server reached RDS.</li>
+<li><code>database: error</code> or a 503 → wrong <code>DATABASE_URL</code>, or the rds-sg blocks 5432.</li>
+<li>Works on localhost but hangs from your laptop → the api-server-sg isn't opening 8000.</li>
+<li><code>psql</code> itself hangs → the rds-sg isn't allowing the api-server-sg on 5432. Fix the security group, not the password.</li>
+</ul>
+<p class="command-purpose">Leave <code>AWS_ACCESS_KEY_ID</code> and <code>AWS_SECRET_ACCESS_KEY</code> unset — the IAM role in C7 handles S3 credentials.</p>
+</div>
+<div class="card">
+<h3>C3b · Launch &amp; provision the frontend-server</h3>
+<p>This box only serves static files. <strong>No Python, no database</strong> — just Node (to build the SPA) and nginx (to serve it).</p>
+<pre><code class="language-bash"># 1. Launch EC2 → Amazon Linux 2023, t3.small (the build is memory-hungry),
+#    security group = frontend-server-sg, your key pair
+# 2. SSH in. Install nginx + Node + git.
+sudo dnf update -y
+sudo dnf install -y git nginx
+curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+sudo dnf install -y nodejs
+sudo systemctl enable --now nginx</code></pre>
+<pre><code class="language-bash"># 3. Copy the SAME deploy key here (C1b step 3), then clone + build the SPA
+cd ~
+git clone git@github.com:&lt;your-team&gt;/COSC2767-RMIT-Store-Django-Vue.git
+cd COSC2767-RMIT-Store-Django-Vue/client
+npm install
+cp .env.example .env
+npm run build                        # produces dist/
+sudo cp -r dist/* /usr/share/nginx/html/</code></pre>
+<p class="command-purpose"><strong>Now:</strong> the SPA loads on port 80 but points nowhere yet — C4 aims it at the api-server. If deep links like <code>/shop</code> 404, add the SPA fallback: put <code>location / { try_files $uri $uri/ /index.html; }</code> in <code>/etc/nginx/conf.d/rmit-store.conf</code> (the <code>location /</code> line from B9.4) and <code>sudo systemctl reload nginx</code>.</p>
+</div>
+<div class="card">
+<h3>C4 · Point the frontend at the API — no rebuild</h3>
+<p>This is the A7 trick in production. On the frontend-server, edit the <em>deployed</em> <code>config.js</code> to name the API's address. You do <strong>not</strong> rebuild the bundle.</p>
+<pre><code class="language-bash"># frontend-server: /usr/share/nginx/html/config.js
+#   API_BASE_URL: "http://&lt;api-server-public-dns&gt;:8000/api"
+sudo nano /usr/share/nginx/html/config.js</code></pre>
+<p class="callout callout--note"><strong>To change the API endpoint, this is the ONLY file you touch — no <code>npm run build</code>, no copy.</strong> <code>config.js</code> is read at page load, so editing the deployed file is enough. After saving, <strong>hard refresh</strong> the browser (<code>Cmd/Ctrl+Shift+R</code>) — nginx serves <code>config.js</code> with <code>no-store</code>, but the browser may still cache it. If you <em>did</em> rebuild (because you changed app code), also redeploy the bundle: <code>sudo cp -r dist/* /usr/share/nginx/html/</code>.</p>
+<p class="command-purpose"><strong>The payoff:</strong> the same <code>dist/</code> you built once now points at any API by editing one text file. Remember it — Plan F promotes builds this way.</p>
+</div>
+<div class="card">
+<h3>C5 · Fix CORS (the thing that "suddenly" breaks)</h3>
+<p>The browser now loads the SPA from one origin and calls the API on another — a cross-origin request. The browser blocks it unless the API says the frontend's origin is allowed. Add it on the <strong>api-server</strong>.</p>
+<pre><code class="language-env"># api-server  server/.env  — use the FRONTEND's public origin
+CORS_ALLOWED_ORIGINS=http://&lt;frontend-server-public-dns&gt;
+CSRF_TRUSTED_ORIGINS=http://&lt;frontend-server-public-dns&gt;
+ALLOWED_HOSTS=&lt;api-server-public-dns&gt;,&lt;api-private-ip&gt;,127.0.0.1</code></pre>
+<pre><code class="language-bash">sudo systemctl restart rmit-api</code></pre>
+<p class="command-purpose"><strong>Why it appears now and not in B:</strong> Plan B put both tiers behind one nginx, so there was only one origin and CORS never applied. Split them and it does. (You can also keep the frontend nginx proxying <code>/api</code> to the api-server to stay single-origin — a valid design; note which you chose in the report.)</p>
+</div>
+<div class="card">
+<h3>C6 · Shared media with S3 (images stop breaking)</h3>
+<p>Uploads land on <em>one</em> API box's <code>server/media/</code>. Add a second API box and half the images 404, intermittently. S3 gives every box one shared store — <strong>no code change</strong>, the backend is chosen by config.</p>
+<p class="callout callout--note"><strong>Run this on the api-server</strong> (it has the AWS CLI and, after C7, an IAM role that's allowed to make buckets). Or run it from your laptop if you have <code>aws configure</code> set up. Either way it only needs to be run <em>once</em> — a bucket is global, not per-box.</p>
+<p>Bucket names are <strong>global and unique</strong> — swap <code>&lt;yourteam&gt;</code> for something like <code>group7</code>. If you get <code>BucketAlreadyExists</code>, pick a different suffix.</p>
+<h4>If you're in us-east-1 (the common case)</h4>
+<p><code>us-east-1</code> does <em>not</em> take a <code>LocationConstraint</code> — it's the one-line form:</p>
+<pre><code class="language-bash">aws s3api create-bucket --bucket rmit-store-media-&lt;yourteam&gt; --region us-east-1</code></pre>
+<h4>Any other region</h4>
+<p>Every other region <em>needs</em> the <code>LocationConstraint</code> flag. Put your region (check the top-right of the console) in both spots:</p>
+<pre><code class="language-bash">aws s3api create-bucket \
+  --bucket rmit-store-media-&lt;yourteam&gt; \
+  --region &lt;your-region&gt; \
+  --create-bucket-configuration LocationConstraint=&lt;your-region&gt;</code></pre>
+<pre><code class="language-env"># api-server  server/.env   (us-east-1 shown)
+USE_S3=True
+AWS_STORAGE_BUCKET_NAME=rmit-store-media-&lt;yourteam&gt;
+AWS_S3_REGION_NAME=us-east-1</code></pre>
+<p>Restart the API so it picks up the new config, then re-seed so the demo images upload to S3:</p>
+<pre><code class="language-bash">sudo systemctl restart rmit-api
+cd ~/a2/server &amp;&amp; source .venv/bin/activate &amp;&amp; python3 manage.py seed_demo</code></pre>
+<h4>Let the browser read the images (public read)</h4>
+<p>Product image URLs point straight at the bucket (<code>https://rmit-store-media-&lt;yourteam&gt;.s3.amazonaws.com/...</code>). New buckets block public access, so the browser gets <strong>403</strong> and images look broken. Open the bucket in the S3 console and do both:</p>
+<p><strong>1. Turn off "Block all public access"</strong> — bucket → <em>Permissions</em> tab → <em>Block public access</em> → <em>Edit</em> → untick <em>Block all public access</em> → Save → type <code>confirm</code>.</p>
+<p><strong>2. Add a read-only bucket policy</strong> — same <em>Permissions</em> tab → <em>Bucket policy</em> → <em>Edit</em> → paste (swap in your bucket name):</p>
+<pre><code class="language-json">{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "PublicReadMedia",
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::rmit-store-media-&lt;yourteam&gt;/*"
+  }]
+}</code></pre>
+<p class="callout callout--note"><strong>This grants read-only.</strong> <code>s3:GetObject</code> only lets the public <em>view</em> images — nobody can upload or delete. Writes still go through the api-server's IAM role (C7).</p>
+<p class="command-purpose"><strong>Test:</strong> upload a product image in <code>/admin/</code> (or open a seeded product), confirm the object is under <code>media/products/</code> in the bucket and the image renders in the browser — then it survives an instance being replaced.</p>
+</div>
+<div class="card">
+<h3>C7 · IAM role, not access keys</h3>
+<p>boto3 uses the default credential chain, so give the api-server an <strong>instance role</strong> that can write to the bucket — no long-lived keys in any <code>.env</code>.</p>
+<pre><code class="language-bash"># attach an instance profile to the api-server whose policy allows,
+# scoped to arn:aws:s3:::rmit-store-media-&lt;yourteam&gt;/* :
+#   s3:GetObject, s3:PutObject, s3:DeleteObject
+# note: NO AWS_ACCESS_KEY_ID / SECRET in .env — the role provides them</code></pre>
+<p class="command-purpose"><strong>Why:</strong> a leaked key in a repo is classic marker-bait. An instance role rotates automatically and never sits in a file.</p>
+</div>
+<div class="card">
+<h3>C8 · Security groups, tightly</h3>
+<p>Every port is a deliberate rule. This is the layout Plan F's load balancer will sit on top of.</p>
+<pre><code class="language-bash">frontend-sg:  80   from anywhere        22 from My IP
+api-sg:       80   from frontend-sg     22 from My IP   # or 8000 if not fronted
+db-sg:        5432 from api-sg ONLY
+# nothing open to 0.0.0.0/0 that does not have to be</code></pre>
+<p class="command-purpose"><strong>Reference by security group, not IP</strong> where you can — it keeps working when instances are replaced.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Done with C when:</strong> the DB is on its own instance/RDS and private, the API and frontend are on separate boxes talking cross-origin without CORS errors, images upload to S3 and survive an instance swap, and no AWS keys sit in any file. You have now proven the app runs <em>split</em> — the shape every later step packages.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="elastic-ip">
+<h2 class="collapsible-header">📌 Elastic IP — survive Learner Lab restarts<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<p class="callout callout--note"><strong>The annoyance.</strong> Every time you stop and restart the Learner Lab, your EC2 <strong>public DNS/IP changes</strong>. That breaks the frontend's <code>config.js</code> and the api-server's <code>.env</code>, so the store stops working until you hunt down and edit every hardcoded address. An <strong>Elastic IP</strong> is a fixed public IP you pin to an instance once — it stays put across restarts, so you set the address <em>once</em> and never touch it again.</p>
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>What changes on restart, what doesn't</h3>
+<pre><code class="language-bash">EC2 public DNS / IP   -&gt; CHANGES every restart   (the pain)
+RDS endpoint          -&gt; stays the same          (DATABASE_URL is safe)
+Elastic IP (once set) -&gt; stays the same          (the fix)</code></pre>
+<p class="command-purpose">Only the two EC2 boxes need pinning. RDS already has a stable endpoint, so <code>DATABASE_URL</code> never changes.</p>
+</div>
+<div class="card">
+<h3>Pin a fixed IP to each box</h3>
+<p>Do this for <strong>both</strong> the api-server and the frontend-server.</p>
+<ol>
+<li>EC2 console → <strong>Elastic IPs</strong> (left menu, under Network &amp; Security) → <strong>Allocate Elastic IP address</strong> → Allocate.</li>
+<li>Select the new IP → <strong>Actions → Associate Elastic IP address</strong>.</li>
+<li><strong>Resource type</strong> Instance → pick the instance → <strong>Associate</strong>.</li>
+<li>Repeat for the second instance (allocate a second Elastic IP).</li>
+</ol>
+<p class="callout callout--note"><strong>Learner Lab tip:</strong> keep the Elastic IP <em>associated</em> with a running instance. AWS charges for an Elastic IP that is allocated but attached to nothing — associated-and-running is free.</p>
+</div>
+<div class="card">
+<h3>Use the fixed IPs (set once)</h3>
+<p>Now put the Elastic IPs where the old changing DNS used to be:</p>
+<pre><code class="language-bash"># frontend-server: edit the DEPLOYED config.js (no rebuild — see C4), then hard-refresh
+#   /usr/share/nginx/html/config.js
+API_BASE_URL: "http://&lt;api-elastic-ip&gt;:8000/api"</code></pre>
+<pre><code class="language-env"># api-server  server/.env
+ALLOWED_HOSTS=&lt;api-elastic-ip&gt;
+CLIENT_URL=http://&lt;frontend-elastic-ip&gt;
+CORS_ALLOWED_ORIGINS=http://&lt;frontend-elastic-ip&gt;
+CSRF_TRUSTED_ORIGINS=http://&lt;frontend-elastic-ip&gt;</code></pre>
+<pre><code class="language-bash"># api-server: reload the new .env
+sudo systemctl restart rmit-api</code></pre>
+<p class="command-purpose"><strong>Payoff:</strong> restart the lab as many times as you like — the addresses hold, the store keeps working, no re-editing. This is also exactly what the CloudFormation/Ansible work in Plan F automates.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="step-d-docker">
+<h2 class="collapsible-header">🐳 Step D — Containerise with Docker (Plan D)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<p class="callout callout--note"><strong>Why now.</strong> Plan C worked but every box was set up by hand. A container captures that setup as a file, so the next box is <code>docker run</code> instead of an afternoon. The repo ships no Dockerfiles — writing them is the assignment. Below is a correct starting shape based on the README's rules.</p>
+<p class="callout callout--note"><strong>Read the order first.</strong> Cards <strong>D1–D5 just write files</strong> (the recipes). Writing a Dockerfile does <strong>not</strong> build anything. The actual <code>docker build</code> and <code>docker run</code> happen in <strong>D6</strong>. So: write the files, then build &amp; run in D6.</p>
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>D1 · Dockerfile for the API</h3>
+<p><strong>Where:</strong> on the <strong>api-server box</strong>, make a new file <code>Dockerfile.api</code> at the repo root (the folder holding <code>server/</code>).</p>
+<p>Package Django + gunicorn. The key decision: <code>migrate</code> touches the database, so it belongs at <em>run</em> time (entrypoint), not in the image build. <code>collectstatic</code> needs no DB, so it can run at build.</p>
+<pre><code class="language-dockerfile">FROM python:3.12-slim
+WORKDIR /app
+COPY server/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY server/ .
+RUN python manage.py collectstatic --noinput
+EXPOSE 8000
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]</code></pre>
+<p>The <code>RUN chmod +x</code> line is not optional: git usually drops the executable bit, so without it the container dies with <code>"/entrypoint.sh": permission denied</code>. Baking the chmod into the image fixes it for every clone.</p>
+<p>This card only <strong>writes the recipe file</strong>. You build it into the <code>rmit-api</code> image in <strong>D6</strong>.</p>
+<p class="command-purpose"><strong>Pin the image</strong> (<code>python:3.12-slim</code>, not <code>latest</code>) so a rebuild next week is the same build this week.</p>
+</div>
+<div class="card">
+<h3>D2 · The API entrypoint</h3>
+<p><strong>Where:</strong> on the <strong>api-server box</strong>, make a new file <code>entrypoint.sh</code> at the repo root, then run <code>chmod +x entrypoint.sh</code>.</p>
+<p>Run migrations, then hand off to gunicorn as PID 1 with <code>exec</code>.</p>
+<pre><code class="language-bash">#!/bin/sh
+set -e
+python manage.py migrate --noinput
+exec gunicorn config.wsgi:application \
+    --bind 0.0.0.0:8000 --workers 3 \
+    --env DJANGO_SETTINGS_MODULE=config.settings.prod</code></pre>
+<p class="command-purpose"><strong>Why <code>exec</code>:</strong> gunicorn becomes PID 1 and receives Docker's stop signals, so the container shuts down cleanly instead of being killed.</p>
+</div>
+<div class="card">
+<h3>D3 · Dockerfile for the frontend</h3>
+<p><strong>Where:</strong> on the <strong>frontend-server box</strong>, make a new file <code>Dockerfile.frontend</code> at the repo root (the folder holding <code>client/</code>). You also need an <code>nginx.conf</code> next to it.</p>
+<p>Multi-stage: Node builds the bundle, then the result is copied into an nginx image. <strong>The final image must not contain Node.</strong></p>
+<pre><code class="language-dockerfile"># build stage
+FROM node:22-slim AS build
+WORKDIR /app
+COPY client/package*.json ./
+RUN npm ci
+COPY client/ .
+RUN npm run build
+
+# runtime stage — nginx only, no Node
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf</code></pre>
+<p>That last line needs a second file — make <code>nginx.conf</code> at the repo root too (next to <code>Dockerfile.frontend</code>). Without it the build fails with <code>"/nginx.conf": not found</code>:</p>
+<pre><code class="language-nginx">server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}</code></pre>
+<p>The <code>try_files ... /index.html</code> line matters: the store is a Vue single-page app, so refreshing a deep link like <code>/products</code> must still serve <code>index.html</code> and let Vue route it. Without it, any refresh off the home page 404s.</p>
+<p>This card only <strong>writes the two recipe files</strong> (<code>Dockerfile.frontend</code> + <code>nginx.conf</code>). You turn them into the <code>rmit-frontend</code> image in <strong>D6</strong> with <code>docker build</code> — don't run anything yet.</p>
+<p class="command-purpose"><strong>Prove it (after D6):</strong> <code>docker run --rm rmit-frontend which node</code> finds nothing. That is the point of the multi-stage build.</p>
+</div>
+<div class="card">
+<h3>D4 · Keep config.js a runtime thing</h3>
+<p><strong>Where:</strong> on the <strong>frontend-server box</strong>, edit <code>/opt/rmit/config.js</code> so <code>API_BASE_URL</code> points at the API Elastic IP, then mount it into the container as shown.</p>
+<p>Remember A7/C4: the API URL is read at page load. Do <strong>not</strong> bake it into the image — inject it when the container starts, so one image works in every environment.</p>
+<pre><code class="language-bash"># this is the D6 run command — only works AFTER you build the image.
+# mount an environment-specific config.js over the baked-in one:
+docker run -d -p 80:80 \
+  -v /opt/rmit/config.js:/usr/share/nginx/html/config.js:ro \
+  rmit-frontend</code></pre>
+<p>Shown here to explain the mount. The <code>/opt/rmit/config.js</code> file must exist first, and you run this in <strong>D6</strong> after <code>docker build</code>.</p>
+<p class="callout callout--note"><strong>Trap — create the file BEFORE the first run.</strong> If <code>/opt/rmit/config.js</code> does not exist when you <code>docker run</code>, Docker silently creates it as an <em>empty directory</em>, and the next run fails with <code>not a directory: Are you trying to mount a directory onto a file?</code> A <code>-v</code> mount must match types — file onto file. Fix it once:</p>
+<pre><code class="language-bash"># if the run made a folder by mistake, delete it and make a real file:
+sudo docker rm web
+sudo rm -rf /opt/rmit/config.js
+sudo mkdir -p /opt/rmit
+# seed it from the image's baked-in config, then set the API IP:
+sudo docker run --rm rmit-frontend cat /usr/share/nginx/html/config.js \
+  | sudo tee /opt/rmit/config.js
+sudo nano /opt/rmit/config.js          # set API_BASE_URL to the API Elastic IP
+ls -l /opt/rmit/config.js              # must be a FILE, not a directory</code></pre>
+<p>This is a <strong>one-time</strong> fix. Once it is a real file it stays a file — rebuilds, restarts and IP edits never bring the error back.</p>
+<p class="command-purpose"><strong>Why:</strong> build the image once, promote the same artifact — the idea Plan F's pipeline depends on.</p>
+</div>
+<div class="card">
+<h3>D5 · A .dockerignore</h3>
+<p><strong>Where:</strong> make a new file <code>.dockerignore</code> at the repo root <strong>on each box</strong> (api-server and frontend-server) — wherever you run <code>docker build</code>.</p>
+<p>Keep build context small and secrets out of the image.</p>
+<pre><code class="language-bash"># .dockerignore
+**/.venv
+**/node_modules
+**/.env
+**/__pycache__
+server/media
+server/staticfiles
+.git</code></pre>
+<p class="command-purpose"><strong>Never</strong> copy <code>.env</code> into an image — pass config at run time with <code>--env-file</code> or an orchestrator secret.</p>
+</div>
+<div class="card">
+<h3>D6 · Build, run, verify</h3>
+<p><strong>Where:</strong> run the API lines on the <strong>api-server box</strong>, and the frontend lines on the <strong>frontend-server box</strong> — each from the repo root.</p>
+<p class="callout callout--note"><strong>Free the ports first.</strong> Step C left the <code>rmit-api</code> systemd service on :8000 and nginx on :80. The containers want those same ports, so a run fails with <code>bind: address already in use</code>. Stop the old services before running the containers:</p>
+<pre><code class="language-bash"># api-server: stop the Step C service that holds :8000
+sudo systemctl stop rmit-api
+# frontend-server: stop the Step C nginx that holds :80
+sudo systemctl stop nginx</code></pre>
+<pre><code class="language-bash"># on the api-server box:
+docker build -t rmit-api -f Dockerfile.api .
+docker run -d --name api -p 8000:8000 --env-file server/.env rmit-api
+curl http://localhost:8000/healthz/    # {"status": "ok"}
+
+# on the frontend-server box:
+docker build -t rmit-frontend -f Dockerfile.frontend .
+docker run -d --name web -p 80:80 \
+  -v /opt/rmit/config.js:/usr/share/nginx/html/config.js:ro \
+  rmit-frontend</code></pre>
+<p>A failed run still leaves a container with that name, so a retry hits <code>name already in use</code>. Clear it before re-running: <code>sudo docker rm api</code> (or <code>web</code>).</p>
+<p class="command-purpose"><strong>Use when:</strong> proving the containers work before Compose. The DB can stay as RDS from Step C, or become a container in Step E.</p>
+</div>
+<div class="card">
+<h3>D7 · Survive a lab restart</h3>
+<p>By default a Learner Lab reboot leaves Docker off and your containers down. Three one-time commands per box make everything come back on its own.</p>
+<pre><code class="language-bash"># on the api-server box:
+sudo systemctl enable docker                       # Docker starts at boot
+sudo systemctl disable --now rmit-api              # kill the Step C service that steals :8000
+sudo docker update --restart unless-stopped api    # container auto-starts on boot
+
+# on the frontend-server box:
+sudo systemctl enable docker
+sudo systemctl disable --now nginx                 # kill the Step C nginx that steals :80
+sudo docker update --restart unless-stopped web</code></pre>
+<p><code>disable --now</code> stops the old Step C service <em>and</em> stops it auto-starting, so it never fights the container for the port. <code>unless-stopped</code> means the container comes back on boot unless you stopped it on purpose.</p>
+<p>After a restart, nothing to re-run — just verify: <code>curl http://localhost:8000/healthz/</code> on the api box, and open the FE Elastic IP in a browser. The Elastic IPs hold, so <code>config.js</code> and <code>server/.env</code> stay correct.</p>
+<p class="command-purpose"><strong>Catch:</strong> <code>docker update --restart</code> only affects a container that already exists. If you <code>docker rm</code> and recreate one, add <code>--restart unless-stopped</code> to that <code>docker run</code> so the policy sticks.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Done with D when:</strong> both images build, the API image runs migrations on startup and stops cleanly, the frontend image has no Node in it, <code>config.js</code> is injected at run time, and the store works from containers. Next: one file to run all of them together.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="step-e-compose">
+<h2 class="collapsible-header">🧱 Step E — Docker Compose (Plan E)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<p class="callout callout--note"><strong>What Compose adds.</strong> Step D ran containers one <code>docker run</code> at a time. Compose describes the database, the API and the frontend in <em>one file</em> and starts them together, on one network, with the startup order handled for you. It is the last manual step — real multi-host orchestration (Swarm/Kubernetes) is Plan F.</p>
+<p class="callout callout--note"><strong>Which box.</strong> Unlike Step D (split across two boxes), Step E runs the <strong>whole stack on ONE box</strong> — db, api and web together. Do it all on the <strong>api-server box</strong>. Compose brings its own <code>db</code> container, so you don't use the Step C RDS here. Every command and file below lives at the <strong>repo root on that one box</strong>.</p>
+<p class="callout callout--note"><strong>Install two plugins first.</strong> Amazon Linux 2023's <code>docker</code> comes from Amazon's repo, <strong>not</strong> Docker's — so <code>sudo dnf install docker-compose-plugin</code> just says <code>No match for argument</code>. You must drop the plugin <strong>binaries</strong> in by hand. Compose also builds with <strong>buildx</strong>, so install both, or you'll hit <code>unknown shorthand flag: 'd'</code> (no Compose) then <code>compose build requires buildx 0.17.0 or later</code> (no buildx).</p>
+<pre><code class="language-bash"># make the plugin folder once:
+sudo mkdir -p /usr/local/lib/docker/cli-plugins
+
+# 1) Compose:
+sudo curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+# 2) buildx (pin a current version — buildx has no 'latest' file):
+sudo curl -SL https://github.com/docker/buildx/releases/download/v0.36.1/buildx-v0.36.1.linux-amd64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-buildx
+sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
+
+# verify both:
+sudo docker compose version      # Docker Compose version v2.x+
+sudo docker buildx version       # github.com/docker/buildx v0.36.1</code></pre>
+<p><strong>Check the newest buildx tag</strong> at <a href="https://github.com/docker/buildx/releases">github.com/docker/buildx/releases</a> and swap the version if <code>v0.36.1</code> is stale. Docker's official plugin docs: <a href="https://docs.docker.com/compose/install/linux/">docs.docker.com/compose/install/linux</a>.</p>
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>E1 · The compose file</h3>
+<p><strong>File:</strong> make a new file <code>docker-compose.yml</code> at the repo root on the <strong>api-server box</strong>.</p>
+<p>Three services on one network. The API and frontend build from the Dockerfiles you wrote in Step D.</p>
+<pre><code class="language-yaml">services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: rmit
+      POSTGRES_PASSWORD: rmit
+      POSTGRES_DB: rmit_store
+    volumes: [ "pgdata:/var/lib/postgresql/data" ]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rmit"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: { context: ., dockerfile: Dockerfile.api }
+    env_file: server/.env
+    ports: [ "8000:8000" ]     # browser hits the API directly (Step C design)
+    depends_on:
+      db: { condition: service_healthy }
+
+  web:
+    build: { context: ., dockerfile: Dockerfile.frontend }
+    ports: [ "80:80" ]
+    depends_on: [ api ]
+
+volumes: { pgdata: {} }</code></pre>
+<p class="callout callout--note"><strong>Publish :8000 or the store can't talk to the API.</strong> nginx (<code>web</code>) only serves the built Vue files on :80 — it does <strong>not</strong> proxy <code>/api</code>. The browser calls the API straight at <code>&lt;api-ip&gt;:8000</code> (the same design as Step C), so <code>config.js</code> <code>API_BASE_URL</code> must be <code>http://&lt;api-ip&gt;:8000/api</code>. Skip the <code>api</code> <code>ports</code> and the page loads but every product/login call fails.</p>
+<p class="command-purpose"><strong>Note the volume:</strong> <code>pgdata</code> keeps the database on disk, so <code>docker compose down</code> does not wipe your catalogue.</p>
+</div>
+<div class="card">
+<h3>E2 · Wait for the database, don't crash-loop</h3>
+<p><strong>File:</strong> keep editing the same <code>docker-compose.yml</code> — add the <code>api.healthcheck</code> block below into the <code>api</code> service.</p>
+<p>The <code>db</code> healthcheck plus <code>depends_on: condition: service_healthy</code> makes the API wait until Postgres actually answers — not just until its container exists.</p>
+<pre><code class="language-yaml"># already in E1:
+#   db.healthcheck  -&gt; pg_isready
+#   api.depends_on.db.condition: service_healthy
+# add a readiness check on the API too, so web waits for a working API:
+  api:
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/readyz/ || exit 1"]
+      interval: 10s
+      retries: 5</code></pre>
+<p class="command-purpose"><strong>Why:</strong> without it the API starts before the DB is ready, fails to connect, and restarts in a loop that looks like a bug. <code>/readyz/</code> is exactly the probe for this.</p>
+</div>
+<div class="card">
+<h3>E3 · Where do migrations run?</h3>
+<p><strong>File:</strong> same <code>docker-compose.yml</code>. Pick Option A (nothing to add) or Option B (paste the <code>migrate</code> service and the <code>api.depends_on</code> below).</p>
+<p>Three containers start at once — you must decide who runs <code>migrate</code>, exactly once, before the API serves traffic. Two clean options.</p>
+<pre><code class="language-yaml"># Option A (simplest): the API entrypoint from D2 runs migrate on start.
+#   Fine for one API replica. With several, they race — usually harmless
+#   (migrations are transactional) but noisy.
+
+# Option B (cleaner): a one-shot migrate service that runs and exits,
+#   and the API waits for it to finish successfully.
+  migrate:
+    build: { context: ., dockerfile: Dockerfile.api }
+    env_file: server/.env
+    entrypoint: []                       # MUST clear the entrypoint, see below
+    command: python manage.py migrate --noinput
+    depends_on:
+      db: { condition: service_healthy }
+  api:
+    depends_on:
+      migrate: { condition: service_completed_successfully }</code></pre>
+<p class="callout callout--note"><strong>The gotcha that makes Option B hang.</strong> <code>Dockerfile.api</code> ends in <code>ENTRYPOINT ["/entrypoint.sh"]</code>, and that script always finishes with <code>exec gunicorn</code>. So a bare <code>command:</code> is ignored — the migrate container runs gunicorn and <strong>never exits</strong>, and <code>api</code> waits on it forever (<code>docker compose ps</code> shows <code>migrate</code> stuck <code>Up</code>, not <code>Exited (0)</code>). Adding <code>entrypoint: []</code> clears that, so <code>command</code> runs directly and the container exits when migrate finishes.</p>
+<p class="command-purpose"><strong>For the report:</strong> naming <em>where</em> migrations run and what happens if they fail is exactly the operational decision the assignment is probing.</p>
+</div>
+<div class="card">
+<h3>E4 · Run it and verify</h3>
+<p><strong>Where:</strong> run these on the <strong>api-server box</strong>, from the repo root (where <code>docker-compose.yml</code> is).</p>
+<p class="callout callout--note"><strong>Free the ports first.</strong> If the one-off <code>api</code>/<code>web</code> containers from D6 (or the Step C services) are still holding :80 and :8000, Compose can't bind and you'll hit <code>address already in use</code>. Clear them — the <code>|| true</code> means "don't error if they aren't there":</p>
+<pre><code class="language-bash">sudo docker rm -f api web 2&gt;/dev/null || true   # remove D6 containers IF they exist
+sudo systemctl stop rmit-api nginx 2&gt;/dev/null || true   # stop Step C services IF running</code></pre>
+<p><code>No such container: api</code> here is <strong>fine</strong> — it just means you never made the D6 containers, so there is nothing to clean up. Move on.</p>
+<p>One command brings the whole stack up. Seed once the DB is healthy.</p>
+<pre><code class="language-bash">docker compose up -d --build
+docker compose ps            # all healthy?
+
+# seed the catalogue (once):
+docker compose exec api python manage.py seed_demo \
+    --admin-email admin@rmit.edu.au --admin-password 'RmitStore2767!' --demo-users
+
+# API lives on :8000 (NOT behind nginx on :80):
+curl -s http://localhost:8000/readyz/       # {"database": "ok", "storage": "ok"}
+curl -s http://localhost:8000/api/version/  # the build you just ran
+
+# the store page is nginx on :80 — this returns HTML, which is correct:
+curl -s http://localhost/                   # &lt;!doctype html&gt; ... RMIT Store</code></pre>
+<p><strong>Don't be fooled:</strong> <code>curl localhost/readyz/</code> (port 80) returns the store's HTML, not JSON — because nginx sends every unknown path to <code>index.html</code>. That is not a bug. The API check must use <code>:8000</code>.</p>
+<p class="command-purpose"><strong>Logs:</strong> <code>docker compose logs -f api</code>. <strong>Tear down:</strong> <code>docker compose down</code> (add <code>-v</code> to also drop the DB volume).</p>
+</div>
+<div class="card">
+<h3>E5 · Know the ceiling</h3>
+<p>Compose runs on <strong>one host</strong>. It is perfect for local dev and a single demo box, but it does not spread containers across machines or scale a tier to many replicas.</p>
+<pre><code class="language-bash"># the moment you scale the API to 2+ replicas across hosts, uploaded
+# images on local disk break again — which is why Step C added S3.
+# multi-host scaling itself is Plan F: Docker Swarm or Kubernetes.</code></pre>
+<p class="command-purpose"><strong>This is the handoff line</strong> to the automation pipeline. Stop here.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Done with E when:</strong> <code>docker compose up -d --build</code> brings the whole store up with the API waiting for a healthy database, migrations run exactly once, and <code>/readyz/</code> is green. You can now start, stop and rebuild the entire app with one command.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="stop-here">
+<h2 class="collapsible-header start-open">🛑 Stop here — Plan F comes next (not yet)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>You are done with A–E</h3>
+<p>Everything above is manual on purpose. You have run the app locally, deployed it to one box, split it across servers with shared S3 storage, containerised it, and described the whole stack in one Compose file — all by hand. That is the understanding the automation is built on.</p>
+<p class="command-purpose"><strong>Do not start Plan F yet.</strong> It replaces these manual steps with tools, one at a time.</p>
+</div>
+<div class="card">
+<h3>What Plan F automates</h3>
+<p>Each of these takes something you just did by hand and makes it boring and repeatable.</p>
+<pre><code class="language-bash">Jenkins        # build, test, deploy on every git push
+Testing        # unit + integration + Web UI suites
+Ansible        # server config instead of hand-run commands
+CloudFormation # the Step C AWS pieces, as code
+Swarm / K8s    # multi-host orchestration and scaling
+Alerting       # email the team on build/test/deploy failure
+Monitoring     # Prometheus / Grafana / CloudWatch</code></pre>
+<p class="command-purpose"><strong>Next session:</strong> start with CI (Jenkins building + testing on push), then continuous deployment to staging → production.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>The whole point:</strong> the assignment grades the pipeline, not the app. Because you did A–E by hand, when the pipeline breaks you will know exactly which manual step it was standing in for.</p>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-resources)" href="../sub_pages/ssh-keys-github.html"><span class="pager__dir">← Previous</span><span class="pager__title">SSH Keys & GitHub Access</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="deploy-overview"><a class="toc__link" href="#deploy-overview"><span>What you are building, and the A–E map</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-a-local"><a class="toc__link" href="#step-a-local"><span>Step A — Run it locally (Plan A)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-b-ec2"><a class="toc__link" href="#step-b-ec2"><span>Step B — Deploy to one EC2 by hand (Plan B)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-c-split"><a class="toc__link" href="#step-c-split"><span>Step C — Split across servers (Plan C)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="elastic-ip"><a class="toc__link" href="#elastic-ip"><span>Elastic IP — survive Learner Lab restarts</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-d-docker"><a class="toc__link" href="#step-d-docker"><span>Step D — Containerise with Docker (Plan D)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-e-compose"><a class="toc__link" href="#step-e-compose"><span>Step E — Docker Compose (Plan E)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="stop-here"><a class="toc__link" href="#stop-here"><span>Stop here — Plan F comes next (not yet)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 8 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

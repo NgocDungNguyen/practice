@@ -1,0 +1,46 @@
+/* =============================================================================
+   main.css — the only stylesheet a page needs to link.
+
+   Import order is the cascade order, from least to most specific intent:
+
+     1. base/        design tokens, reset, bare element defaults
+     2. layout/      page shell, header, footer, grids
+     3. components/  reusable blocks (card, collapsible, code block, …)
+     4. utilities    single-purpose helpers
+     5. print        the PDF/print rendition of everything above
+
+   A page that needs styles of its own links css/pages/<page>.css *after* this
+   file. See docs/ARCHITECTURE.md before adding anything here.
+   ========================================================================== */
+
+/* 1. Base ------------------------------------------------------------------ */
+@import url("base/tokens.css");
+@import url("base/reset.css");
+@import url("base/elements.css");
+
+/* 2. Layout ---------------------------------------------------------------- */
+@import url("layout/page.css");
+@import url("layout/site-header.css");
+@import url("layout/site-footer.css");
+@import url("layout/grid.css");
+
+/* 3. Components ------------------------------------------------------------ */
+@import url("components/section.css");
+@import url("components/card.css");
+@import url("components/collapsible.css");
+@import url("components/button.css");
+@import url("components/instruction-step.css");
+@import url("components/callout.css");
+@import url("components/code-block.css");
+@import url("components/output-box.css");
+@import url("components/media.css");
+@import url("components/table.css");
+@import url("components/list.css");
+@import url("components/tutorial.css");
+
+/* 4. Utilities ------------------------------------------------------------- */
+@import url("utilities.css");
+
+/* 5. Print ----------------------------------------------------------------- */
+@import url("print.css");
+

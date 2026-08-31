@@ -1,0 +1,4263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Build confidence at the Bash command line through guided exercises and nine hands-on challenges covering files, permissions, packages, scripting, logs, and pipelines.">
+<title>Week 2: Linux and CLI Commands - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="week-2" data-stage="foundations" data-root="../" style="--stage-accent: var(--stage-foundations)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Foundations</span><span class="crumb-sep">/</span><span>Week 02</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Week 02</span><span class="chip">Foundations</span><span class="chip">Lab guide</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">⌨️</span>Linux and CLI Commands</h1>
+<p class="page-hero__intro">Build confidence at the
+     <code>
+      Bash
+     </code>
+     command line through guided exercises and nine hands-on challenges covering files, permissions, packages, scripting, logs, and pipelines.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>14</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 15.5l-4.2-4.2L7 21"/></svg><strong>49</strong>&nbsp;screenshots</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>123</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>70</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="learning-outcomes">
+<h2 class="collapsible-header start-open">
+     🎯 Learning outcomes
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="card">
+<p class="text-note">
+<strong>
+        Work through the sections in order.
+       </strong>
+       Complete each instruction and confirm the expected result before moving on.
+      </p>
+<ul>
+<li>
+        Navigate the
+        <code>
+         Linux
+        </code>
+        filesystem and create, move, copy, inspect, and remove files.
+       </li>
+<li>
+        Edit text with
+        <code>
+         Nano
+        </code>
+        and search content with
+        <code>
+         grep
+        </code>
+        and
+        <code>
+         find
+        </code>
+        .
+       </li>
+<li>
+        Write and execute
+        <code>
+         Bash
+        </code>
+        scripts that automate repeatable work.
+       </li>
+<li>
+        Read and change Linux permissions and ownership safely.
+       </li>
+<li>
+        Install packages, inspect directory trees, analyse logs, and combine commands with pipelines.
+       </li>
+</ul>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="cli-foundations">
+<h2 class="collapsible-header start-open">
+     🧭 Introduction to the Bash command line
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Introduction and Challenge 0: CLI foundations" class="img-large" height="544" loading="lazy" src="../assets/tutorials/week-2/01-introduction-to-the-bash-command-line-001.png" width="543"/>
+</div>
+</div>
+<div class="tutorial-flow">
+<p>
+         We usually interact with remote servers through a
+         <code>
+          command-line interface
+         </code>
+         (CLI) rather than a graphical user interface (
+         <code>
+          GUI
+         </code>
+         ). A
+         <code>
+          CLI
+         </code>
+         is a text-based interface where commands follow a defined syntax. This makes remote administration efficient and makes repeatable work easy to capture in scripts.
+        </p>
+<p>
+         Here are a few reasons why it is important to learn the CLI:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           It is a very popular technology and a very common tool in DevOps and Computer Science.
+          </p>
+</li>
+<li>
+<p>
+           It is one of the best ways to control and interact with cloud services.
+          </p>
+</li>
+<li>
+<p>
+           You type faster than you click.
+          </p>
+</li>
+<li>
+<p>
+           It allows you to automate repetitive tasks.
+          </p>
+</li>
+</ul>
+</div>
+<div class="tutorial-flow">
+<p>
+         To start, please:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Open VirtualBox and start a
+           <code>
+            Linux
+           </code>
+           environment (Ubuntu/Fedora) we set up in the previous lab.
+          </p>
+</li>
+<li>
+<p>
+           You can either
+           <code>
+            SSH
+           </code>
+           to your VM. But if your SSH has some issues then you can just type commands straight in the terminal of your VM for this lab.
+          </p>
+</li>
+<li>
+<p>
+           Ready to play around with CLI commands in the challenges below.
+          </p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-0">
+<h2 class="collapsible-header">
+     ⌨️ Challenge 0: CLI foundations
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Challenge 0 (Live code with Tom in the lecture) - Recommended to do it yourself:" class="img-large" height="572" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-001.png" width="573"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check your current
+           <code>
+            date
+           </code>
+           :
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Note: the time and date is shown is the default EDT ("Eastern Daylight Time.") It is the daylight saving time observed in the Eastern Time Zone of the United States and parts of Canada so it might not exactly reflect the time format in Vietnam without the conversation.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>date</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Print out the current login user:
+          </p>
+</li>
+</ul>
+<pre><code>whoami</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Print out the group which current login user belongs to:
+          </p>
+</li>
+</ul>
+<pre><code>groups $(whoami)</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Print "Hello World" to the screen:
+          </p>
+</li>
+</ul>
+<pre><code>echo Hello World</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check current working directory (where you are):
+          </p>
+</li>
+</ul>
+<pre><code>pwd</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Can you guess what “
+         <code>
+          pwd
+         </code>
+         ” stands for?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           List all files and directories in current working directory (where you are):
+          </p>
+</li>
+</ul>
+<pre><code>ls</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Do you see any files or directories? Also, can you guess what “
+         <code>
+          ls
+         </code>
+         ” stands for?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Create a new directory so we can work on it:
+          </p>
+</li>
+</ul>
+<pre><code>mkdir my_new_folder</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : How to check if that
+         <code>
+          my_new_folder
+         </code>
+         is created after your previous command ?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           List all files and folders in current working directory (where you are) again:
+          </p>
+</li>
+</ul>
+<pre><code>ls</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Do you see any files or folders now?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Change current working directory to that
+           <code>
+            my_new_folder
+           </code>
+           directory:
+          </p>
+</li>
+</ul>
+<pre><code>cd my_new_folder</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : How to confirm if you are already inside
+         <code>
+          my_new_folder
+         </code>
+         ?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's create 2 folders: folder1, folder2:
+          </p>
+</li>
+</ul>
+<pre><code>mkdir folder1</code></pre>
+<pre><code>mkdir folder2</code></pre>
+<p>
+         Or in one line:
+        </p>
+<pre><code>mkdir folder1 folder2</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's create two empty files: file1, file2:
+          </p>
+</li>
+</ul>
+<pre><code>touch file1.txt</code></pre>
+<pre><code>touch file2.txt</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Is there any quicker way to create these two files in one go?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           List all files and directories (including hidden ones -a and in long format -l):
+          </p>
+</li>
+</ul>
+<p>
+         Can you try each of these commands and see the differences?
+        </p>
+<pre><code>ls</code></pre>
+<pre><code>ls -l</code></pre>
+<pre><code>ls -a</code></pre>
+<pre><code>ls -la</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : What is the . and .. (only show with -a) ?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's add some text to the files:
+          </p>
+</li>
+</ul>
+<pre><code>echo Hello What are you doing &gt; file1.txt</code></pre>
+<pre><code>echo Bonjour How are you doing &gt; file1.txt</code></pre>
+<pre><code>echo I am fine thank you &gt;&gt; file2.txt</code></pre>
+<pre><code>echo I am coding bash commands now &gt;&gt; file2.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's check the content of file1 and file2:
+          </p>
+</li>
+</ul>
+<pre><code>cat file1.txt</code></pre>
+<pre><code>cat file2.txt</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : After checking the content of
+         <code>
+          file1.txt
+         </code>
+         and
+         <code>
+          file2.txt
+         </code>
+         , what is the difference between &gt; and &gt;&gt; ?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's move those files to the different directories:
+          </p>
+</li>
+</ul>
+<pre><code>mv file1.txt folder1</code></pre>
+<pre><code>mv file2.txt folder2</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : How can you check if your files are moved after you have run the commands?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's check what inside folder1
+          </p>
+</li>
+</ul>
+<pre><code>cd folder1</code></pre>
+<pre><code>ls</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's make a copy of
+           <code>
+            file1.txt
+           </code>
+           to folder2
+          </p>
+</li>
+</ul>
+<pre><code>cp file1.txt ../folder2</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Why do we use .. here?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's change current directory to folder2:
+          </p>
+</li>
+</ul>
+<pre><code>cd ..</code></pre>
+<pre><code>cd folder2</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : How can you confirm if you are already in the folder2? Also, how can you check what files are in folder2?
+        </p>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Can you quickly do two steps of changing directories from folder 1 to folder 2 in one go?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's remove the copied file1 in folder2:
+          </p>
+</li>
+</ul>
+<pre><code>rm file1.txt</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : How can you confirm before deleting, that
+         <code>
+          file1.txt
+         </code>
+         is in folder1 or in folder2?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's try to remove the whole folder2:
+          </p>
+</li>
+</ul>
+<pre><code>cd ..</code></pre>
+<pre><code>ls</code></pre>
+<pre><code>rm folder2</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Why does this last command give you an error?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Now, let's try to force it to delete the directory folder2:
+          </p>
+</li>
+</ul>
+<pre><code>rm -rf folder2</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Can you guess what are the
+         <strong>
+          r
+         </strong>
+         and
+         <strong>
+          f
+         </strong>
+         arguments of the
+         <strong>
+<code>
+           rm
+          </code>
+</strong>
+         command?
+        </p>
+<p>
+         Here is the meme for the most destructive command in the history of computers:
+        </p>
+<div class="tutorial-image-group">
+<img alt="Visual showing Here is the meme for the most destructive command in the history of computers:" class="img-large" height="502" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-002.png" width="370"/>
+<img alt="Visual showing Here is the meme for the most destructive command in the history of computers:" class="img-large" height="231" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-003.png" width="414"/>
+<img alt="Visual showing Here is the meme for the most destructive command in the history of computers:" class="img-large" height="226" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-004.png" width="404"/>
+</div>
+<p>
+         Please do not try the command in this meme :)) (or you might need a new VM for that)
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's rename
+           <code>
+            file1.txt
+           </code>
+           to
+           <code>
+            file3.txt
+           </code>
+           :
+          </p>
+</li>
+</ul>
+<pre><code>cd folder1</code></pre>
+<pre><code>mv file1.txt file3.txt</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Is there any quicker way to rename
+         <code>
+          file1.txt
+         </code>
+         to
+         <code>
+          file3.txt
+         </code>
+         without
+         <code>
+          cd
+         </code>
+         folder1 first?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's create more files (
+           <code>
+            file4.txt
+           </code>
+           and
+           <code>
+            file5.txt
+           </code>
+           ) in folder1:
+          </p>
+</li>
+</ul>
+<pre><code>touch file4.txt file5.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's add more content in
+           <code>
+            file4.txt
+           </code>
+           and
+           <code>
+            file5.txt
+           </code>
+           :
+          </p>
+</li>
+</ul>
+<pre><code>echo Hello world &gt;&gt; file4.txt</code></pre>
+<pre><code>echo Hello good friends to DevOps &gt;&gt; file4.txt</code></pre>
+<pre><code>echo Learning new DevOps materials &gt;&gt; file5.txt</code></pre>
+<pre><code>echo Good bye new friends &gt;&gt; file5.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's see what is in
+           <code>
+            file4.txt
+           </code>
+           :
+          </p>
+</li>
+</ul>
+<pre><code>cat file4.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's search the word "Hello" in
+           <code>
+            file4.txt
+           </code>
+           :
+          </p>
+</li>
+</ul>
+<pre><code>grep Hello file4.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's search the word "DevOps" in the whole folder1:
+          </p>
+</li>
+</ul>
+<pre><code>grep DevOps -r .</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Can you guess what is
+         <code>
+          -r
+         </code>
+         and what is . ? Also, for this task, is there any scenario, we use "folder1" instead of . ?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's save the results of the search in a new file "
+           <code>
+            result.txt
+           </code>
+           ":
+          </p>
+</li>
+</ul>
+<pre><code>grep DevOps -r . &gt;&gt; ../search_result.txt</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : So where is the location of
+         <code>
+          search_result.txt
+         </code>
+         ? How can we check the content of
+         <code>
+          search_result.txt
+         </code>
+         ? Can you guess what exact location of .. and . in this context?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<code>
+            grep
+           </code>
+           is for searching word content. However, to
+           <code>
+            find
+           </code>
+           file names then you need to use “find” command:
+          </p>
+</li>
+</ul>
+<pre><code>find ~ -name "*.txt"</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         what is different between that command and “ls *
+         <code>
+          .txt
+         </code>
+         ”
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's create more empty files with different extensions in the folder1:
+          </p>
+</li>
+</ul>
+<pre><code>touch image.jpg music.mp3 dataset.zip</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : How can you list those newly created files in the folder1?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We have a bunch of files in folder1 but we want to move all
+           <code>
+            file3.txt
+           </code>
+           ,
+           <code>
+            file4.txt
+           </code>
+           and
+           <code>
+            file5.txt
+           </code>
+           outside of folder1:
+          </p>
+</li>
+</ul>
+<pre><code>mv *.txt ..</code></pre>
+<p>
+         or
+        </p>
+<pre><code>mv file* ..</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : What is the * here? Can you explain the difference between the * in the first command and the * in the second command?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's change the directory outside of folder1 (back to
+           <code>
+            my_new_folder
+           </code>
+           ):
+          </p>
+</li>
+</ul>
+<pre><code>cd ..</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's count how many words in
+           <code>
+            file4.txt
+           </code>
+           :
+          </p>
+</li>
+</ul>
+<pre><code class="language-bash">wc -w file4.txt</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Can you guess what are the parameters
+         <strong>
+          w
+         </strong>
+         of the
+         <strong>
+<code>
+           wc
+          </code>
+</strong>
+         command?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's count how many lines in
+           <code>
+            file4.txt
+           </code>
+           :
+          </p>
+</li>
+</ul>
+<pre><code class="language-bash">wc -l file4.txt</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : Can you guess what are the parameters
+         <strong>
+          l
+         </strong>
+         of the
+         <strong>
+          wc
+         </strong>
+         command?
+        </p>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : What is the -w and -l ?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's see how many times the word "world" appear all files in
+           <code>
+            my_new_folder
+           </code>
+</p>
+</li>
+</ul>
+<pre><code>grep world -r .</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's count how many times the word "friends" appear all files in
+           <code>
+            my_new_folder
+           </code>
+</p>
+</li>
+</ul>
+<pre><code>grep friends -r . | wc -l</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question
+         </strong>
+         : What is the purpose of |? Could you break this command into two parts and explain it?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To check all the past commands I have used so far, you can use “history” command:
+          </p>
+</li>
+</ul>
+<pre><code>history</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s edit a file using the
+           <strong>
+<code>
+             nano
+            </code>
+</strong>
+           command. But first, let’s install nano command:
+          </p>
+</li>
+</ul>
+<pre><code>sudo yum install nano</code></pre>
+<p>
+         Enter “y” to confirm that installation!
+        </p>
+<p class="callout callout--note">
+<strong>
+          Note
+         </strong>
+         : you don’t need to install nano command on Ubuntu, but only on CentOS as Ubuntu got the nano command already installed!
+        </p>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         what does “sudo” do? When do we need to use it to run commands?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Visual showing Question: what does “sudo” do? When do we need to use it to run commands?" class="img-large" height="376" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-005.png" width="453"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To edit “
+           <code>
+            file5.txt
+           </code>
+           ”, we need to run:
+          </p>
+</li>
+</ul>
+<pre><code>nano file5.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You should see this screen:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Visual showing You should see this screen:" class="img-large" height="277" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-006.png" width="903"/>
+</div>
+<p>
+         You use arrow keys to move the cursor around to edit the file, and just type like normal to add characters, use backspace to remove characters, and when you are ready to save and quit nano, press “Ctrl+X”.
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Add two new lines in the “
+           <code>
+            file5.txt
+           </code>
+           ”:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Visual showing Add two new lines in the “file5.txt”:" class="img-large" height="324" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-007.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Press “Ctrl+X” to save the file and quit Nano:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Visual showing Press “Ctrl+X” to save the file and quit Nano:" class="img-large" height="324" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-008.png" width="902"/>
+</div>
+<p>
+         Press “Y” to confirm to save the file with new changes or “N” to not save the changes.
+        </p>
+<div class="tutorial-image-group">
+<img alt="Visual showing Press “Y” to confirm to save the file with new changes or “N” to not save the changes." class="img-large" height="324" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-009.png" width="903"/>
+</div>
+<p>
+         Then nano will ask you if you want to rename the file: you can either change the file name to save as a new file or just press Enter to overwrite the current file! That’s it! That’s how you learn how to use the
+        </p>
+<pre><code>nano editor!</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You can confirm the changes by using the
+           <code>
+            cat
+           </code>
+           command for
+           <code>
+            file5.txt
+           </code>
+           :
+          </p>
+</li>
+</ul>
+<pre><code>cat file5.txt</code></pre>
+<p>
+         Hopefully, you will see:
+        </p>
+<div class="tutorial-image-group">
+<img alt="Visual showing Hopefully, you will see:" class="img-large" height="111" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-010.png" width="488"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Sometimes you do not want to display all content of the file, you just want to show the beginning or the end of the file:
+          </p>
+</li>
+</ul>
+<pre><code>head -2 file5.txt</code></pre>
+<pre><code>tail -2 file5.txt</code></pre>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         can you figure out what
+         <code>
+          head
+         </code>
+         and
+         <code>
+          tail
+         </code>
+         do? and what are the number parameters of each command?
+        </p>
+<p>
+         Alright, that is fun so far! To automate stuff, we need to run these commands at once! Then we need to learn how to create a
+         <code>
+          bash
+         </code>
+         script which contains many commands and when we execute that bash script file, all the commands inside that file will be executed!
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           First, keep the exercise organised by creating a new working directory:
+          </p>
+</li>
+</ul>
+<pre><code>mkdir learn_bash_script</code></pre>
+<pre><code>cd learn_bash_script</code></pre>
+<pre><code>pwd</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Create an empty Bash script. The <code>.sh</code> extension is conventional but does not make the file executable by itself:
+          </p>
+</li>
+</ul>
+<pre><code>touch my_bash_script.sh</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Open the file in Nano:
+          </p>
+</li>
+</ul>
+<pre><code>nano my_bash_script.sh</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We would like to create these directory structures like in the picture:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Visual showing We would like to create these directory structures like in the picture:" class="img-large" height="232" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-011.png" width="244"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Enter the following commands in Nano, then save the file:
+          </p>
+</li>
+</ul>
+<div class="code-legend">
+<span class="legend-item"><span class="legend-swatch hl-new"></span> New line</span>
+<span class="legend-item"><span class="legend-swatch hl-focus"></span> Line to notice</span>
+</div>
+<pre><code class="language-bash"><span class="hl-new">#!/bin/bash</span>
+<span class="hl-focus">mkdir -p src/main/java src/main/resources</span>
+<span class="hl-new">touch src/main/java/Main.java</span>
+<span class="hl-new">touch src/main/resources/application.properties</span></code></pre>
+<p class="callout callout--note">
+<strong>Why use <code>mkdir -p</code>?</strong> It creates missing parent directories and does not fail if the directory already exists, making the script safe to run again.
+        </p>
+<div class="tutorial-image-group">
+<img alt="Visual showing Enter the following commands in Nano, then save the file:" class="img-large" height="364" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-012.png" width="903"/>
+</div>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         Can you explain why these commands must run in this order?
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Now, you can execute this bash script file:
+          </p>
+</li>
+</ul>
+<pre><code>bash my_bash_script.sh</code></pre>
+<p>
+         Explore the newly created <code>src</code> directory and confirm that its contents match the target structure.
+        </p>
+<p class="callout callout--task">
+<strong>
+          Question:
+         </strong>
+         Can you run the bash script by simply running it “./
+         <code>
+          my_bash_script.sh
+         </code>
+         ” without the command bash? If not, then what is the issue and how do we solve it?
+        </p>
+<p>
+         Other interesting commands:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check the current
+           <code>
+            Linux
+           </code>
+           Distro information by looking at os-release file:
+          </p>
+</li>
+</ul>
+<pre><code>cat /etc/os-release</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To get a neat summary of the current logged-in user, we can install the “finger” package for that:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Replace “
+             <code>
+              yum
+             </code>
+             ” with “
+             <code>
+              apt
+             </code>
+             ” if you use Ubuntu VM instead of Fedora.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>sudo yum install finger</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing sudo yum install finger" class="img-large" height="252" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-013.png" width="813"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Once you have finger installed, you can use it to display some information about any user:
+          </p>
+</li>
+</ul>
+<pre><code>finger $(whoami)</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Here is my example screenshot:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Visual showing Here is my example screenshot:" class="img-large" height="172" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-014.png" width="714"/>
+</div>
+<p>
+         That's it, you have finished the basics of the command line, please go through those challenges below!
+        </p>
+<div class="tutorial-image-group">
+<img alt="Visual showing That's it, you have finished the basics of the command line, please go through those challenges below!" class="img-large" height="538" loading="lazy" src="../assets/tutorials/week-2/02-challenge-0-cli-foundations-015.png" width="538"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-1">
+<h2 class="collapsible-header">
+     📁 Challenge 1: Create directories and copy files
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Challenge 1: Create directories and copy files" class="img-large" height="465" loading="lazy" src="../assets/tutorials/week-2/03-challenge-1-create-directories-and-copy-files-001.png" width="465"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Create a directory named
+           <strong>
+<code>
+             bash_learning
+            </code>
+</strong>
+           , and change your current working directory to that directory.
+          </p>
+</li>
+<li>
+<p>
+           Create three folders named
+           <strong>
+            dir1
+           </strong>
+           ,
+           <strong>
+            dir2
+           </strong>
+           ,
+           <strong>
+            dir3
+           </strong>
+           with one command.
+          </p>
+</li>
+<li>
+<p>
+           Create three empty files in each folder named
+           <strong>
+<code>
+             file1.txt
+            </code>
+</strong>
+           in
+           <strong>
+            dir1
+           </strong>
+           ,
+           <strong>
+<code>
+             file2.txt
+            </code>
+</strong>
+           in
+           <strong>
+            dir2
+           </strong>
+           ,
+           <strong>
+<code>
+             file3.txt
+            </code>
+</strong>
+           in
+           <strong>
+            dir3
+           </strong>
+           with one command.
+          </p>
+</li>
+<li>
+<p>
+           Append 'Hello' to
+           <strong>
+<code>
+             file1.txt
+            </code>
+</strong>
+           , 'Bonjour' to
+           <strong>
+<code>
+             file2.txt
+            </code>
+</strong>
+           , 'Hallo' to
+           <strong>
+<code>
+             file3.txt
+            </code>
+</strong>
+           using
+           <strong>
+<code>
+             echo
+            </code>
+            .
+           </strong>
+</p>
+</li>
+<li>
+<p>
+           Copy
+           <strong>
+<code>
+             file1.txt
+            </code>
+</strong>
+           to
+           <strong>
+            dir2
+           </strong>
+           ,
+           <strong>
+<code>
+             file2.txt
+            </code>
+</strong>
+           to
+           <strong>
+            dir3
+           </strong>
+           ,
+           <strong>
+<code>
+             file3.txt
+            </code>
+</strong>
+           to
+           <strong>
+            dir1.
+           </strong>
+</p>
+</li>
+<li>
+<p>
+           From
+           <strong>
+<code>
+             bash_learning
+            </code>
+            /
+           </strong>
+<code>
+            find
+           </code>
+           all files that contain 'Hallo' and save the result in
+           <strong>
+<code>
+             hallo.txt
+            </code>
+</strong>
+</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-2">
+<h2 class="collapsible-header">
+     📜 Challenge 2: Working with text files
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Challenge 2: Dealing with Text files" class="img-large" height="306" loading="lazy" src="../assets/tutorials/week-2/04-challenge-2-working-with-text-files-001.png" width="602"/>
+</div>
+<p>
+         That
+         <strong>
+          Project Gutenberg
+         </strong>
+         text file includes many of Shakespeare’s best-known works, such as the tragedies Hamlet, Macbeth, Othello, King Lear, and Romeo and Juliet; the comedies A Midsummer Night’s Dream, Twelfth Night, and Much Ado About Nothing; the histories Henry V and Richard III; plus the Sonnets and other poems.
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Download the file containing the works of Shakespeare with this command:
+          </p>
+</li>
+</ul>
+<pre><code>curl https://www.gutenberg.org/files/100/100-0.txt &gt; shakespeare.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing curl https://www.gutenberg.org/files/100/100-0.txt &gt; shakespeare.txt" class="img-large" height="477" loading="lazy" src="../assets/tutorials/week-2/04-challenge-2-working-with-text-files-002.png" width="696"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Use
+           <code>
+            Linux
+           </code>
+           commands you have learnt so far (like
+           <strong>
+<code>
+             grep
+            </code>
+</strong>
+           ) to find out:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Count how many words are there in the file.
+            </p>
+</li>
+<li>
+<p>
+             Count how many lines of this file.
+            </p>
+</li>
+<li>
+<p>
+             Count how many times the word Romeo occurs, and compare with the word Juliet.
+            </p>
+</li>
+<li>
+<p>
+             These are the top five most popular characters in Shakespeare’s book. Can you figure out
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Visual showing These are the top five most popular characters in Shakespeare’s book. Can you figure out" class="img-large" height="354" loading="lazy" src="../assets/tutorials/week-2/04-challenge-2-working-with-text-files-003.png" width="352"/>
+</div>
+<p>
+         which character names are mentioned the most:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Romeo
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Juliet
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               Macbeth
+              </p>
+</li>
+<li>
+<p>
+               Hamlet
+              </p>
+</li>
+<li>
+<p>
+               Duncan
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>
+           Also, can you find the total amount of mentions of these five characters?
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Visual showing Also, can you find the total amount of mentions of these five characters?" class="img-large" height="292" loading="lazy" src="../assets/tutorials/week-2/04-challenge-2-working-with-text-files-004.png" width="292"/>
+<img alt="Visual showing Also, can you find the total amount of mentions of these five characters?" class="img-large" height="291" loading="lazy" src="../assets/tutorials/week-2/04-challenge-2-working-with-text-files-005.png" width="291"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-3">
+<h2 class="collapsible-header">
+     🗂️ Challenge 3: Setup project folder
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Challenge 3: Setup project folder" class="img-large" height="558" loading="lazy" src="../assets/tutorials/week-2/05-challenge-3-setup-project-folder-001.png" width="556"/>
+</div>
+<p>
+         Write a
+         <code>
+          bash
+         </code>
+         script to generate this project structure:
+        </p>
+<pre><code class="language-tree">├── data/
+│   ├── raw/
+│   │   ├── cat/
+│   │   └── dog/
+│   ├── train/
+│   ├── test/
+│   └── validation/
+├── app/
+│   ├── blueprints/
+│   │   └── home_page/
+│   │       └── blueprint.py
+│   ├── static/
+│   │   ├── styles.css
+│   │   └── index.js
+│   ├── templates/
+│   │   ├── base.html
+│   │   └── home.html
+│   ├── app.py
+│   └── .gitignore
+├── scripts/
+│   ├── preprocess.py
+│   ├── model.py
+│   └── train.py
+└── notebooks/</code></pre>
+<p>
+         Create a bash script file named "
+         <code>
+          my_script.sh
+         </code>
+         " and when you execute that script:
+        </p>
+<pre><code>bash my_script.sh</code></pre>
+<p>
+         This will generate all of these folders and files.
+        </p>
+<p class="callout callout--note">
+<strong>
+          [Extra Information]
+         </strong>
+         Run the following command to check the
+         <code>
+          file permissions
+         </code>
+         of
+         <code>
+          my_script.sh
+         </code>
+         :
+        </p>
+<pre><code>ls -l my_script.sh</code></pre>
+<p>
+         You should see output similar to this, with your own username instead of tom:
+        </p>
+<div class="tutorial-image-group">
+<img alt="Visual showing You should see output similar to this, with your own username instead of tom:" class="img-large" height="34" loading="lazy" src="../assets/tutorials/week-2/05-challenge-3-setup-project-folder-002.png" width="789"/>
+</div>
+<p>
+         The permissions
+         <strong>
+          -rw-rw-r--
+         </strong>
+         mean that the file is readable and writable by the owner and group, and readable by others. However, it is not executable by anyone.
+        </p>
+<p class="callout callout--task">
+<strong>
+          [Question]
+         </strong>
+         So why can we still run the script using this command?
+        </p>
+<p class="callout callout--note">
+<strong>
+          Answer
+         </strong>
+         : You can run a script without execute permission by explicitly calling an interpreter, such as bash.
+        </p>
+<p>
+         When you run bash
+         <code>
+          my_script.sh
+         </code>
+         , you are telling the Bash program to read and execute the commands inside
+         <code>
+          my_script.sh
+         </code>
+         . In this case, the script itself does not need execute permission because it is being passed as an argument to bash.
+        </p>
+<p>
+         This works because:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           the bash program has execute permission
+          </p>
+</li>
+<li>
+<p>
+           you have read permission for
+           <code>
+            my_script.sh
+           </code>
+</p>
+</li>
+</ul>
+<p>
+         This method is useful for quick tests or when you do not want to make a script executable. However, if you plan to run the script often, you can add execute permission for the owner:
+        </p>
+<pre><code>chmod u+x my_script.sh</code></pre>
+<p>
+         After that, you can run the script directly:
+        </p>
+<pre><code>./my_script.sh</code></pre>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-4">
+<h2 class="collapsible-header">
+     🖼️ Challenge 4: Sort image dataset
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Challenge 4: Sort image dataset" class="img-large" height="422" loading="lazy" src="../assets/tutorials/week-2/06-challenge-4-sort-image-dataset-001.png" width="423"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Download a small dataset of cat and dog images from GitHub:
+          </p>
+</li>
+</ul>
+<pre><code class="language-bash">curl -L -O https://raw.githubusercontent.com/TomHuynhSG/public_datasets/master/small_cat_dog_dataset.zip</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check the file which you just downloaded
+          </p>
+</li>
+</ul>
+<pre><code>ls</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Realise the file name is pretty ugly "
+           <code>
+            small_cat_dog_dataset.zip_raw
+           </code>
+           =true"
+          </p>
+</li>
+<li>
+<p>
+           Rename that file name to "
+           <code>
+            small_cat_dog.zip
+           </code>
+           "
+          </p>
+</li>
+</ul>
+<pre><code>mv small_cat_dog_dataset.zip\?raw\=true small_cat_dog.zip</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To
+           <code>
+            unzip
+           </code>
+           that file, we need to install unzip command:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Remove “
+             <code>
+              apt
+             </code>
+             ” with “
+             <code>
+              yum
+             </code>
+             ” if you use Fedora VM instead of Ubuntu VM
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>sudo apt install unzip</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Unzip that file using the command
+          </p>
+</li>
+</ul>
+<pre><code>unzip small_cat_dog_dataset.zip</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Now, you should see there is a new folder "DATA" contains 10 images of dogs and 10 images of cats
+          </p>
+</li>
+<li>
+<p>
+           Create a new folder “
+           <code>
+            SORTED_DATA
+           </code>
+           ”.
+          </p>
+</li>
+<li>
+<p>
+           Create two new folders "cat" and "dog" inside the “
+           <code>
+            SORTED_DATA
+           </code>
+           ”.
+          </p>
+</li>
+<li>
+<p>
+           Figure out how to quickly move all cat images to cat folder and move all dogs images to dog folder
+          </p>
+</li>
+</ul>
+<p class="callout callout--note">
+<strong>
+          Note
+         </strong>
+         : This is a very common first step you need to do during your machine learning project. You download a dataset which is messy, and you need to sort them and put them in the right folders to be ready for preprocessing.
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-5">
+<h2 class="collapsible-header">
+     ⚙️ Challenge 5: Automate the whole process
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Challenge 5: Automate the whole process" class="img-large" height="247" loading="lazy" src="../assets/tutorials/week-2/07-challenge-5-automate-the-whole-process-001.png" width="351"/>
+</div>
+<p>
+         This challenge is straightforward! Write a
+         <code>
+          bash
+         </code>
+         script to combine all the steps of Challenge 3 and Challenge 4 so when you run your bash script:
+        </p>
+<pre><code>bash my_ultimate_script.sh</code></pre>
+<p>
+         All of those folders and files are generated. Also the dataset file is downloaded, unzipped and sorted inside the folder
+         <code>
+          data/raw/cat
+         </code>
+         and
+         <code>
+          data/raw/dog
+         </code>
+         .
+         <strong>
+          All of those steps in one go!
+         </strong>
+</p>
+<p class="callout callout--checkpoint">
+<strong>Automation checkpoint:</strong> Which commands in this script should be safe to run twice? What could go wrong if the download, unzip, or move steps are not idempotent?
+        </p>
+<pre><code class="language-tree">├── data/
+│   └── raw/
+│       ├── cat/  ← Put all the cat images in this folder
+│       └── dog/  ← Put all the dog images in this folder
+├── app/
+├── scripts/
+└── notebooks/</code></pre>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-6">
+<h2 class="collapsible-header">
+     🔐 Challenge 6: File permissions and ownership
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Challenge 6: Understanding File Permissions and Ownership" class="img-large" height="426" loading="lazy" src="../assets/tutorials/week-2/08-challenge-6-file-permissions-and-ownership-001.png" width="426"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Navigate to Home Directory :
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Start by going to your home directory. This is usually the default directory when you open a terminal, but you can always navigate to it using:
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>cd ~</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Create a File:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Use the
+             <code>
+              touch
+             </code>
+             command to create a blank file named
+             <code>
+              filename.txt
+             </code>
+             :
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>touch filename.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Verify Creation:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             To make sure the file was created successfully, list the contents of your directory:
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ls -l</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You should see
+           <code>
+            filename.txt
+           </code>
+           in the list, along with its default permissions.
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Visual showing You should see filename.txt in the list, along with its default permissions." class="img-large" height="94" loading="lazy" src="../assets/tutorials/week-2/08-challenge-6-file-permissions-and-ownership-002.png" width="763"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Add some content:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             For demonstration purposes, let's add some content to
+             <code>
+              filename.txt
+             </code>
+             . You can use the
+             <code>
+              echo
+             </code>
+             command in conjunction with the &gt;
+             <code>
+              redirection
+             </code>
+             operator:
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>echo "This is a sample text for filename.txt" &gt; filename.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Verify Content:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Use the
+             <code>
+              cat
+             </code>
+             command to display the contents of the file:
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>cat filename.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You should see the text "This is a sample text for
+           <code>
+            filename.txt
+           </code>
+           " printed to the terminal.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Now that
+             <code>
+              filename.txt
+             </code>
+             is set up and has some content, you can proceed with the steps related to
+             <code>
+              file permissions
+             </code>
+             and ownership.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<strong>
+           Modifying Permissions with
+           <code>
+            chmod
+           </code>
+</strong>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             The chmod command allows you to change permissions on a file or directory.
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<strong>
+               Using Symbolic Mode:
+              </strong>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                 u stands for user, g for group, o for others, and a for all.
+                </p>
+</li>
+<li>
+<p>
+                 + is used to add permissions, - to remove, and = to set exact permissions.
+                </p>
+</li>
+<li>
+<p>
+                 Give execute permission to the owner:
+                </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>chmod u+x filename.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing chmod u+x filename.txt" class="img-large" height="99" loading="lazy" src="../assets/tutorials/week-2/08-challenge-6-file-permissions-and-ownership-003.png" width="597"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Remove write permission for the group:
+          </p>
+</li>
+</ul>
+<pre><code>chmod g-w filename.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing chmod g-w filename.txt" class="img-large" height="108" loading="lazy" src="../assets/tutorials/week-2/08-challenge-6-file-permissions-and-ownership-004.png" width="663"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Give read and execute permissions to everyone:
+          </p>
+</li>
+</ul>
+<pre><code>chmod a+wx filename.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing chmod a+wx filename.txt" class="img-large" height="108" loading="lazy" src="../assets/tutorials/week-2/08-challenge-6-file-permissions-and-ownership-005.png" width="658"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<strong>
+           Using Octal Mode:
+          </strong>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Permissions can be represented as octal numbers: r is 4, w is 2, and x is 1. The sum of these numbers gives the permission set.
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               To give read, write, execute permissions to the owner, and only read and execute to group and others:
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>chmod 755 filename.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing chmod 755 filename.txt" class="img-large" height="109" loading="lazy" src="../assets/tutorials/week-2/08-challenge-6-file-permissions-and-ownership-006.png" width="670"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           This is calculated as:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Owner: rwx = 4 + 2 + 1 = 7
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               Group: r-x = 4 + 0 + 1 = 5
+              </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                 Others: r-x = 4 + 0 + 1 = 5
+                </p>
+</li>
+<li>
+<p class="callout callout--task">
+<strong>
+                  [Question]
+                 </strong>
+                 For server security, what is usually the default permission of the production project on the server? Is 755 good enough or is it very bad?
+                </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>
+           Changing File Ownership with
+           <code>
+            chown
+           </code>
+           and chgrp
+          </strong>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Using chown to Change Owner:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               To change the owner of a file or directory:
+              </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                 “sudo chown newuser thefile”
+                </p>
+</li>
+<li>
+<p>
+                 For this example, we can set the new owner to be the root user
+                </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>sudo chown root filename.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing sudo chown root filename.txt" class="img-large" height="139" loading="lazy" src="../assets/tutorials/week-2/08-challenge-6-file-permissions-and-ownership-007.png" width="715"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Using chgrp to Change Group:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             To change the group of a file or directory:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               “sudo chgrp newgroup thefile”
+              </p>
+<ul class="tutorial-list tutorial-list--level-4">
+<li>
+<p>
+                 Let’s change the group to root as well (so the file will belong to both user root and group root)
+                </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>sudo chgrp root filename.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing sudo chgrp root filename.txt" class="img-large" height="109" loading="lazy" src="../assets/tutorials/week-2/08-challenge-6-file-permissions-and-ownership-008.png" width="709"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To change both the owner and the group at the same time:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             “sudo chown newowner:newgroup thefile”
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               In this example, we set the owner is tom and the group is wheel:
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>sudo chown tom:wheel filename.txt</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing sudo chown tom:wheel filename.txt" class="img-large" height="113" loading="lazy" src="../assets/tutorials/week-2/08-challenge-6-file-permissions-and-ownership-009.png" width="726"/>
+</div>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🔐 Mini challenge: Secure the deployment server
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<strong>
+            Step 1: Prepare the environment
+           </strong>
+           by creating the following structure:
+          </li>
+</ul>
+<pre><code class="language-tree">deployment_lab/
+├── scripts/
+│   └── deploy.sh
+├── config/
+│   └── app.conf
+├── logs/
+│   └── app.log
+└── secrets/
+    └── credentials.txt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Add some sample content to each file.
+           </p>
+</li>
+<li>
+<strong>
+            Step 2: Complete the permission challenges
+           </strong>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Use
+              <strong>
+<code>
+                chmod
+               </code>
+</strong>
+              ,
+              <strong>
+<code>
+                chown
+               </code>
+</strong>
+              , or
+              <strong>
+               chgrp
+              </strong>
+              where appropriate.
+             </p>
+</li>
+<li>
+<strong>
+              Requirement 1: Deployment script
+             </strong>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                The owner must be able to
+                <strong>
+                 read
+                </strong>
+                ,
+                <strong>
+                 write
+                </strong>
+                , and
+                <strong>
+                 execute
+                </strong>
+<code>
+                 deploy.sh
+                </code>
+                .
+               </p>
+</li>
+<li>
+<p>
+                The group may
+                <strong>
+                 read
+                </strong>
+                and
+                <strong>
+                 execute
+                </strong>
+                it.
+               </p>
+</li>
+<li>
+<p>
+                Other users must have
+                <strong>
+                 no access
+                </strong>
+                .
+               </p>
+</li>
+</ul>
+</li>
+<li>
+<strong>
+              Requirement 2: Application configuration
+             </strong>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                The owner may
+                <strong>
+                 read
+                </strong>
+                and
+                <strong>
+                 write
+                </strong>
+<code>
+                 app.conf
+                </code>
+                .
+               </p>
+</li>
+<li>
+<p>
+                The group may only read it.
+               </p>
+</li>
+<li>
+<p>
+                Other users must have no access.
+               </p>
+</li>
+</ul>
+</li>
+<li>
+<strong>
+              Requirement 3: Log file
+             </strong>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                The owner may
+                <strong>
+                 read
+                </strong>
+                and
+                <strong>
+                 write
+                </strong>
+<code>
+                 app.log
+                </code>
+                .
+               </p>
+</li>
+<li>
+<p>
+                The group may
+                <strong>
+                 read
+                </strong>
+                it.
+               </p>
+</li>
+<li>
+<p>
+                Other users may also
+                <strong>
+                 read
+                </strong>
+                it.
+               </p>
+</li>
+<li>
+<p>
+                Nobody should be able to
+                <strong>
+                 execute
+                </strong>
+                it.
+               </p>
+</li>
+</ul>
+</li>
+<li>
+<strong>
+              Requirement 4: Credentials file
+             </strong>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                Only the owner may
+                <strong>
+                 read
+                </strong>
+                or
+                <strong>
+                 write
+                </strong>
+<code>
+                 credentials.txt
+                </code>
+                .
+               </p>
+</li>
+<li>
+<p>
+                The group and other users must have
+                <strong>
+                 no permissions
+                </strong>
+                .
+               </p>
+</li>
+</ul>
+</li>
+<li>
+<strong>
+              Requirement 5: Secrets directory
+             </strong>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                Only the owner should be able to
+                <strong>
+                 enter
+                </strong>
+                ,
+                <strong>
+                 list
+                </strong>
+                , or
+                <strong>
+                 modify
+                </strong>
+                the secrets directory.
+               </p>
+</li>
+</ul>
+</li>
+<li>
+<strong>
+              Requirement 6: Ownership challenge
+             </strong>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                Change the group of the
+                <strong>
+<code>
+                  deployment_lab
+                 </code>
+</strong>
+                directory and everything inside it to a group available on your VM.
+               </p>
+</li>
+<li>
+<p>
+                Do not assume that the group wheel exists; check your available groups first.
+               </p>
+</li>
+</ul>
+</li>
+<li>
+<strong>
+              Requirement 7: Verification
+             </strong>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                Use
+                <strong>
+<code>
+                  ls
+                 </code>
+                 -l
+                </strong>
+                and
+                <strong>
+                 ls -ld
+                </strong>
+                to confirm every permission.
+               </p>
+</li>
+<li>
+<p>
+                Record the symbolic permission and octal permission for each item.
+               </p>
+</li>
+</ul>
+</li>
+<li>
+<strong>
+              Reflection questions:
+             </strong>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                Why should
+                <strong>
+<code>
+                  credentials.txt
+                 </code>
+                 NOT
+                </strong>
+                use permission
+                <strong>
+                 755
+                </strong>
+                ?
+               </p>
+</li>
+<li>
+<p>
+                Why does a directory need execute permission?
+               </p>
+</li>
+<li>
+<p>
+                What is the difference between chmod
+                <strong>
+                 640
+                </strong>
+                file and chmod
+                <strong>
+                 750
+                </strong>
+                file?
+               </p>
+</li>
+<li>
+<p>
+                Why is it normally unnecessary for
+                <code>
+                 .txt
+                </code>
+                ,
+                <code>
+                 .conf
+                </code>
+                , and
+                <code>
+                 .log
+                </code>
+                files to be executable?
+               </p>
+</li>
+<li>
+<p>
+                Which permissions would you consider too open for a production secret?
+               </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-7">
+<h2 class="collapsible-header">
+     📦 Challenge 7: Linux packages and terminal tools
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Challenge 7: Installing and Running Awesome Linux Packages" class="img-large" height="441" loading="lazy" src="../assets/tutorials/week-2/09-challenge-7-linux-packages-and-terminal-tools-001.png" width="441"/>
+</div>
+<p>
+<strong>
+          Objective
+         </strong>
+         : Familiarize yourself with the installation and usage of popular
+         <code>
+          Linux
+         </code>
+         packages on Ubuntu or Centos.
+        </p>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🚂 Package 1: sl
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          The
+          <code>
+           sl
+          </code>
+          command is to playfully simulate a train moving across your terminal when you accidentally type “sl” instead of “
+          <code>
+           ls
+          </code>
+          ” (a common mistype).
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Install sl. (Replace
+            <code>
+             apt
+            </code>
+            with
+            <code>
+             yum
+            </code>
+            if you run it on Fedora VM instead of Ubuntu VM)
+           </p>
+</li>
+</ul>
+<pre><code>sudo apt install sl</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Run sl.
+           </p>
+</li>
+</ul>
+<pre><code class="language-bash">sl</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing sl" class="img-large" height="510" loading="lazy" src="../assets/tutorials/week-2/10-package-1-sl-001.png" width="951"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🐄 Package 2: cowsay
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          The cowsay command is used to generate an ASCII art representation of a cow or other animals with speech or thought bubbles containing a customizable message.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Install cowsay
+           </p>
+</li>
+</ul>
+<pre><code>sudo apt install cowsay -y</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Once cowsay is installed, you run the command to see a cow in your terminal:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              You can customise the message of the cow.
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>cowsay I Love DevOps at RMIT</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing cowsay I Love DevOps at RMIT" class="img-large" height="313" loading="lazy" src="../assets/tutorials/week-2/11-package-2-cowsay-001.png" width="828"/>
+</div>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🎬 Package 3: hollywood
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Have you ever watched a movie where the “tech expert” has many terminal windows flashing logs, system monitors, and random code? The hollywood package lets you turn your terminal into a harmless movie-style command center.
+         </p>
+<div class="tutorial-image-group">
+<img alt="Visual showing Have you ever watched a movie where the “tech expert” has many terminal windows flashing logs, system monitors, and random code? The hollywood package lets y..." class="img-large" height="481" loading="lazy" src="../assets/tutorials/week-2/12-package-3-hollywood-001.png" width="898"/>
+</div>
+<p>
+          It does not hack anything or change your system in a serious way. It is just a fun visual demo that makes your terminal look busy and dramatic, like you are operating a secret DevOps control room.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Install hollywood.
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Replace
+              <code>
+               apt
+              </code>
+              with
+              <code>
+               yum
+              </code>
+              if your
+              <code>
+               Linux
+              </code>
+              distro is Fedora instead of Ubuntu
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>sudo apt install hollywood -y</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Run hollywood.
+           </p>
+</li>
+</ul>
+<pre><code>hollywood</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Enjoy the cinematic terminal show! You should see multiple panels showing fake system activity, logs, code, and monitoring screens. Pretend you are in a movie scene where the production server needs saving in 60 seconds.
+           </p>
+</li>
+<li>
+<p>
+            To stop it, press:
+           </p>
+</li>
+</ul>
+<pre><code class="language-bash">Ctrl + C</code></pre>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🌳 Package 4: tree
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          The
+          <code>
+           tree
+          </code>
+          command is a very useful tool for visualizing the file and folder structure of your current directory.
+         </p>
+<p>
+          Instead of using many
+          <code>
+           cd
+          </code>
+          and
+          <code>
+           ls
+          </code>
+          commands to explore folders one by one, tree gives you a clear “map” of your project. This is especially helpful when you are working with project folders, datasets, scripts, or web applications.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Install tree.
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Replace
+              <code>
+               apt
+              </code>
+              with
+              <code>
+               yum
+              </code>
+              if your
+              <code>
+               Linux
+              </code>
+              distro is Fedora instead of Ubuntu
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>sudo apt install tree -y</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Run tree in your current directory.
+           </p>
+</li>
+</ul>
+<pre><code>tree</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            You should see the folder and file structure displayed like a tree.
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Example output:
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Visual showing Example output:" class="img-large" height="375" loading="lazy" src="../assets/tutorials/week-2/13-package-4-tree-001.png" width="334"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Show only folders, not files:
+           </p>
+</li>
+</ul>
+<pre><code>tree -d</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing tree -d" class="img-large" height="268" loading="lazy" src="../assets/tutorials/week-2/13-package-4-tree-002.png" width="489"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Limit how many levels deep you want to display:
+           </p>
+</li>
+</ul>
+<pre><code>tree -L 2</code></pre>
+<div class="tutorial-image-group">
+<img alt="Visual showing tree -L 2" class="img-large" height="237" loading="lazy" src="../assets/tutorials/week-2/13-package-4-tree-003.png" width="417"/>
+</div>
+<p class="callout callout--task">
+<strong>
+           [Question]
+          </strong>
+          Why is tree useful when checking whether your
+          <code>
+           bash
+          </code>
+          script created the correct project folder structure?
+         </p>
+<p class="callout callout--task">
+<strong>
+           [Bonus Question
+          </strong>
+          ] After completing Challenge 3 or Challenge 5, can you use the “tree” command to confirm that your generated folders and files match the required structure?
+         </p>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🧰 Mini challenge: Build your system administrator toolkit
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<strong>
+            Role-play scenario:
+           </strong>
+           You have joined an infrastructure team and received a list of approved command-line packages. Your team lead has not explained them because they want you to practise discovering unfamiliar tools independently.
+          </li>
+<li>
+<strong>
+            Your package list
+           </strong>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Install and investigate the following packages:
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-bash">tree
+htop
+ncdu
+curl
+wget
+jq
+rsync
+tmux
+traceroute
+dnsutils
+lsof
+net-tools</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<strong>
+            Package names may differ
+           </strong>
+           between
+           <strong>
+            Ubuntu
+           </strong>
+           and
+           <strong>
+            Fedora
+           </strong>
+           . Use the package manager and search tools available on your
+           <code>
+            Linux
+           </code>
+           distribution.
+          </li>
+<li>
+<strong>
+            For each package:
+           </strong>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Install it using
+              <strong>
+<code>
+                apt
+               </code>
+</strong>
+              or
+              <strong>
+<code>
+                yum
+               </code>
+</strong>
+              .
+             </p>
+</li>
+<li>
+<p>
+              Find the main command provided by the package.
+             </p>
+</li>
+<li>
+<p>
+              Read its help output or manual page.
+             </p>
+</li>
+<li>
+<p>
+              Run one safe example.
+             </p>
+</li>
+<li>
+<p>
+              Record:
+             </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+                What the command does.
+               </p>
+</li>
+<li>
+<p>
+                One useful option.
+               </p>
+</li>
+<li>
+<p>
+                Why it is useful to a System Administrator or DevOps engineer.
+               </p>
+</li>
+<li>
+<p>
+                One realistic situation in which you would use it.
+               </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>
+            Answer these questions:
+           </strong>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Which package would help you
+              <strong>
+               investigate disk-space usage
+              </strong>
+              ?
+             </p>
+</li>
+<li>
+<p>
+              Which package would help you
+              <strong>
+               inspect
+               <code>
+                JSON
+               </code>
+               returned by an
+               <code>
+                API
+               </code>
+</strong>
+              ?
+             </p>
+</li>
+<li>
+<p>
+              Which package would help you
+              <strong>
+               keep a terminal session running after an
+               <code>
+                SSH
+               </code>
+               disconnection
+              </strong>
+              ?
+             </p>
+</li>
+<li>
+<p>
+              Which package would help you
+              <strong>
+               discover which process is using a file or network port
+              </strong>
+              ?
+             </p>
+</li>
+<li>
+<p>
+              Which package would help you
+              <strong>
+               copy and synchronize deployment files efficiently
+              </strong>
+              ?
+             </p>
+</li>
+<li>
+<p>
+              Which packages are mainly related to
+              <strong>
+               network troubleshooting
+              </strong>
+              ?
+             </p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-8">
+<h2 class="collapsible-header">
+     🧾 Challenge 8: Log-file forensic analysis
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Challenge 8 - Fun Challenge: The Log File Forensics Analyst" class="img-large" height="391" loading="lazy" src="../assets/tutorials/week-2/14-challenge-8-log-file-forensic-analysis-001.png" width="588"/>
+</div>
+</div>
+<h4 class="tutorial-static-heading">
+        🎯 Objective
+       </h4>
+<div class="tutorial-flow">
+<p>
+         As a DevOps engineer, one of your most common tasks is to troubleshoot issues by analyzing log files. This challenge simulates a real-world scenario where you must parse a web server's access log to identify errors, find performance bottlenecks, and generate a summary report for your team. This will test your mastery of command-line pipelines and text-processing tools.
+        </p>
+</div>
+<h4 class="tutorial-static-heading">
+        🎭 Scenario
+       </h4>
+<div class="tutorial-flow">
+<p>
+         The main website at
+         <strong>
+          'RMIT Web Solutions'
+         </strong>
+         has been experiencing serious errors and slowdowns. The senior engineer has handed you the
+         <strong>
+<code>
+           access.log
+          </code>
+</strong>
+         file from the main web server and tasked you with finding the root causes. Your mission is to become a command-line detective and extract actionable intelligence from this raw data.
+        </p>
+<p class="callout callout--checkpoint">
+<strong>Investigation checkpoint:</strong> Before writing a pipeline, which evidence would help you distinguish a traffic spike from an application failure: timestamps, status codes, source IPs, or requested paths? Which would you inspect first, and why?
+        </p>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🕵️ Step 1: Set up the investigation
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          First, prepare your workspace and acquire the evidence.
+         </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li value="1">
+<p>
+            In your home directory (~), create a new directory for this task called
+            <strong>
+<code>
+              log_analysis
+             </code>
+</strong>
+            and navigate into it.
+           </p>
+</li>
+<li value="2">
+<p>
+            The log file is too large to email, so you must
+            <strong>
+             download
+            </strong>
+            it from the company's artifact repository. Use
+            <strong>
+<code>
+              curl
+             </code>
+</strong>
+            to download the log file:
+           </p>
+</li>
+</ol>
+<pre><code>curl -O https://raw.githubusercontent.com/TomHuynhSG/public_datasets/refs/heads/master/access.log</code></pre>
+<ol class="tutorial-list tutorial-list--level-1">
+<li value="3">
+<strong>
+            Initial Analysis:
+           </strong>
+           Let’s get started by getting a feel for the evidence.
+           <ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              How many total requests are in this log file? (Hint:
+              <strong>
+<code>
+                wc
+               </code>
+</strong>
+              )
+             </p>
+</li>
+<li>
+<p>
+              View the first 5 and last 5 lines of the file to understand its format. (Hint:
+              <strong>
+<code>
+                head
+               </code>
+</strong>
+              ,
+              <strong>
+<code>
+                tail
+               </code>
+</strong>
+              )
+             </p>
+</li>
+</ul>
+</li>
+</ol>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🚨 Step 2: Hunt for errors
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Your first priority is to find out what's breaking.
+         </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li value="1">
+<strong>
+            Find User-Facing Errors:
+           </strong>
+           Search the log for all requests that resulted in a "404 Not Found" error. Save just these error lines to a new file called
+           <code>
+            404_errors.log
+           </code>
+           .
+          </li>
+<li value="2">
+<strong>
+            Identify Server-Side Failures:
+           </strong>
+           Server errors (
+           <strong>
+            5xx
+           </strong>
+           status codes) are more critical. In a single command, find all lines containing a server error (i.e., 500, 501, 502, etc.) and count how many there are. You should not have to
+           <code>
+            grep
+           </code>
+           for each number individually. (Hint: Use grep with a simple regular expression to match any number starting with '5'. Then,
+           <code>
+            pipe
+           </code>
+           the output to another command to count the lines.)
+          </li>
+</ol>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📊 Step 3: Identify high-traffic sources
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Slowdowns can be caused by a single client sending too many requests. Your next task is to find the busiest IP addresses.
+         </p>
+<p>
+<strong>
+           Generate a Top 5 List:
+          </strong>
+          Construct a
+          <strong>
+           single command-line pipeline
+          </strong>
+          to identify the top 5 IP addresses that have made the most requests to the server.
+         </p>
+<p>
+          Your pipeline will need to:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Extract only the IP address from each line. (Hint:
+            <code>
+             awk
+            </code>
+            is perfect for this. The IP is the first field).
+           </p>
+</li>
+<li>
+<p>
+            Sort the IP addresses so that identical entries are grouped together. (Hint:
+            <code>
+             sort
+            </code>
+            )
+           </p>
+</li>
+<li>
+<p>
+            Count the number of occurrences of each unique IP address. (Hint:
+            <code>
+             uniq
+            </code>
+            )
+           </p>
+</li>
+<li>
+<p>
+            Sort the results numerically in descending order to find the highest counts.
+           </p>
+</li>
+<li>
+<p>
+            Display only the top 5 results.
+           </p>
+</li>
+</ul>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📊 Step 4: Analyse application usage
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Understanding which parts of the website are most popular can help developers optimize.
+         </p>
+<pre><code>Find the Top 10 Most Requested Pages: Similar to the previous step, construct a single pipeline</code></pre>
+<p>
+          to find the 10 most frequently requested web pages (URLs).
+         </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li value="1">
+<p>
+            This is trickier because the URL is in the middle of the line (e.g., "GET /products/
+            <code>
+             special.html
+            </code>
+            HTTP/1.1").
+           </p>
+</li>
+<li value="2">
+<p>
+            Your pipeline should extract the URL (the 7th field), then
+            <code>
+             sort
+            </code>
+            , count, and display the top
+           </p>
+</li>
+</ol>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        📝 Step 5: Create the intelligence report
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          You must now automate this analysis so it can be run daily. Create a
+          <code>
+           bash
+          </code>
+          script that generates a clean report.
+         </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li value="1">
+<p>
+            Create a new bash script named
+            <strong>
+<code>
+              analyze_logs.sh
+             </code>
+</strong>
+            .
+           </p>
+</li>
+<li value="2">
+<p>
+            Edit the script using
+            <code>
+             nano
+            </code>
+            . The script must perform the following actions:
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+              Start with #!/bin/bash.
+             </p>
+</li>
+<li>
+<p>
+              Delete any existing
+              <strong>
+<code>
+                report.txt
+               </code>
+</strong>
+              to ensure a fresh report every time.
+             </p>
+</li>
+<li>
+<p>
+              Use
+              <code>
+               echo
+              </code>
+              to add a
+              <strong>
+               title
+              </strong>
+              and
+              <strong>
+               timestamp
+              </strong>
+              to a new
+              <strong>
+<code>
+                report.txt
+               </code>
+</strong>
+              file.
+             </p>
+</li>
+<li>
+<p>
+              Append a section header like
+              <strong>
+               --- Server Error Summary ---
+              </strong>
+              to the report.
+             </p>
+</li>
+<li>
+<p>
+              Run the command from Step 2 to count
+              <strong>
+               5xx
+              </strong>
+              errors and append the result to the report.
+             </p>
+</li>
+<li>
+<p>
+              Append a section header for
+              <strong>
+               --- Top 5 Client IPs ---
+              </strong>
+              and run the pipeline from Step 3, appending its output to the report.
+             </p>
+</li>
+<li>
+<p>
+              Append a section header for
+              <strong>
+               --- Top 10 Requested Pages ---
+              </strong>
+              and run the pipeline from Step 4, appending its output to the report.
+             </p>
+</li>
+<li>
+<p>
+              End the script by printing
+              <strong>
+               "Log analysis complete. Report generated at
+               <code>
+                report.txt
+               </code>
+               ”
+              </strong>
+              to the terminal.
+             </p>
+</li>
+</ul>
+</li>
+<li value="3">
+<p>
+            Make your
+            <strong>
+<code>
+              analyze_logs.sh
+             </code>
+</strong>
+            script executable.
+           </p>
+</li>
+<li value="4">
+<p>
+            Run the script and then use
+            <code>
+             cat
+            </code>
+            to view your final, neatly formatted
+            <strong>
+<code>
+              report.txt
+             </code>
+</strong>
+            .
+           </p>
+</li>
+</ol>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-9">
+<h2 class="collapsible-header">
+     🕵️ Challenge 9: Bash detective crime
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing Challenge 9 - Bonus Fun Challenge: Bash Detective Solve Crime" class="img-large" height="310" loading="lazy" src="../assets/tutorials/week-2/15-challenge-9-bash-detective-crime-001.png" width="415"/>
+<img alt="Visual showing Challenge 9 - Bonus Fun Challenge: Bash Detective Solve Crime" class="img-large" height="348" loading="lazy" src="../assets/tutorials/week-2/15-challenge-9-bash-detective-crime-002.png" width="394"/>
+</div>
+<p>
+<strong>
+          "The Command Line Murders"
+         </strong>
+         is a fun,
+         <strong>
+          detective-themed game
+         </strong>
+         that teaches the basics of navigating and manipulating files in a
+         <code>
+          Linux
+         </code>
+         -style command line by
+         <strong>
+          solving a fictional murder mystery.
+         </strong>
+         The game is
+         <strong>
+          designed for those new to the command line
+         </strong>
+         , so it's a great way to learn commands like
+         <code>
+          grep
+         </code>
+         , cat, head, tail, find, and so on.
+        </p>
+<p>
+<strong>
+          Let’s go, detective!
+         </strong>
+</p>
+<p>
+         There's been a murder in
+         <strong>
+          Terminal City
+         </strong>
+         , and the City Police Department needs your help!
+        </p>
+<div class="tutorial-image-group">
+<img alt="Visual showing There's been a murder in Terminal City , and the City Police Department needs your help!" class="img-large" height="480" loading="lazy" src="../assets/tutorials/week-2/15-challenge-9-bash-detective-crime-003.png" width="480"/>
+</div>
+<p>
+         To figure out who did it, you need access to a
+         <code>
+          bash
+         </code>
+         command line.
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Once you're ready, download it as a
+           <code>
+            zip
+           </code>
+           file using
+           <code>
+            curl
+           </code>
+           .
+          </p>
+</li>
+</ul>
+<pre><code>curl -L -O https://github.com/TomHuynhSG/clmystery/archive/master.zip</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           It is a zip file so you need to
+           <code>
+            unzip
+           </code>
+           it:
+          </p>
+</li>
+</ul>
+<pre><code>unzip master.zip</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Change your current directory inside it:
+          </p>
+</li>
+</ul>
+<pre><code>cd clmystery-master</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s list all files inside this special folder:
+          </p>
+</li>
+</ul>
+<pre><code>ls</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You should see these files then you are set to ready for your detective investigation:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Visual showing You should see these files then you are set to ready for your detective investigation:" class="img-large" height="144" loading="lazy" src="../assets/tutorials/week-2/15-challenge-9-bash-detective-crime-004.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Begin by opening the 'instructions' file using a command using cat command so like:
+          </p>
+</li>
+</ul>
+<pre><code>cat instructions</code></pre>
+<p>
+         (cat is a command that will print the contents of the file called instructions for you to read.)
+        </p>
+<p class="callout callout--note">
+         Note: Be the true bash terminal detective! Do the right thing by only using the bash commands to solve this great mystery! Great Power comes with great responsibilities!
+        </p>
+<p>
+         Ok, Detective! Let's start!
+        </p>
+<p>
+<strong>
+          Everything you need inside the mystery directory so make sure you change your current working directory there!
+         </strong>
+</p>
+<p>
+         You'll want to start by collecting all the clues at the crime scene (the
+         <strong>
+          'crimescene'
+         </strong>
+         file).
+        </p>
+<p>
+         The officers on the scene are pretty meticulous, so they've written down EVERYTHING in their officer reports. You'll have a file that represents the crime scene, which might contain numbers corresponding to different people, places, and things at the crime scene. Use cat to read the contents of the file.
+        </p>
+<p>
+         You'll find files that contain people's names. You may need to look inside these to check their alibis. Again, use cat or grep to find the necessary information.
+        </p>
+<p>
+         Similar to verifying alibis, you might need to find out which weapon was used in the murder. This could involve looking for files with names of different weapons and using command-line tools to determine which one was used.
+        </p>
+<p>
+         Eventually, you'll collect enough evidence to identify the killer. The solution will come from piecing together the right combination of clues.
+        </p>
+<p>
+         Fortunately the sergeant went through and marked the real clues with the word
+         <strong>
+          "CLUE"
+         </strong>
+         in all caps.
+        </p>
+<p>
+<strong>
+          So your first hint is to search for the word “CLUE" for all files in the crimescene file! Thus, you will see three clues, and continue to use these clues to search for stuff you want to investigate in other files.
+         </strong>
+</p>
+<p>
+         I hope you find
+         <strong>
+          the name of the person who committed the crime
+         </strong>
+         !
+        </p>
+<p>
+         Remember, the idea is to simulate a real investigation using the command line, so avoid using text editors or other tools to view the files except for the instructions and cheatsheets provided.
+        </p>
+<p>
+         Good luck and have fun, DevOps Detective!
+        </p>
+<div class="tutorial-image-group">
+<img alt="Visual showing Good luck and have fun, DevOps Detective!" class="img-large" height="282" loading="lazy" src="../assets/tutorials/week-2/15-challenge-9-bash-detective-crime-005.png" width="282"/>
+</div>
+</div>
+<h4 class="collapsible-header collapsible-header--chip">
+        💡 Hints if you are stuck
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Here are the
+            <code>
+             bash
+            </code>
+            commands you need to use to solve this crime! Remember you might use other commands as you see fit as your detective way can be different from my detective way!
+           </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<code>
+               cd
+              </code>
+</p>
+</li>
+<li>
+<p>
+<code>
+               cat
+              </code>
+</p>
+</li>
+<li>
+<p>
+<code>
+               grep
+              </code>
+</p>
+</li>
+<li>
+<p>
+<code>
+               head
+              </code>
+</p>
+</li>
+<li>
+<p>
+<code>
+               tail
+              </code>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+            If you do get stuck while trying to figure out who the murderer is, you can use the hints that have been provided for you! They are denoted with a filename called hint. If you get stuck, there are hint files provided within the game that you can consult. These are named hint1, hint2, etc. There are 8 hints total - simply replace with a number 1 through 8. NOTE: try to do as much as you can without the hints! To access a hint from the command line, simply type:
+           </p>
+</li>
+</ul>
+<pre><code>cat hint1</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            If you forget all commands somehow, then you can familiarise yourself with command-line tools as the game provides a
+            <code>
+             cheatsheet.md
+            </code>
+            or cheatsheet.pdf to help you understand various commands.
+           </p>
+</li>
+</ul>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="reference">
+<h2 class="collapsible-header">
+     📚 Command reference
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<h4 class="collapsible-header collapsible-header--chip">
+        🧩 Command syntax
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<pre><code>command parameter_1 parameter_2 ...</code></pre>
+<pre><code>command -options arguments</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            A command is a text instruction given to the computer
+           </p>
+</li>
+<li>
+<p>
+            Command behavior can be modified with options
+           </p>
+</li>
+</ul>
+<p>
+<strong>
+           Example:
+          </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<code>
+             date
+            </code>
+</p>
+</li>
+<li>
+<p>
+<code>
+             pwd
+            </code>
+            (short for "print working directory")
+           </p>
+</li>
+<li>
+<p>
+<code>
+             ls
+            </code>
+            (listing)
+           </p>
+</li>
+<li>
+<p>
+            ls
+            <code>
+             -p
+            </code>
+            (append a slash to the end of directories name)
+           </p>
+</li>
+<li>
+<p>
+            ls
+            <code>
+             -A
+            </code>
+            (list all content)
+           </p>
+</li>
+<li>
+<p>
+            ls -h (human readable)
+           </p>
+</li>
+<li>
+<p>
+            ls -l (listing in long format)
+           </p>
+</li>
+<li>
+<p>
+<code>
+             cd
+            </code>
+            (change directory), cd .. move to "parent directory"
+           </p>
+</li>
+<li>
+<p>
+            history, history -c (clear the history)
+           </p>
+</li>
+</ul>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🗂️ Filesystem concepts
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          Files are organized in a hierarchical directory structure. It is an organizational system for files and directories, in which files and directories are contained in other directories.
+         </p>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🧭 Paths and locations
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            An absolute path is like a latitude and longitude: it has the same value no matter where you are.
+           </p>
+</li>
+<li>
+<p>
+            A relative path, on the other hand, specifies a location starting from where you are: it's like saying "20 kilometers north".
+           </p>
+</li>
+<li>
+<p>
+            The root directory is defined by the path /.
+           </p>
+</li>
+<li>
+<p>
+            The home directory is defined by ~.
+           </p>
+</li>
+</ul>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🗂️ Working with files and directories
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<strong>
+<code>
+             mkdir
+            </code>
+            dir1 dir2 dir3
+           </strong>
+           creates three directories
+          </li>
+<li>
+<strong>
+<code>
+             rmdir
+            </code>
+            dir1 dir2 dir3
+           </strong>
+           removes the empty directories
+          </li>
+<li>
+<strong>
+<code>
+             rm
+            </code>
+            -R dir
+           </strong>
+           deletes non-empty directory
+          </li>
+<li>
+<strong>
+<code>
+             cp
+            </code>
+            file1 file2
+           </strong>
+           copies file,
+           <code>
+            -i
+           </code>
+           (interactive mode) to prompt user to answer if they want to overwrite file.
+          </li>
+<li>
+<strong>
+<code>
+             mv
+            </code>
+            file1 file2
+           </strong>
+           moves file
+          </li>
+<li>
+<strong>
+<code>
+             touch
+            </code>
+<code>
+             file_name
+            </code>
+</strong>
+           creates an empty file
+          </li>
+</ul>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🔍 Inspect files
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<strong>
+<code>
+             cat
+            </code>
+<code>
+             file_name
+            </code>
+</strong>
+           views a file's contents or concatenate several files
+          </li>
+<li>
+<strong>
+<code>
+             less
+            </code>
+<code>
+             large_file
+            </code>
+</strong>
+           displays one page at a time; press Space to move down and q to quit. When viewing several files, use :n for the next file,
+           <strong>
+            :p
+           </strong>
+           to go back,
+           <strong>
+            :q
+           </strong>
+           to quit
+          </li>
+<li>
+<strong>
+<code>
+             head
+            </code>
+<code>
+             -n
+            </code>
+            3
+            <code>
+             file_name
+            </code>
+</strong>
+           prints the first 3 lines of the file
+          </li>
+<li>
+<strong>
+<code>
+             tail
+            </code>
+<code>
+             -n
+            </code>
+            3
+            <code>
+             file_name
+            </code>
+</strong>
+           prints the last 3 lines of the file
+          </li>
+<li>
+<strong>
+            shuf
+            <code>
+             -n
+            </code>
+            3
+            <code>
+             file_name
+            </code>
+</strong>
+           prints randomly 3 lines of the file
+          </li>
+<li>
+<strong>
+<code>
+             wc
+            </code>
+<code>
+             file_name
+            </code>
+</strong>
+           counts number of lines, words, and characters in the file
+          </li>
+<li>
+<strong>
+            column -s"," -t
+            <code>
+             example_data.csv
+            </code>
+</strong>
+           (be careful to use column on very large files)
+          </li>
+<li>
+<strong>
+<code>
+             sort
+            </code>
+<code>
+             file_name
+            </code>
+</strong>
+           sorts the content (
+           <strong>
+<code>
+             -r
+            </code>
+</strong>
+           to reverse,
+           <strong>
+<code>
+             -u
+            </code>
+</strong>
+           for getting rid of duplicates)
+          </li>
+</ul>
+<pre><code>grep</code></pre>
+<pre><code>grep is great for searching files, especially long files, for the strings you care about. It's installed</code></pre>
+<p>
+          everywhere and can search files for matches, list files that don't contain a string, and recursively search directories.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<strong>
+<code>
+             grep
+            </code>
+            Hello
+            <code>
+             greetings.txt
+            </code>
+</strong>
+           : find line with the word “Hello”
+          </li>
+<li>
+<strong>
+            grep --ignore-case hello
+            <code>
+             greetings.txt
+            </code>
+</strong>
+           =
+           <strong>
+            grep
+            <code>
+             -i
+            </code>
+            hello
+            <code>
+             greetings.txt
+            </code>
+</strong>
+           argument with more than one letter start with two dash
+          </li>
+<li>
+<strong>
+            grep -E ‘[Hh]ello’
+            <code>
+             greetings.txt
+            </code>
+</strong>
+           : apply regex
+          </li>
+<li>
+<strong>
+            grep --invert-match hello
+            <code>
+             greetings.txt
+            </code>
+</strong>
+           = grep
+           <code>
+            -v
+           </code>
+           hello
+           <code>
+            greetings.txt
+           </code>
+           : find every line that not contains “hello”
+          </li>
+<li>
+<strong>
+            grep
+            <code>
+             -i
+            </code>
+<code>
+             -v
+            </code>
+            hello
+            <code>
+             greeting.txt
+            </code>
+</strong>
+           : find every line that not contain the case-insensitive “hello”
+          </li>
+<li>
+<strong>
+            grep
+            <code>
+             -r
+            </code>
+            Hello folder/
+           </strong>
+           : search every subfolder and file for the string “Hello”
+          </li>
+</ul>
+</div>
+</div></div>
+<h4 class="collapsible-header collapsible-header--chip">
+        🔗 Command pipelines
+        <span class="collapse-icon">
+</span>
+</h4>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Visual showing The Pipeline" class="img-large" height="312" loading="lazy" src="../assets/tutorials/week-2/16-command-pipelines-001.png" width="612"/>
+</div>
+<p>
+          So far we see all of the output on the screen, now we'll redirect the output from the screen to file.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<strong>
+<code>
+             echo
+            </code>
+            "Hello" &gt;
+            <code>
+             greetings.txt
+            </code>
+</strong>
+           replaces all of the content (be careful)
+          </li>
+<li>
+<strong>
+            echo "Hello" &gt;&gt;
+            <code>
+             greetings.txt
+            </code>
+</strong>
+           appends to the end of the file
+          </li>
+</ul>
+<p>
+          A pipeline passes the standard output of one command to the standard input of the next command.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<strong>
+<code>
+             sort
+            </code>
+<code>
+             greetings.txt
+            </code>
+</strong>
+           ,
+           <strong>
+            sort
+            <code>
+             greetings.txt
+            </code>
+            &gt;
+            <code>
+             sorted_greetings.txt
+            </code>
+</strong>
+           : sort in alphabetical order
+          </li>
+<li>
+<strong>
+<code>
+             grep
+            </code>
+            H
+            <code>
+             sorted_greetings.txt
+            </code>
+            &gt;
+            <code>
+             grepped_sorted_greetings.txt
+            </code>
+</strong>
+           : find and save the result in new file
+          </li>
+</ul>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="whats-next">
+<h2 class="collapsible-header start-open">
+     📚 Continue the course
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--home">
+<a class="card" href="week-3-git-aws-lab.html">
+<h3>
+        🔀 Week 3: Git &amp; AWS
+       </h3>
+<p>
+        Continue to the next weekly lab in the COSC2767 learning path.
+       </p>
+<span class="go-to-link">
+        View next week
+       </span>
+</a>
+<a class="card" href="../index.html">
+<h3>
+        🗓️ All weekly labs
+       </h3>
+<p>
+        Return to the course map and review every published and upcoming tutorial.
+       </p>
+<span class="go-to-link">
+        Course home
+       </span>
+</a>
+</div>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-foundations)" href="../sub_pages/week-1-tools-environment-setup-lab.html"><span class="pager__dir">← Previous</span><span class="pager__title">Tools & Environment Setup</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-foundations)" href="../sub_pages/week-3-git-aws-lab.html"><span class="pager__dir">Next →</span><span class="pager__title">Git and AWS</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="learning-outcomes"><a class="toc__link" href="#learning-outcomes"><span>Learning outcomes</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="cli-foundations"><a class="toc__link" href="#cli-foundations"><span>Introduction to the Bash command line</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-0"><a class="toc__link" href="#challenge-0"><span>Challenge 0: CLI foundations</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-1"><a class="toc__link" href="#challenge-1"><span>Challenge 1: Create directories and copy files</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-2"><a class="toc__link" href="#challenge-2"><span>Challenge 2: Working with text files</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-3"><a class="toc__link" href="#challenge-3"><span>Challenge 3: Setup project folder</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-4"><a class="toc__link" href="#challenge-4"><span>Challenge 4: Sort image dataset</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-5"><a class="toc__link" href="#challenge-5"><span>Challenge 5: Automate the whole process</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-6"><a class="toc__link" href="#challenge-6"><span>Challenge 6: File permissions and ownership</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-7"><a class="toc__link" href="#challenge-7"><span>Challenge 7: Linux packages and terminal tools</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-8"><a class="toc__link" href="#challenge-8"><span>Challenge 8: Log-file forensic analysis</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-9"><a class="toc__link" href="#challenge-9"><span>Challenge 9: Bash detective crime</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="reference"><a class="toc__link" href="#reference"><span>Command reference</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="whats-next"><a class="toc__link" href="#whats-next"><span>Continue the course</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 14 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

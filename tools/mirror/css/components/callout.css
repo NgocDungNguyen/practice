@@ -1,0 +1,49 @@
+/* =============================================================================
+   Callouts
+   Tinted panels for advice the reader must not skim past.
+
+     .pro-tip  — an aside with its own <h4> title
+     .callout  — a single highlighted paragraph
+
+   Both share one look. Selectors are qualified with .card where they have to
+   win against the generic `.card p` rule in components/card.css.
+   ========================================================================== */
+
+.pro-tip,
+.callout,
+.card p.callout {
+    background-color: var(--accent-color-soft);
+    border: 1px solid var(--accent-color-line);
+    border-left: 5px solid var(--accent-color);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin: var(--space-4) 0;
+    font-size: 1rem;
+}
+
+.pro-tip h4 {
+    margin-top: 0;
+    margin-bottom: var(--space-1);
+    color: var(--accent-color);
+}
+
+.pro-tip strong,
+.callout strong {
+    color: var(--heading-color);
+}
+
+/* --- Inline note -----------------------------------------------------------
+   A short accented aside in running text ("Note:", "Best practice:"). Lighter
+   than a .callout — no panel, just emphasis. Qualified with .card so it wins
+   against the generic `.card p` font-size. */
+.text-note,
+.card .text-note {
+    font-size: 0.9em;
+    color: var(--accent-color);
+}
+
+/* Never leave a trailing gap inside the panel. */
+.pro-tip > *:last-child,
+.card .pro-tip > p:last-child {
+    margin-bottom: 0;
+}

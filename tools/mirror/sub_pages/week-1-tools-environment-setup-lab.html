@@ -1,0 +1,2392 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="Set up Ubuntu and Fedora virtual machines in VirtualBox, confirm SSH access, handle Apple Silicon differences, and activate the AWS Academy Learner Lab." name="description"/>
+  <title>
+   Week 1: Tools &amp; Environment Setup - COSC2767
+  </title>
+  <link href="../assets/images/rmit-logo.png" rel="icon" type="image/png"/>
+  <link href="../css/main.css" rel="stylesheet"/>
+  <script src="../js/main.js" type="module">
+  </script>
+ </head>
+ <body>
+  <header>
+   <div class="container">
+    <div class="back-to-home-container">
+     <a class="back-to-home-button" href="../index.html">
+      ← Back to Home
+     </a>
+    </div>
+    <div class="university-branding">
+     <img alt="RMIT University Logo" class="logo" src="../assets/images/rmit-logo.png"/>
+     <span class="university-name">
+      RMIT University
+     </span>
+    </div>
+    <p class="course-kicker">
+     COSC2767 · Systems Deployment and Operations
+    </p>
+    <h1>
+     🧰 Week 1: Tools &amp; Environment Setup
+     <span>
+      Lab Guide
+     </span>
+    </h1>
+    <p class="intro">
+     Set up
+     <code>
+      Ubuntu
+     </code>
+     and
+     <code>
+      Fedora
+     </code>
+     virtual machines in
+     <code>
+      VirtualBox
+     </code>
+     , confirm
+     <code>
+      SSH
+     </code>
+     access, handle
+     <code>
+      Apple Silicon
+     </code>
+     differences, and activate the
+     <code>
+      AWS Academy Learner Lab
+     </code>
+     .
+    </p>
+   </div>
+  </header>
+  <main class="container">
+   <section class="cheatsheet-section" id="learning-outcomes">
+    <h2 class="collapsible-header start-open">
+     🎯 Learning outcomes
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="card">
+      <p class="text-note">
+       <strong>
+        Work through the sections in order.
+       </strong>
+       Complete each instruction and confirm the expected result before moving on.
+      </p>
+      <ul>
+       <li>
+        Explain why the course uses both
+        <code>
+         Ubuntu
+        </code>
+        and
+        <code>
+         Fedora
+        </code>
+        Linux environments.
+       </li>
+       <li>
+        Create, install, and verify Ubuntu and Fedora virtual machines in
+        <code>
+         VirtualBox
+        </code>
+        .
+       </li>
+       <li>
+        Enable
+        <code>
+         SSH
+        </code>
+        and connect to each
+        <code>
+         VM
+        </code>
+        from the host computer.
+       </li>
+       <li>
+        Choose compatible
+        <code>
+         ARM
+        </code>
+        images when working on
+        <code>
+         Apple Silicon
+        </code>
+        .
+       </li>
+       <li>
+        Start, monitor, and safely stop an
+        <code>
+         AWS Academy Learner Lab
+        </code>
+        session.
+       </li>
+      </ul>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="objectives">
+    <h2 class="collapsible-header start-open">
+     🎯 Lab objectives
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Visual showing Lab objectives and environment plan" class="img-large" loading="lazy" src="../assets/tutorials/week-1/01-lab-objectives-001.png"/>
+        </div>
+       </div>
+       <div class="tutorial-flow">
+        <p>
+         In the lecture, we discussed the concepts and importance of virtualization.
+        </p>
+        <p>
+         This week, we will set up different Linux environments together using virtualization tools.
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Visual showing This week, we will set up different Linux environments together using virtualization tools." class="img-large" loading="lazy" src="../assets/tutorials/week-1/01-lab-objectives-002.png"/>
+        </div>
+        <p>
+         These shared baseline environments give everyone a consistent place to practise DevOps tools and build CI/CD pipelines.
+        </p>
+        <p>
+         In fact, there are two main tasks for today’s lab:
+        </p>
+        <ol class="tutorial-list tutorial-list--level-1">
+         <li value="1">
+          <p>
+           Set up Linux virtual machines (
+           <code>
+            Ubuntu
+           </code>
+           &amp;
+           <code>
+            Fedora
+           </code>
+           ) on
+           <code>
+            VirtualBox
+           </code>
+           .
+          </p>
+         </li>
+         <li value="2">
+          <p>
+           Set up your Amazon Web Services (
+           <code>
+            AWS
+           </code>
+           )
+           <code>
+            Learner Lab
+           </code>
+           account.
+          </p>
+         </li>
+        </ol>
+        <p>
+         <strong>
+          The VM instructions have two paths
+          <code>
+           VMs
+          </code>
+          : sections A and B
+         </strong>
+         . If you use any new
+         <strong>
+          MacBooks with Apple Silicon
+         </strong>
+         then please
+         <strong>
+          read both sections A and B.
+         </strong>
+         However, if you use
+         <strong>
+          a Windows laptop
+         </strong>
+         or Lab computers with
+         <strong>
+          an Intel CPU
+         </strong>
+         then
+         <strong>
+          follow section A only
+         </strong>
+         .
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="ubuntu-virtualbox">
+    <h2 class="collapsible-header">
+     🟠 Ubuntu Server on VirtualBox
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <h4 class="collapsible-header collapsible-header--chip">
+        🖥️ Plan the Ubuntu virtual machine
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Virtual Machine Setup (Linux VMs):" class="img-large" loading="lazy" src="../assets/tutorials/week-1/02-plan-the-ubuntu-virtual-machine-001.png"/>
+         </div>
+         <p>
+          We will set up the following:
+         </p>
+         <ol class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <code>
+             Ubuntu
+            </code>
+            <code>
+             VM
+            </code>
+            manually on
+            <code>
+             VirtualBox
+            </code>
+           </p>
+          </li>
+          <li>
+           <p>
+            <code>
+             Fedora
+            </code>
+            VM manually on VirtualBox
+           </p>
+          </li>
+         </ol>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Fedora VM manually on VirtualBox" class="img-large" loading="lazy" src="../assets/tutorials/week-1/02-plan-the-ubuntu-virtual-machine-002.png"/>
+         </div>
+         <p>
+          Here’s a comparison between Ubuntu and Fedora across some important aspects:
+         </p>
+         <p class="callout">
+          <strong>Planning checkpoint:</strong> If your host cannot comfortably run both VMs at once, which resource (RAM, CPU, or disk) is the likely bottleneck, and how would you adjust the VM plan without preventing the lab from working?
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Here’s a comparison between Ubuntu and Fedora across some important aspects:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/02-plan-the-ubuntu-virtual-machine-003.png"/>
+         </div>
+         <p>
+          When embarking on the journey to learn DevOps, setting up Ubuntu and Fedora as Virtual Machines (
+          <code>
+           VMs
+          </code>
+          ) in VirtualBox is an important step.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <strong>
+            Ubuntu
+           </strong>
+           , being the most popular
+           <strong>
+            <code>
+             Debian
+            </code>
+           </strong>
+           -based Linux distribution, provides a user-friendly environment, thus serving as a great starting point for learners to get acquainted with Linux systems, which are widely used in DevOps practices.
+          </li>
+          <li>
+           <p>
+            On the other hand,
+            <strong>
+             Fedora
+            </strong>
+            , a derivative of
+            <strong>
+             <code>
+              Red Hat
+             </code>
+            </strong>
+            , mirrors the functionality and features of
+            <code>
+             Red Hat Enterprise Linux
+            </code>
+            (
+            <code>
+             RHEL
+            </code>
+            ), thereby providing a platform to delve deeper into enterprise-level system configurations. Moreover, honing your skills on Fedora is beneficial as it facilitates the practice of command line operations on
+            <code>
+             AWS
+            </code>
+            <code>
+             EC2
+            </code>
+            instances, which often run on Red Hat-based distributions.
+           </p>
+          </li>
+         </ul>
+         <p>
+          Working with two Linux families broadens your understanding and prepares you to recognise differences in package managers, service names, and system configuration before you automate them.
+         </p>
+         <p>
+          You will complete the setup manually first so you can identify each state-changing step. Later, automation tools will encode these same steps in a repeatable form.
+         </p>
+         <p>
+          Before anything else, we need to download and install VirtualBox. However,
+          <strong>
+           if you use the RMIT computer lab then the computer should already have VirtualBox installed so you can skip these installation steps:
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Download and install VirtualBox (
+            <a href="https://www.virtualbox.org/wiki/Downloads" rel="noopener" target="_blank">
+             https://www.virtualbox.org/wiki/Downloads
+            </a>
+            ) for your operating system (Windows, macOS, or Linux):
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Download and install VirtualBox (https://www.virtualbox.org/wiki/Downloads) for your operating system (Windows, macOS, or Linux):" class="img-large" loading="lazy" src="../assets/tutorials/week-1/02-plan-the-ubuntu-virtual-machine-004.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Complete the installer using the default settings.
+           </p>
+          </li>
+          <li>
+           <p>
+            After installation, open VirtualBox and confirm its version as shown:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing After installation, open VirtualBox and confirm its version as shown:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/02-plan-the-ubuntu-virtual-machine-005.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        📦 Install Ubuntu Server in VirtualBox
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Keep in mind that these virtual machines above are empty and not yet functional as we need to install the actual operating systems from an
+            <code>
+             ISO
+            </code>
+            image on them! Let’s do that!
+           </p>
+          </li>
+          <li>
+           <p>
+            Next, you need to download the
+            <strong>
+             <code>
+              Ubuntu
+             </code>
+             18 Server
+            </strong>
+            ISO image (
+            <a href="https://releases.ubuntu.com/18.04/" rel="noopener" target="_blank">
+             https://releases.ubuntu.com/18.04/
+            </a>
+            ):
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Next, you need to download the Ubuntu 18 Server ISO image (https://releases.ubuntu.com/18.04/):" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            This will download an Ubuntu server ISO file to your laptop:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing This will download an Ubuntu server ISO file to your laptop:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now, with your VirtualBox installed, let’s virtualize! Open the
+            <code>
+             VirtualBox
+            </code>
+            :
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Now, with your VirtualBox installed, let’s virtualize! Open the VirtualBox:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Enter a new information of the Ubuntu Virtual OS as following:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Name: name of your
+              <code>
+               VM
+              </code>
+              (up to you) or you can name it “
+              <code>
+               my-ubuntu-18
+              </code>
+              ”
+             </p>
+            </li>
+            <li>
+             <p>
+              Folder: where your VM location is (best to leave it default)
+             </p>
+            </li>
+            <li>
+             <p>
+              ISO Image: select the Ubuntu ISO file to use it to install Ubuntu on our VM.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing ISO Image: select the Ubuntu ISO file to use it to install Ubuntu on our VM." class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-004.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Set your username and password for the Ubuntu:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Username: something short and easy to type fast and remember.
+             </p>
+            </li>
+            <li>
+             <p>
+              Password: something short and easy to type fast and remember.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Password: something short and easy to type fast and remember." class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Set the amount of RAM and CPU threads you will allocate to your VM:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              For this lab, 4 GB of RAM and 2 virtual CPUs are sufficient for
+              <code>
+               Ubuntu Server
+              </code>
+              .
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing For this lab, 4 GB of RAM and 2 virtual CPUs are sufficient for Ubuntu Server." class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Create a virtual hard disk and allocate at least 10 GB for this lab:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Create a virtual hard disk and allocate at least 10 GB for this lab:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-007.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You have now created the Ubuntu Server VM:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing You have now created the Ubuntu Server VM:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-008.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Start the Ubuntu VM to begin the initial operating-system installation:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Start the Ubuntu VM to begin the initial operating-system installation:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-009.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            On a high-resolution monitor, the VM display may appear small. Increase the display scale if needed:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing On a high-resolution monitor, the VM display may appear small. Increase the display scale if needed:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-010.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            While the VM starts, select “x” to dismiss the VirtualBox notifications:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing While the VM starts, select “x” to dismiss the VirtualBox notifications:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-011.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            When the Ubuntu welcome screen appears, press Enter to continue:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing When the Ubuntu welcome screen appears, press Enter to continue:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-012.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Press Enter to continue without updating the installer:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Press Enter to continue without updating the installer:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-013.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Press Enter to select the default English keyboard layout:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Press Enter to select the default English keyboard layout:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-014.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            [ … ] press Enter to continue:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing [ … ] press Enter to continue:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-015.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            This lab does not require a proxy. Press Enter to leave the field blank:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing This lab does not require a proxy. Press Enter to leave the field blank:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-016.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            We will use the default mirror so press Enter to skip it:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing We will use the default mirror so press Enter to skip it:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-017.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Use the virtual disk space allocated earlier, then select Done:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Use the virtual disk space allocated earlier, then select Done:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-018.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Accept Ubuntu’s automatic partitioning, then select Done:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Accept Ubuntu’s automatic partitioning, then select Done:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-019.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Select Continue to confirm that the virtual disk may be erased and used for Ubuntu:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Select Continue to confirm that the virtual disk may be erased and used for Ubuntu:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-020.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Finally, enter a profile name, server name, username, and password. Record the username and password because you will need them to sign in later:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Your name: your long name.
+             </p>
+            </li>
+            <li>
+             <p>
+              Your server’s name: the unique name for your VM.
+             </p>
+            </li>
+            <li>
+             <p>
+              Pick a username: keep it short because you will use it to log in.
+             </p>
+            </li>
+            <li>
+             <p>
+              Password: keep it simple and short to be easily remembered.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Password: keep it simple and short to be easily remembered." class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-021.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <strong>
+            [Important]
+           </strong>
+           Please check the option to install
+           <code>
+            OpenSSH
+           </code>
+           so your host computer can later connect to the VM:
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing [Important] Please check the option to install OpenSSH so your host computer can later connect to the VM:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-022.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            No need to install any software for now, choose Done to continue:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing No need to install any software for now, choose Done to continue:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-023.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            The installation will now run and may take several minutes:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing The installation will now run and may take several minutes:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-024.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            After installation completion, you should see the option to reboot the VM:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <strong>
+              Let’s wait
+             </strong>
+             for it as it is trying “downloading and installing all updates”,
+             <strong>
+              it might take some time
+             </strong>
+             (~10 minutes).
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Let’s wait for it as it is trying “downloading and installing all updates”, it might take some time (~10 minutes)." class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-025.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            After the installation, it will restart the VM.
+           </p>
+          </li>
+         </ul>
+         <p class="callout">
+          <strong>
+           Important: Remove the Ubuntu ISO before rebooting again
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <strong>
+            Common Issue:
+           </strong>
+           After Ubuntu finishes installing and the VM restarts, VirtualBox may still keep the Ubuntu ISO file attached to the VM. If the ISO is still attached, the VM may boot back into the Ubuntu installer instead of booting into the installed Ubuntu system.
+          </li>
+          <li>
+           <p>
+            If you see the Ubuntu installation screen again after rebooting, do the following:
+           </p>
+           <ol class="tutorial-list tutorial-list--level-2">
+            <li value="1">
+             <p>
+              Shut down the Ubuntu VM.
+             </p>
+            </li>
+            <li value="2">
+             <p>
+              In VirtualBox, select your Ubuntu VM.
+             </p>
+            </li>
+            <li value="3">
+             <p>
+              Click
+              <strong>
+               Settings
+              </strong>
+              .
+             </p>
+            </li>
+            <li value="4">
+             <p>
+              Go to
+              <strong>
+               Storage
+              </strong>
+              .
+             </p>
+            </li>
+            <li value="5">
+             <p>
+              Under
+              <strong>
+               Controller: IDE
+              </strong>
+              , click the attached Ubuntu ISO file.
+             </p>
+            </li>
+            <li value="6">
+             <p>
+              Click the small disc icon or remove option, then choose
+              <strong>
+               Remove disk from virtual drive
+              </strong>
+              .
+             </p>
+            </li>
+            <li value="7">
+             <p>
+              Click
+              <strong>
+               OK
+              </strong>
+              to save the settings.
+             </p>
+            </li>
+            <li value="8">
+             <p>
+              Start the Ubuntu VM again.
+             </p>
+            </li>
+           </ol>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Start the Ubuntu VM again." class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-026.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now the VM should boot from the virtual hard disk instead of the Ubuntu ISO.
+           </p>
+          </li>
+          <li>
+           <p>
+            Please launch your VM, then you should see the Ubuntu login screen and can enter your username and password. If everything corrects then you should see the screen like this:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Please launch your VM, then you should see the Ubuntu login screen and can enter your username and password. If everything corrects then you should see the s..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/03-install-ubuntu-server-in-virtualbox-027.png"/>
+         </div>
+         <p>
+          <strong>
+           Congratulations! You have successfully created an Ubuntu VM in the
+           <code>
+            VirtualBox
+           </code>
+           !
+          </strong>
+         </p>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🔐 Configure SSH access
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            It's a common and useful task to
+            <code>
+             SSH
+            </code>
+            into your
+            <code>
+             VirtualBox
+            </code>
+            <code>
+             VM
+            </code>
+            (in this case,
+            <code>
+             Ubuntu
+            </code>
+            VM) from your host machine.
+            <strong>
+             With the default "
+             <code>
+              NAT
+             </code>
+             " network, direct SSH access is not possible
+            </strong>
+            out-of-the-box because the VM is on a separate, private network created by VirtualBox. However, you can easily enable this by using
+            <strong>
+             <code>
+              Port Forwarding
+             </code>
+            </strong>
+            .
+           </p>
+           <p class="callout">
+            <strong>Prediction:</strong> Why can a VM using NAT reach the internet while the host still cannot initiate SSH to that VM until port forwarding is configured?
+           </p>
+          </li>
+          <li>
+           <strong>
+            Port forwarding
+           </strong>
+           creates a tunnel through the VirtualBox NAT network, redirecting traffic from a specific port on your host machine to a specific port on your guest VM.
+          </li>
+          <li>
+           <strong>
+            Step 1
+           </strong>
+           :
+           <strong>
+            Ensure an SSH Server is Running on Your Linux VM
+           </strong>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Check if the SSH service is running:
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                The screenshot below shows that it is running.
+               </p>
+              </li>
+             </ul>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>sudo systemctl status ssh</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing sudo systemctl status ssh" class="img-large" loading="lazy" src="../assets/tutorials/week-1/04-configure-ssh-access-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            However, If it's not installed, you can install it:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo apt install openssh-server</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing sudo apt install openssh-server" class="img-large" loading="lazy" src="../assets/tutorials/week-1/04-configure-ssh-access-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Then start the SSH service:
+           </p>
+          </li>
+         </ul>
+         <pre><code>sudo systemctl start ssh</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing sudo systemctl start ssh" class="img-large" loading="lazy" src="../assets/tutorials/week-1/04-configure-ssh-access-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <strong>
+            Step 2
+           </strong>
+           :
+           <strong>
+            Configure Port Forwarding in VirtualBox
+           </strong>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <strong>
+              Shut down your VM
+             </strong>
+             . While some settings can be changed while the VM is running, it's best practice to do this when it's powered off.
+            </li>
+            <li>
+             <strong>
+              Open VirtualBox
+             </strong>
+             and select your Linux VM.
+            </li>
+            <li>
+             <p>
+              Go to
+              <strong>
+               Settings
+              </strong>
+              &gt;
+              <strong>
+               Network
+              </strong>
+              .
+             </p>
+            </li>
+            <li>
+             <p>
+              Ensure the "Attached to" dropdown is set to
+              <strong>
+               "NAT".
+              </strong>
+             </p>
+            </li>
+            <li>
+             <p>
+              Expand the "
+              <strong>
+               Advanced
+              </strong>
+              " section and click on the
+              <strong>
+               "Port Forwarding" button
+              </strong>
+              .
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt='Visual showing Expand the " Advanced " section and click on the "Port Forwarding" button .' class="img-large" loading="lazy" src="../assets/tutorials/week-1/04-configure-ssh-access-004.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            In the Port Forwarding Rules window, click the green '+' icon to
+            <strong>
+             add a new rule
+            </strong>
+            .
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Fill in the fields for the new rule as follows:
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <strong>
+                Name
+               </strong>
+               : Give the rule a descriptive name (e.g., "SSH-VM" or "Ubuntu-SSH-VM").
+              </li>
+              <li>
+               <strong>
+                Protocol:
+               </strong>
+               TCP
+              </li>
+              <li>
+               <strong>
+                Host IP
+               </strong>
+               : Leave this as
+               <code>
+                127.0.0.1
+               </code>
+               which is generally safe as it only allows connections from your host machine.
+              </li>
+              <li>
+               <strong>
+                Host Port:
+               </strong>
+               Choose a port on your host machine that you'll connect to. A common choice is 2222 to avoid conflicts with any services running on the standard SSH
+               <code>
+                port 22
+               </code>
+               on your host.
+              </li>
+              <li>
+               <strong>
+                Guest IP:
+               </strong>
+               You can generally leave this blank, as VirtualBox will automatically use the VM's IP address.
+              </li>
+              <li>
+               <strong>
+                Guest Port:
+               </strong>
+               This should be the port the SSH server is listening on inside your VM, which is 22 by default.
+              </li>
+             </ul>
+            </li>
+            <li>
+             <p>
+              Your rule should look something like this:
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Your rule should look something like this:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/04-configure-ssh-access-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Click OK to save the rule and OK again to close the VM settings.
+           </p>
+          </li>
+          <li>
+           <strong>
+            Step 3
+           </strong>
+           :
+           <strong>
+            SSH from Your Host to the VM
+           </strong>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Start your Linux VM.
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                Ensure to check the status and start the SSH Server if needed
+               </p>
+              </li>
+             </ul>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Ensure to check the status and start the SSH Server if needed" class="img-large" loading="lazy" src="../assets/tutorials/week-1/04-configure-ssh-access-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            On your host machine (your main OS), open a terminal (on macOS or Linux) or a command prompt/PowerShell (on Windows).
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Use the following command to connect. You are connecting to localhost (your own machine) on the Host Port you specified (2222 in our example).
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                Replace
+                <code>
+                 your_vm_username
+                </code>
+                with your actual username on the Linux VM.
+               </p>
+              </li>
+              <li>
+               <p>
+                <code>
+                 -p
+                </code>
+                2222 specifies the port you set as the "Host Port".
+               </p>
+              </li>
+             </ul>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code class="language-bash">ssh your_vm_username@127.0.0.1 -p 2222</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You should now be prompted for your VM user's password, and upon entering it, you will have an SSH session running in your virtual machine.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing You should now be prompted for your VM user's password, and upon entering it, you will have an SSH session running in your virtual machine." class="img-large" loading="lazy" src="../assets/tutorials/week-1/04-configure-ssh-access-007.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        ⌨️ Practise Linux commands in the VM
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now, you can play around with the
+            <code>
+             Ubuntu
+            </code>
+            <code>
+             VM
+            </code>
+            server by typing this command to check the version number of Ubuntu:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cat /etc/os-release</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing cat /etc/os-release" class="img-large" loading="lazy" src="../assets/tutorials/week-1/05-practise-linux-commands-in-the-vm-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can type these commands to print out string or display date like so:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing You can type these commands to print out string or display date like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/05-practise-linux-commands-in-the-vm-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            When you are ready to disconnect
+            <code>
+             SSH
+            </code>
+            from the VM server, just type:
+           </p>
+          </li>
+         </ul>
+         <pre><code>exit</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing exit" class="img-large" loading="lazy" src="../assets/tutorials/week-1/05-practise-linux-commands-in-the-vm-003.png"/>
+         </div>
+         <p>
+          Congrats, you have finished setting up the Ubuntu VM server and learning how to connect via SSH from the current local computer to the VM server!
+         </p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="fedora-virtualbox">
+    <h2 class="collapsible-header">
+     🔵 Fedora Server on VirtualBox
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <h4 class="collapsible-header collapsible-header--chip">
+        🖥️ Create and install the Fedora virtual machine
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            First of all, you need to download the
+            <code>
+             Fedora
+            </code>
+            Server
+            <code>
+             ISO
+            </code>
+            image (
+            <a href="https://fedoraproject.org/server/download" rel="noopener" target="_blank">
+             https://fedoraproject.org/server/download
+            </a>
+            ) :
+           </p>
+          </li>
+          <li>
+           <p>
+            Choose the server version because we only want the smallest one for things we need to learn DevOps:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Choose the server version because we only want the smallest one for things we need to learn DevOps:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Can you do the same steps above and create another one for Fedora
+            <code>
+             VM
+            </code>
+            with below settings?
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Name:
+              <code>
+               my-fedora
+              </code>
+              (up to you)
+             </p>
+            </li>
+            <li>
+             <p>
+              Type: Linux
+             </p>
+            </li>
+            <li>
+             <p>
+              Subtype: Fedora
+             </p>
+            </li>
+            <li>
+             <p>
+              Version: Fedora (64-bit)
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Version: Fedora (64-bit)" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Other settings are similar to the above instructions for
+            <code>
+             Ubuntu
+            </code>
+            !
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Like the Memory and CPU allocation:
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Like the Memory and CPU allocation:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Like Hard Disk:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Like Hard Disk:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-004.png"/>
+         </div>
+         <p>
+          After you are done, you should have another Fedora VM like this:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing After you are done, you should have another Fedora VM like this:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Start the VM and finish the installation steps:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Start the VM and finish the installation steps:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Continue with English language and keyboard layouts:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Continue with English language and keyboard layouts:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-007.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <strong>
+            [Important]
+           </strong>
+           If you saw this pop-up message:
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing [Important] If you saw this pop-up message:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-008.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Here are the explanations:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              When working with
+              <code>
+               VirtualBox
+              </code>
+              , understanding the interaction between your host machine (your laptop/computer) and the virtual machine (VM) is very important.
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <strong>
+                Mouse and Keyboard Capture
+               </strong>
+               :
+               <ul class="tutorial-list tutorial-list--level-4">
+                <li>
+                 <p>
+                  When you click inside the VM display or press the host key, VirtualBox can "capture" your mouse interaction and keyboard. This means they are now interacting with the VM rather than with applications on your host machine. This occurs if the guest OS (the OS running inside the VM) doesn't support mouse interaction.
+                 </p>
+                </li>
+               </ul>
+              </li>
+              <li>
+               <strong>
+                The Host Key:
+               </strong>
+               <ul class="tutorial-list tutorial-list--level-4">
+                <li>
+                 <p>
+                  The host key acts as a toggle switch. Pressing it will either capture or release the keyboard and mouse, depending on their current state.
+                 </p>
+                </li>
+                <li>
+                 <p>
+                  The host key is indicated in the status bar at the bottom of the VM window, next to a specific icon. By default, the host key is set to Right Ctrl.
+                 </p>
+                </li>
+                <li>
+                 <p>
+                  When the keyboard and mouse are captured, they interact with the VM. When they're released (or "uncaptured"), they interact with the host machine.
+                 </p>
+                </li>
+               </ul>
+              </li>
+              <li>
+               <p>
+                This setup allows you to easily switch between interacting with your VM and your host machine, making the use of VirtualBox efficient and user-friendly. This mechanism ensures that you can dedicate your input devices to the VM when necessary, and effortlessly return control to your host machine with a simple key press.
+               </p>
+              </li>
+             </ul>
+            </li>
+           </ul>
+          </li>
+          <li>
+           <p>
+            For the settings, you just need to take care of two sections: Installation Destination and Network &amp; Host Name
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing For the settings, you just need to take care of two sections: Installation Destination and Network &amp; Host Name" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-009.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            For the installation destination, we select the default partition to let the Fedora make that decision for us:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing For the installation destination, we select the default partition to let the Fedora make that decision for us:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-010.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            For the Network &amp; Hostname, make sure you turn on the Ethernet option so our Fedora VM can connect to the internet:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing For the Network &amp; Hostname, make sure you turn on the Ethernet option so our Fedora VM can connect to the internet:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-011.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Next, we need to enter two sections for root password and user details:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              To keep it simple, please use the same password for both of them
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing To keep it simple, please use the same password for both of them" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-012.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Enter a root password. The root account has full permission to install and configure software on the VM:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Make sure you tick on the option “Allow root
+              <code>
+               SSH
+              </code>
+              login with password”
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Make sure you tick on the option “Allow root SSH login with password”" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-013.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Enter user details (username and password):
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Enter user details (username and password):" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-014.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            After that, we should begin the OS installation for Fedora!
+           </p>
+          </li>
+          <li>
+           <p>
+            After the installation completion, you can reboot the Fedora VM:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing After the installation completion, you can reboot the Fedora VM:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-015.png"/>
+         </div>
+         <p class="callout">
+          <strong>
+           Important: Remove the Fedora ISO after installation
+          </strong>
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            As you did for the Ubuntu VM, after Fedora finishes installing, make sure to remove the ISO file from the VM storage settings.
+           </p>
+          </li>
+          <li>
+           <p>
+            Go to: VirtualBox &gt; Select Fedora VM &gt; Settings &gt; Storage &gt; Controller: IDE &gt; Remove the Fedora ISO file
+           </p>
+          </li>
+          <li>
+           <p>
+            Then start the Fedora VM again.
+           </p>
+          </li>
+          <li>
+           <p>
+            If you see the Fedora installation screen again after rebooting, it means the VM is still booting from the ISO instead of the installed Fedora system. Remove the ISO and reboot the VM.
+           </p>
+          </li>
+          <li>
+           <p>
+            Enter the username and password correctly:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Enter the username and password correctly:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/06-create-and-install-the-fedora-virtual-machine-016.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🔐 Configure SSH access to Fedora
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Try to set up this
+            <code>
+             Fedora
+            </code>
+            <code>
+             VM
+            </code>
+            to be able to receive
+            <code>
+             SSH
+            </code>
+            connection from the host machine just like shown in the
+            <code>
+             Ubuntu
+            </code>
+            example above.
+           </p>
+          </li>
+          <li>
+           <p>
+            Keep in mind that, since we have two Linux
+            <code>
+             VMs
+            </code>
+            (Ubuntu and Fedora), please assign a Different Port to Your VMs.
+           </p>
+          </li>
+          <li>
+           <p>
+            You will add a new rule, similar to the first VM, but you must change the Host Port.
+           </p>
+          </li>
+          <li>
+           <strong>
+            VM 1 (Ubuntu) Rule:
+           </strong>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Name: ssh-ubuntu
+             </p>
+            </li>
+            <li>
+             <p>
+              Host Port: 2222
+             </p>
+            </li>
+            <li>
+             <p>
+              Guest Port: 22
+             </p>
+            </li>
+           </ul>
+          </li>
+          <li>
+           <strong>
+            VM 2 (Fedora) Rule:
+           </strong>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Name: ssh-fedora
+             </p>
+            </li>
+            <li>
+             <p>
+              Host Port: 2223
+              <strong>
+               (This is a very important change!)
+              </strong>
+             </p>
+            </li>
+            <li>
+             <p>
+              Guest Port: 22
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Guest Port: 22" class="img-large" loading="lazy" src="../assets/tutorials/week-1/07-configure-ssh-access-to-fedora-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Ensure the ssh service is running:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Run this command to check the status of ssh service:
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>sudo systemctl status sshd</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing sudo systemctl status sshd" class="img-large" loading="lazy" src="../assets/tutorials/week-1/07-configure-ssh-access-to-fedora-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Make sure you can SSH from your terminal to the Fedora VM:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Make sure you can SSH from your terminal to the Fedora VM:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/07-configure-ssh-access-to-fedora-003.png"/>
+          <img alt="Visual showing Make sure you can SSH from your terminal to the Fedora VM:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/07-configure-ssh-access-to-fedora-004.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🛑 Shut down the Fedora VM safely
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Please try some linux commands in the
+            <code>
+             Fedora
+            </code>
+            <code>
+             VM
+            </code>
+            as below:
+           </p>
+          </li>
+          <li>
+           <p>
+            Check the version number of Fedora like so:
+           </p>
+          </li>
+         </ul>
+         <p>
+          Also test out other commands like this:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Also test out other commands like this:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/08-shut-down-the-fedora-vm-safely-001.png"/>
+         </div>
+         <p>
+          You can shut down the VM of
+          <code>
+           VirtualBox
+          </code>
+          just by clicking on the x and shut it down:
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing To shut down a VirtualBox VM, close its window and choose the shutdown option:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/08-shut-down-the-fedora-vm-safely-002.png"/>
+          <img alt="Visual showing To shut down a VirtualBox VM, close its window and choose the shutdown option:" class="img-large" loading="lazy" src="../assets/tutorials/week-1/08-shut-down-the-fedora-vm-safely-003.png"/>
+         </div>
+         <p>
+          You have now completed these steps and set up the
+          <code>
+           VMs
+          </code>
+          to prepare for the next labs! Cheers!
+         </p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="apple-silicon">
+    <h2 class="collapsible-header">
+     🍎 Apple Silicon (M-series) setup notes [Read this first if using Macbook]
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         If you are using a MacBook with an Apple M1 or M2 chip, there are specific considerations for setting up virtual machines (
+         <code>
+          VMs
+         </code>
+         ) due to the differences in hardware architecture. Unlike Intel-based Macs,
+         <code>
+          Apple Silicon
+         </code>
+         (M1/M2) uses
+         <code>
+          ARM
+         </code>
+         architecture, which impacts the compatibility of virtualization software and operating systems. Here are the key things you need to know:
+        </p>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🍎 Choose ARM-compatible virtualization software
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          Since M1/M2 chips are based on
+          <code>
+           ARM
+          </code>
+          architecture, you cannot use the standard version of
+          <code>
+           VirtualBox
+          </code>
+          that works for Intel chips. Instead, you need to download the ARM version of VirtualBox, or alternatively, use
+          <strong>
+           <code>
+            UTM
+           </code>
+          </strong>
+          or
+          <strong>
+           <code>
+            Parallels
+           </code>
+           Desktop
+          </strong>
+          which also support ARM virtualization on
+          <code>
+           Apple Silicon
+          </code>
+          .
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <strong>
+            ARM Version of VirtualBox
+           </strong>
+           : The standard VirtualBox versions will not work on M1/M2 MacBooks. Make sure to download
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              The ARM version of
+              <strong>
+               VirtualBox
+              </strong>
+              from VirtualBox’s official site
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing The ARM version of VirtualBox from VirtualBox’s official site" class="img-large" loading="lazy" src="../assets/tutorials/week-1/09-choose-arm-compatible-virtualization-software-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Or use
+            <strong>
+             UTM
+            </strong>
+            (
+            <a href="https://mac.getutm.app/" rel="noopener" target="_blank">
+             https://mac.getutm.app/
+            </a>
+            ) for a more streamlined experience on M1/M2 Macs.
+           </p>
+          </li>
+         </ul>
+         <p class="callout">
+          <strong>
+           [Important] Since all of the instructions for this lab are written for VirtualBox, please ignore the UTM option and stick with VirtualBox for now!
+          </strong>
+         </p>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🍎 Choose an ARM-compatible operating system
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          The operating system you install in your virtual machine must also be
+          <code>
+           ARM
+          </code>
+          -compatible, as the Intel-based versions of
+          <code>
+           Ubuntu
+          </code>
+          and
+          <code>
+           Fedora
+          </code>
+          will not run on
+          <code>
+           Apple Silicon
+          </code>
+          . Here’s what to use:
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <strong>
+            Ubuntu ARM Version
+           </strong>
+           : For Ubuntu, download the
+           <code>
+            ARM64
+           </code>
+           version from the official Ubuntu releases page.
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Ubuntu ARM Version : For Ubuntu, download the ARM64 version from the official Ubuntu releases page." class="img-large" loading="lazy" src="../assets/tutorials/week-1/10-choose-an-arm-compatible-operating-system-001.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Ubuntu ARM Version : For Ubuntu, download the ARM64 version from the official Ubuntu releases page." class="img-large" loading="lazy" src="../assets/tutorials/week-1/10-choose-an-arm-compatible-operating-system-002.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Ubuntu ARM Version : For Ubuntu, download the ARM64 version from the official Ubuntu releases page." class="img-large" loading="lazy" src="../assets/tutorials/week-1/10-choose-an-arm-compatible-operating-system-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <strong>
+            <code>
+             Fedora ARM
+            </code>
+            Version
+           </strong>
+           : Use
+           <strong>
+            Fedora ARM
+           </strong>
+           as it is a community-driven Linux distribution for
+           <code>
+            Red Hat Enterprise Linux
+           </code>
+           , known for its cutting-edge features and regular updates. Download the ARM version of Fedora.
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Fedora ARM Version : Use Fedora ARM as it is a community-driven Linux distribution for Red Hat Enterprise Linux, known for its cutting-edge features a..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/10-choose-an-arm-compatible-operating-system-004.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Fedora ARM Version : Use Fedora ARM as it is a community-driven Linux distribution for Red Hat Enterprise Linux, known for its cutting-edge features a..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/10-choose-an-arm-compatible-operating-system-005.png"/>
+         </div>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Fedora ARM Version : Use Fedora ARM as it is a community-driven Linux distribution for Red Hat Enterprise Linux, known for its cutting-edge features a..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/10-choose-an-arm-compatible-operating-system-006.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        ✅ Apple Silicon setup summary
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ol class="tutorial-list tutorial-list--level-1">
+          <li value="1">
+           <p>
+            Install
+            <strong>
+             <code>
+              ARM
+             </code>
+             -compatible
+             <code>
+              VirtualBox
+             </code>
+            </strong>
+            (or use
+            <code>
+             UTM
+            </code>
+            /
+            <code>
+             Parallels
+            </code>
+            for better compatibility).
+           </p>
+          </li>
+          <li value="2">
+           <p>
+            Install
+            <strong>
+             <code>
+              Ubuntu ARM64
+             </code>
+            </strong>
+            as an option for
+            <code>
+             Debian
+            </code>
+            <code>
+             VM
+            </code>
+           </p>
+          </li>
+          <li value="3">
+           <p>
+            Install
+            <strong>
+             <code>
+              Fedora ARM
+             </code>
+            </strong>
+            as the Red Hat-family VM
+           </p>
+          </li>
+         </ol>
+         <p class="callout">
+          <strong>
+           Important note:
+          </strong>
+          Even when using an Apple M1/M2/M3/M4 chip, continue reading Section B. Most steps, including configuring VirtualBox, networking, and
+          <code>
+           SSH
+          </code>
+          access, are the same regardless of your machine's architecture.
+         </p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="aws-learner-lab">
+    <h2 class="collapsible-header">
+     ☁️ AWS Academy Learner Lab
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Visual showing C. Set up your Amazon Web Services (AWS) Learner Lab account for RMIT" class="img-large" loading="lazy" src="../assets/tutorials/week-1/11-aws-academy-learner-lab-001.png"/>
+        </div>
+        <p>
+         As a RMIT student, you have access to the Academy
+         <code>
+          Learner Lab
+         </code>
+         which allows you to access different cloud services within $50 free credit.
+        </p>
+        <p>
+         I have added all students’ email to the
+         <code>
+          AWS
+         </code>
+         Learner Lab!
+        </p>
+        <p>
+         We will discuss in more details in later weeks about AWS. Thus, this week, you just need to make sure you have received an email from Academy Learner Lab from AWS and set up your account to prepare for the future labs when we learn about Cloud Computing.
+        </p>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🔑 Set up and sign in to AWS Academy
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Set up your
+            <code>
+             AWS Academy
+            </code>
+            account by responding to your email invitation and clicking Get Started. The email invitation will come from AWS Academy &lt;notifications@instructure.com&gt;. If you do not see the email, check your junk, spam, or promotional mail folder. Here is a sample invitation email:
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Set up your AWS Academy account by responding to your email invitation and clicking Get Started. The email invitation will come from AWS Academy &lt;notificatio..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/12-set-up-and-sign-in-to-aws-academy-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Go to
+            <a href="https://www.awsacademy.com/LMS_Login" rel="noopener" target="_blank">
+             https://www.awsacademy.com/LMS_Login
+            </a>
+            to login.
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Press Student Login.
+             </p>
+            </li>
+            <li>
+             <p>
+              Use the email address that received the email invitation for the email field.
+             </p>
+            </li>
+            <li>
+             <strong>
+              [Important note]
+             </strong>
+             The Canvas Instructure of AWS Academy is different from Canvas Instructure of RMIT, so if you do not have an account for AWS Academy before, you might need to create a new account using your RMIT student email in order to sign in!
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing [Important note] The Canvas Instructure of AWS Academy is different from Canvas Instructure of RMIT, so if you do not have an account for AWS Academy before,..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/12-set-up-and-sign-in-to-aws-academy-002.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🧪 Open the Learner Lab
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            In the
+            <code>
+             AWS Academy
+            </code>
+            Dashboard, click on the
+            <code>
+             Learner Lab
+            </code>
+            you wish to use. Students invited to more than one course/learner lab will see multiple tiles on the dashboard.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing In the AWS Academy Dashboard, click on the Learner Lab you wish to use. Students invited to more than one course/learner lab will see multiple tiles on the d..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/13-open-the-learner-lab-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Select Modules.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Select Modules." class="img-large" loading="lazy" src="../assets/tutorials/week-1/13-open-the-learner-lab-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Select the Learner Lab item.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Select the Learner Lab item." class="img-large" loading="lazy" src="../assets/tutorials/week-1/13-open-the-learner-lab-003.png"/>
+          <img alt="Visual showing Select the Learner Lab item." class="img-large" loading="lazy" src="../assets/tutorials/week-1/13-open-the-learner-lab-004.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🎛️ Use and manage the Learner Lab
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            The instructions for using the lab environment are to the right of the console window. You can return to the instructions by pressing the Readme button. The instructions include important details about how to access and use your
+            <code>
+             AWS
+            </code>
+            account, the AWS Services available to you, and the restrictions placed on some AWS Services.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing The instructions for using the lab environment are to the right of the console window. You can return to the instructions by pressing the Readme button. The..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Start the lab by selecting Start Lab.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Start the lab by selecting Start Lab." class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            When the dot next to AWS turns
+            <strong>
+             yellow
+            </strong>
+            , your lab environment is still being prepared to use. So wait for it!
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing When the dot next to AWS turns yellow , your lab environment is still being prepared to use. So wait for it!" class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            When the dot next to AWS turns
+            <strong>
+             green
+            </strong>
+            , your lab environment is ready to use. Click AWS to launch the
+            <code>
+             AWS Console
+            </code>
+            in a new tab.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing When the dot next to AWS turns green , your lab environment is ready to use. Click AWS to launch the AWS Console in a new tab." class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-004.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            A new tab will open the
+            <code>
+             AWS Management Console
+            </code>
+            when you click on AWS. The system logged you into a temporary AWS account and the lab session will automatically end when the session timer expires. The system will save your work when you end the session or the session timer expires.
+           </p>
+           <p class="callout">
+            <strong>Operational checkpoint:</strong> How does a temporary AWS lab change your shutdown checklist compared with a local VM? What should you save, stop, and verify before the session timer expires?
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Note: The system will suspend your
+              <code>
+               EC2
+              </code>
+              instances at the end of a session and they will restart when you start the lab again. Press Start if you need to start up a new lab session.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Note: The system will suspend your EC2 instances at the end of a session and they will restart when you start the lab again. Press Start if you need to start..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-005.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Alternatively, you can use the terminal window to the left of the instructions to use the AWS Command-Line Interface (CLI) to interact with your account.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Alternatively, you can use the terminal window to the left of the instructions to use the AWS Command-Line Interface (CLI) to interact with your account." class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-006.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Return to the
+            <code>
+             AWS Academy
+            </code>
+            LMS tab to view the lab instructions or to control your lab session.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Return to the AWS Academy LMS tab to view the lab instructions or to control your lab session." class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-007.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            To monitor spending, see the area at the top of the lab instructions. Note: This information is provided by the AWS Budgets service and might be delayed by up to 8 hours. This is an approximate view of spending.
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Note: If you spend the entire budget, you will lose all of your work, and the system will deactivate your temporary AWS account. Your $50 budget is sufficient for most academic projects, as long as you take care to stay within the budget guidelines.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Note: If you spend the entire budget, you will lose all of your work, and the system will deactivate your temporary AWS account. Your $50 budget is sufficien..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-008.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            You can monitor your remaining session time at the top of the lab. Note: If you are actively working and you need more time, you can reset your session timer by pressing Start Lab again.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing You can monitor your remaining session time at the top of the lab. Note: If you are actively working and you need more time, you can reset your session timer..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-009.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            To delete all resources that you have configured in a lab and start with a fresh AWS account, choose Reset. Important: All work will be lost and cannot be recovered.
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              This option will not reset your budget. Any spending that you have incurred will continue to be tracked.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing This option will not reset your budget. Any spending that you have incurred will continue to be tracked." class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-010.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            When you are finished with the session, choose End Lab.
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Any running Amazon Elastic Compute Cloud (Amazon EC2) instances will be stopped. If you return and restart the lab, any stopped EC2 instances will restart and any other resources that you configured will still be available.
+             </p>
+            </li>
+            <li>
+             <p>
+              Important: If you created and started other AWS resources such as a
+              <code>
+               NAT
+              </code>
+              gateway or Amazon Relational Database Service (Amazon RDS) database, those resources will continue to run in the background and incur charges, even outside of your lab session time.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing Important: If you created and started other AWS resources such as a NAT gateway or Amazon Relational Database Service (Amazon RDS) database, those resources..." class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-011.png"/>
+         </div>
+         <p>
+          For this lab, we have no task regarding AWS yet so you can press the button “End Lab” to stop your lab from running.
+         </p>
+         <p>
+          That’s it! We are done for this week's lab!
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Visual showing That’s it! We are done for this week's lab!" class="img-large" loading="lazy" src="../assets/tutorials/week-1/14-use-and-manage-the-learner-lab-012.png"/>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="whats-next">
+    <h2 class="collapsible-header start-open">
+     📚 Continue the course
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--home">
+      <a class="card" href="week-2-linux-cli-lab.html">
+       <h3>
+        ⌨️ Week 2: Linux and CLI Commands
+       </h3>
+       <p>
+        Continue to the next weekly lab in the COSC2767 learning path.
+       </p>
+       <span class="go-to-link">
+        View next week
+       </span>
+      </a>
+      <a class="card" href="../index.html">
+       <h3>
+        🗓️ All weekly labs
+       </h3>
+       <p>
+        Return to the course map and review every published and upcoming tutorial.
+       </p>
+       <span class="go-to-link">
+        Course home
+       </span>
+      </a>
+     </div>
+    </div>
+   </section>
+  </main>
+  <footer>
+   <p>
+    © Created by Tom Huynh with love ❤️
+   </p>
+  </footer>
+ </body>
+</html>
+

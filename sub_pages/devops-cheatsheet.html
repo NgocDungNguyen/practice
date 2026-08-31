@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A COSC2767 quick reference for Linux, Git, AWS, Maven, Tomcat, Jenkins, Docker, Ansible, Docker Compose, Swarm, Kubernetes, and Amazon EKS.">
+<title>DevOps Cheatsheet - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="cheatsheet" data-stage="resources" data-root="../" style="--stage-accent: var(--stage-resources)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Reference</span><span class="crumb-sep">/</span><span>DevOps Cheatsheet</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Reference</span>
+</div>
+<h1>DevOps Cheatsheet</h1>
+<p class="page-hero__intro">A fast command and configuration reference distilled from all ten weekly labs. Use it to recall syntax after you understand the workflow; return to the full tutorial whenever you need setup context, screenshots, or troubleshooting guidance.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>8</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>59</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>29</strong>&nbsp;min</span></div>
+</div>
+
+<div class="cheatsheet-note grid-container grid-container--home">
+<div class="card">
+<h3>⌨️ Placeholder convention</h3>
+<p>Values inside angle brackets are examples that you must replace. Do not type the brackets themselves.</p>
+<ul class="placeholder-key">
+<li><code>&lt;server-ip&gt;</code> → the server's actual address</li>
+<li><code>&lt;container&gt;</code> → a container name or ID</li>
+<li><code>&lt;region&gt;</code> → an AWS Region such as <code>us-east-1</code></li>
+</ul>
+</div>
+<div class="card">
+<h3>🧭 Know where you are</h3>
+<p>Before changing a system, confirm the current user, host, directory, and active tool context. Many lab errors come from running the right command on the wrong server.</p>
+<pre><code class="language-bash">whoami
+hostname
+pwd</code></pre>
+</div>
+<div class="card">
+<h3>⚠️ Destructive commands</h3>
+<p>Inspect targets before using recursive deletion, forced container cleanup, namespace-wide deletion, or EKS teardown. Cloud resources may also incur costs until deleted.</p>
+<pre><code class="language-bash">ls -la &lt;target&gt;
+docker ps -a
+kubectl get all</code></pre>
+</div>
+</div>
+<section class="cheatsheet-section" id="linux-shell">
+<h2 class="collapsible-header start-open">
+                🐧 Linux, Bash, SSH, and system administration
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Identity and system information</h3>
+<p>Confirm who you are, group membership, operating system, date, and recent command history.</p>
+<pre><code class="language-bash">date
+whoami
+groups $(whoami)
+cat /etc/os-release
+history</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> you have just entered a VM or EC2 instance.</p>
+</div>
+<div class="card">
+<h3>Navigate and inspect directories</h3>
+<p>Move around the filesystem and include hidden files or detailed permissions when needed.</p>
+<pre><code class="language-bash">pwd
+ls
+ls -la
+cd /path/to/project
+cd ~
+cd ..</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> <code>~</code> is your home directory and <code>..</code> is the parent.</p>
+</div>
+<div class="card">
+<h3>Create, copy, move, and remove</h3>
+<p>Use explicit paths and inspect them before recursive removal.</p>
+<pre><code class="language-bash">mkdir -p app/templates
+touch app/app.py
+cp source.txt backup.txt
+mv old.txt archive/new.txt
+rm file.txt
+rm -rf old-directory</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> <code>mv</code> renames when source and destination are in the same directory.</p>
+</div>
+<div class="card">
+<h3>Read and edit text files</h3>
+<p>Inspect a full file, sample its beginning or end, or edit interactively with Nano.</p>
+<pre><code class="language-bash">cat application.log
+head -n 20 application.log
+tail -n 20 application.log
+nano configuration.yml</code></pre>
+<p class="command-purpose"><strong>Nano:</strong> save with <code>Ctrl+O</code>, confirm with Enter, and exit with <code>Ctrl+X</code>.</p>
+</div>
+<div class="card">
+<h3>Redirect and append output</h3>
+<p>One greater-than sign replaces a file; two append to the end.</p>
+<pre><code class="language-bash">echo "first line" &gt; report.txt
+echo "next line" &gt;&gt; report.txt
+command &gt; output.log 2&gt; error.log</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> creating configuration, reports, or captured command output.</p>
+</div>
+<div class="card">
+<h3>Search, find, count, and pipe</h3>
+<p>Connect small commands so each stage filters or summarises the previous result.</p>
+<pre><code class="language-bash">find ~ -name "*.txt"
+grep -R "ERROR" .
+grep "friends" file.txt | wc -l
+cat access.log | grep " 500 " | head</code></pre>
+<p class="command-purpose"><strong>Pipeline:</strong> <code>|</code> sends standard output into the next command.</p>
+</div>
+<div class="card">
+<h3>Permissions and ownership</h3>
+<p>Control read, write, and execute permissions symbolically or numerically.</p>
+<pre><code class="language-bash">chmod u+x script.sh
+chmod g-w report.txt
+chmod 755 script.sh
+sudo chown user:group report.txt
+ls -l report.txt</code></pre>
+<p class="command-purpose"><strong>755:</strong> owner can read/write/execute; group and others can read/execute.</p>
+</div>
+<div class="card">
+<h3>Install packages</h3>
+<p>Use the package manager that matches the Linux distribution.</p>
+<pre><code class="language-debian"># Debian / Ubuntu
+sudo apt update
+sudo apt install tree unzip curl</code></pre>
+<pre><code class="language-redhat"># Fedora / RHEL / Amazon Linux
+sudo yum install git -y
+sudo dnf install nano -y</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> a required command reports “command not found”.</p>
+</div>
+<div class="card">
+<h3>Services with systemd</h3>
+<p>Inspect, start, restart, enable, or stop long-running services.</p>
+<pre><code class="language-bash">sudo systemctl status sshd
+sudo systemctl start sshd
+sudo systemctl restart sshd
+sudo systemctl enable sshd
+sudo systemctl stop sshd</code></pre>
+<p class="command-purpose"><strong>Enable vs start:</strong> enable affects future boots; start affects the current session.</p>
+</div>
+<div class="card">
+<h3>Connect with SSH</h3>
+<p>Use port forwarding for a local VM or a private key for an EC2 instance.</p>
+<pre><code class="language-bash">ssh &lt;vm-user&gt;@127.0.0.1 -p 2222
+chmod 400 devops_project_key.pem
+ssh -i devops_project_key.pem ec2-user@&lt;public-ip&gt;</code></pre>
+<p class="command-purpose"><strong>Check first:</strong> port 22 must be reachable and the SSH service must be running.</p>
+</div>
+<div class="card">
+<h3>Bash script skeleton</h3>
+<p>Make repeated setup steps executable and stop the script when a command fails.</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+set -euo pipefail
+
+project_dir="${1:-my-project}"
+mkdir -p "$project_dir"
+echo "Created $project_dir"</code></pre>
+<pre><code class="language-bash">chmod u+x setup.sh
+./setup.sh demo-project</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> the same manual sequence must run reliably more than once.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="git-aws">
+<h2 class="collapsible-header">
+                🌿 Git collaboration and AWS access
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Configure and initialise Git</h3>
+<p>Set your commit identity once, create a repository, and standardise the primary branch.</p>
+<pre><code class="language-bash">git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git config --global init.defaultBranch main
+
+git init
+git branch -m main</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> preparing Git on a new laptop or server.</p>
+</div>
+<div class="card">
+<h3>Inspect, stage, and commit</h3>
+<p>Review changes before creating a meaningful repository checkpoint.</p>
+<pre><code class="language-bash">git status
+git diff
+git add .
+git commit -m "Describe the change"
+git log --oneline</code></pre>
+<p class="command-purpose"><strong>Habit:</strong> check <code>git status</code> before and after each commit.</p>
+</div>
+<div class="card">
+<h3>Branches and merging</h3>
+<p>Isolate work on a feature branch, then integrate it into <code>main</code>.</p>
+<pre><code class="language-bash">git checkout -b feature-login
+# edit, add, and commit
+git checkout main
+git merge feature-login
+git log --graph --decorate --oneline --all</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> developing features without destabilising the shared branch.</p>
+</div>
+<div class="card">
+<h3>Connect and synchronise a remote</h3>
+<p>Add a GitHub repository, inspect the mapping, and exchange commits.</p>
+<pre><code class="language-bash">git remote add origin git@github.com:&lt;user&gt;/&lt;repo&gt;.git
+git remote -v
+git fetch origin
+git pull --no-rebase
+git push -u origin main</code></pre>
+<p class="command-purpose"><strong>Fetch vs pull:</strong> fetch downloads history; pull downloads and integrates it.</p>
+</div>
+<div class="card">
+<h3>GitHub SSH key setup</h3>
+<p>Create a key pair, load the private key, and copy the public key into GitHub.</p>
+<pre><code class="language-bash">ssh-keygen -t rsa -b 4096 -C "you@example.com"
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub
+ssh -T git@github.com</code></pre>
+<p class="command-purpose"><strong>Never share:</strong> the private key file without <code>.pub</code>.</p>
+</div>
+<div class="card">
+<h3>Resolve a merge conflict</h3>
+<p>Pull the remote history, edit conflict markers, then commit the resolved file.</p>
+<pre><code class="language-bash">git pull origin main --no-rebase
+git status
+nano conflicted-file.txt
+git add conflicted-file.txt
+git commit -m "Resolve merge conflict"
+git push</code></pre>
+<p class="command-purpose"><strong>Do not commit:</strong> files that still contain <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> conflict markers.</p>
+</div>
+<div class="card">
+<h3>Confirm the AWS CLI identity</h3>
+<p>Before operating AWS resources, confirm the client and authenticated principal.</p>
+<pre><code class="language-aws">aws --version
+aws sts get-caller-identity</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> a cloud command fails with an authentication or permissions error.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="java-maven-tomcat">
+<h2 class="collapsible-header">
+                ☕ Java, Maven, and Tomcat delivery
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Verify Java and Maven</h3>
+<p>Confirm both tools are installed and visible through <code>PATH</code>.</p>
+<pre><code class="language-maven">java -version
+mvn -v
+which java
+which mvn</code></pre>
+<p class="command-purpose"><strong>Troubleshoot:</strong> if Maven exists but is not found, check <code>M2_HOME</code> and <code>PATH</code>.</p>
+</div>
+<div class="card">
+<h3>Generate a Maven web application</h3>
+<p>Create the same archetype-based web project introduced in Week 4.</p>
+<pre><code class="language-maven">mvn archetype:generate \
+  -DgroupId=vn.edu.rmit \
+  -DartifactId=helloWorld \
+  -DarchetypeArtifactId=maven-archetype-webapp \
+  -DinteractiveMode=false</code></pre>
+<p class="command-purpose"><strong>Result:</strong> a project containing <code>pom.xml</code> and <code>src/main/webapp</code>.</p>
+</div>
+<div class="card">
+<h3>Build and test with Maven</h3>
+<p>Run the lifecycle from a clean working directory and package the application as a WAR.</p>
+<pre><code class="language-maven">cd helloWorld
+mvn clean
+mvn test
+mvn package
+ls -la target/</code></pre>
+<p class="command-purpose"><strong>Artifact:</strong> <code>target/helloWorld.war</code>.</p>
+</div>
+<div class="card">
+<h3>Start and stop Tomcat</h3>
+<p>Operate Tomcat directly from its binary directory or through course-created symbolic links.</p>
+<pre><code class="language-tomcat">cd /opt/tomcat/bin
+./startup.sh
+./shutdown.sh
+
+tomcatup
+tomcatdown</code></pre>
+<p class="command-purpose"><strong>Verify:</strong> check the configured HTTP port in a browser or with <code>curl</code>.</p>
+</div>
+<div class="card">
+<h3>Deploy a WAR to Tomcat</h3>
+<p>Copy the packaged artifact into the webapps directory and restart the server.</p>
+<pre><code class="language-tomcat">cp target/helloWorld.war /opt/tomcat/webapps/
+tomcatdown &amp;&amp; tomcatup
+ls -la /opt/tomcat/webapps/</code></pre>
+<p class="command-purpose"><strong>Application URL:</strong> <code>http://&lt;server-ip&gt;:8080/helloWorld/</code>.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins">
+<h2 class="collapsible-header">
+                🔁 Jenkins continuous integration and delivery
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Operate the Jenkins service</h3>
+<p>Reload systemd after installation, then start and inspect Jenkins.</p>
+<pre><code class="language-jenkins">sudo systemctl daemon-reload
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+sudo systemctl status jenkins</code></pre>
+<p class="command-purpose"><strong>Web interface:</strong> normally available on port <code>8080</code>.</p>
+</div>
+<div class="card">
+<h3>Retrieve the initial password</h3>
+<p>Use this only during first-time setup, then create a normal administrator account.</p>
+<pre><code class="language-bash">sudo cat /var/lib/jenkins/secrets/initialAdminPassword</code></pre>
+<p class="command-purpose"><strong>Security:</strong> do not place this value in Git, screenshots, or shared logs.</p>
+</div>
+<div class="card">
+<h3>Check build-agent tools</h3>
+<p>Verify that the Jenkins node can access the same tools used by the build job.</p>
+<pre><code class="language-jenkins">git --version
+java -version
+mvn -v
+docker --version
+ansible --version</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> a job works manually but fails under the Jenkins user or agent.</p>
+</div>
+<div class="card">
+<h3>Fail a build when validation fails</h3>
+<p>Return a non-zero status so Jenkins stops before deployment.</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+set -e
+cd "$WORKSPACE"
+
+if ! grep -q "&lt;title&gt;Hello DevOps Students!&lt;/title&gt;" \
+  src/main/webapp/index.jsp; then
+  echo "Expected title was not found"
+  exit 1
+fi</code></pre>
+<p class="command-purpose"><strong>Pipeline rule:</strong> build and test successfully before copying artifacts or deploying containers.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="docker">
+<h2 class="collapsible-header">
+                🐳 Docker images, containers, storage, and registries
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Inspect Docker state</h3>
+<p>List local images and running or stopped containers before making changes.</p>
+<pre><code class="language-docker">docker images
+docker ps
+docker ps -a
+docker --help</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> checking names, IDs, status, ports, or existing resources.</p>
+</div>
+<div class="card">
+<h3>Pull and run an image</h3>
+<p>Start a detached container and map a host port to the application's container port.</p>
+<pre><code class="language-docker">docker pull tomcat
+docker run -d \
+  --name tomcat-container \
+  -p 8081:8080 \
+  tomcat:latest</code></pre>
+<p class="command-purpose"><strong>Port order:</strong> <code>host:container</code>.</p>
+</div>
+<div class="card">
+<h3>Enter and inspect a container</h3>
+<p>Open an interactive shell inside a running container.</p>
+<pre><code class="language-docker">docker exec -it tomcat-container /bin/bash
+pwd
+ls -la
+exit</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> inspecting files, environment variables, or processes inside the container.</p>
+</div>
+<div class="card">
+<h3>Stop and remove containers</h3>
+<p>Stop gracefully, remove explicitly, or prune all stopped containers.</p>
+<pre><code class="language-docker">docker stop tomcat-container
+docker rm tomcat-container
+docker container prune</code></pre>
+<p class="command-purpose"><strong>Caution:</strong> pruning affects every stopped container on the host.</p>
+</div>
+<div class="card">
+<h3>Build from a Dockerfile</h3>
+<p>Build and tag an image using the Dockerfile in the current directory.</p>
+<pre><code class="language-docker">docker build -t myapp:v1 .
+docker images</code></pre>
+<pre><code class="language-dockerfile">FROM tomcat:latest
+RUN cp -R /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps
+COPY ./*.war /usr/local/tomcat/webapps</code></pre>
+<p class="command-purpose"><strong>Build context:</strong> the final dot sends the current directory to Docker.</p>
+</div>
+<div class="card">
+<h3>Persist data with a volume</h3>
+<p>Keep logs or application data when a container is replaced.</p>
+<pre><code class="language-docker">docker volume create my-app-logs
+docker run -d \
+  --name myapp-container \
+  -p 8088:8080 \
+  -v my-app-logs:/usr/local/tomcat/logs \
+  myapp:v3</code></pre>
+<p class="command-purpose"><strong>Benefit:</strong> the named volume survives the container lifecycle.</p>
+</div>
+<div class="card">
+<h3>Tag and publish an image</h3>
+<p>Associate the local image with your Docker Hub namespace, authenticate, and push.</p>
+<pre><code class="language-docker">docker tag myapp:latest &lt;dockerhub-user&gt;/myapp:latest
+docker login
+docker push &lt;dockerhub-user&gt;/myapp:latest</code></pre>
+<p class="command-purpose"><strong>Naming:</strong> the registry namespace must match your Docker Hub user or organisation.</p>
+</div>
+<div class="card">
+<h3>Clean unused Docker data</h3>
+<p>Review resources first, then remove unused containers, networks, and images.</p>
+<pre><code class="language-docker">docker ps -a
+docker images
+docker system df
+docker system prune</code></pre>
+<p class="command-purpose"><strong>Caution:</strong> read Docker's confirmation prompt before accepting.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="ansible">
+<h2 class="collapsible-header">
+                ⚙️ Ansible inventories, ad-hoc commands, and playbooks
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Inventory groups</h3>
+<p>Group managed server addresses in the inventory used by the controller.</p>
+<pre><code class="language-ansible">[dockerserver]
+&lt;docker-private-ip&gt;
+
+[ansibleserver]
+&lt;ansible-private-ip&gt;</code></pre>
+<p class="command-purpose"><strong>Check:</strong> use <code>ansible-config dump | grep DEFAULT_HOST_LIST</code> to find the active inventory path.</p>
+</div>
+<div class="card">
+<h3>Prepare passwordless access</h3>
+<p>Copy the controller user's public key to each managed node.</p>
+<pre><code class="language-ansible">ssh-keygen
+ssh-copy-id &lt;managed-node-ip&gt;
+ssh &lt;managed-node-ip&gt;</code></pre>
+<p class="command-purpose"><strong>Ansible requirement:</strong> the control node must be able to reach managed nodes over SSH.</p>
+</div>
+<div class="card">
+<h3>Test managed nodes</h3>
+<p>Validate connectivity, Python availability, and ad-hoc command execution.</p>
+<pre><code class="language-ansible">ansible all -m ping
+ansible all -m command -a uptime
+ansible dockerserver -a "docker ps"</code></pre>
+<p class="command-purpose"><strong>Start here:</strong> do not debug a playbook until the ping module succeeds.</p>
+</div>
+<div class="card">
+<h3>Run a playbook</h3>
+<p>Apply the ordered tasks in a YAML playbook to its target hosts.</p>
+<pre><code class="language-ansible">ansible-playbook buildAndPush.yml
+ansible-playbook pullToCreateContainer.yml</code></pre>
+<p class="command-purpose"><strong>Repeatability:</strong> design tasks so rerunning the playbook converges safely.</p>
+</div>
+<div class="card">
+<h3>Build and push with a playbook</h3>
+<p>This course pattern delegates Docker build and registry publishing to Ansible.</p>
+<pre><code class="language-ansible">---
+- hosts: ansibleserver
+  tasks:
+    - name: Build application image
+      command: docker build -t myapp:latest .
+    - name: Tag image for Docker Hub
+      command: docker tag myapp:latest &lt;user&gt;/myapp:latest
+    - name: Push image
+      command: docker push &lt;user&gt;/myapp:latest</code></pre>
+<p class="command-purpose"><strong>Before running:</strong> authenticate once with <code>docker login</code>.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="compose-swarm">
+<h2 class="collapsible-header">
+                🧩 Docker Compose and Docker Swarm
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Compose service definition</h3>
+<p>Describe related containers, ports, environment values, and dependencies in one YAML file.</p>
+<pre><code class="language-compose">services:
+  redis:
+    image: redis:latest
+  db:
+    image: postgres:9.4
+    environment:
+      POSTGRES_PASSWORD: postgres
+  vote:
+    build: ./vote
+    ports:
+      - "8080:80"
+    depends_on:
+      - redis</code></pre>
+<p class="command-purpose"><strong>Course application:</strong> expand the same file with worker and result services.</p>
+</div>
+<div class="card">
+<h3>Compose lifecycle</h3>
+<p>Create the whole application, inspect it, view logs, and remove its resources.</p>
+<pre><code class="language-compose">docker compose up -d
+docker compose ps
+docker compose logs -f
+docker compose down</code></pre>
+<p class="command-purpose"><strong>Course note:</strong> older installations use the equivalent <code>docker-compose</code> command.</p>
+</div>
+<div class="card">
+<h3>Create and join a swarm</h3>
+<p>Initialise the manager, then run the generated join command on each worker.</p>
+<pre><code class="language-swarm"># Manager
+docker swarm init
+
+# Worker
+docker swarm join --token &lt;token&gt; &lt;manager-ip&gt;:2377
+
+# Manager
+docker node ls</code></pre>
+<p class="command-purpose"><strong>Network:</strong> allow the required Swarm management and overlay ports between nodes.</p>
+</div>
+<div class="card">
+<h3>Create and inspect a service</h3>
+<p>Publish Nginx through the routing mesh and maintain two replicas.</p>
+<pre><code class="language-swarm">docker service create \
+  --name nginx \
+  --replicas 2 \
+  --publish published=8080,target=80 \
+  nginx
+
+docker service ls
+docker service ps nginx</code></pre>
+<p class="command-purpose"><strong>Service vs task:</strong> the service is desired state; each replica runs as a task.</p>
+</div>
+<div class="card">
+<h3>Drain a manager or remove a service</h3>
+<p>Prevent workload scheduling on the manager and observe Swarm replace its tasks.</p>
+<pre><code class="language-swarm">docker node update --availability drain docker-master
+docker service ps nginx
+docker service rm nginx</code></pre>
+<p class="command-purpose"><strong>Self-healing:</strong> Swarm reschedules tasks to maintain the requested replica count.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="kubernetes-eks">
+<h2 class="collapsible-header">
+                ☸️ Kubernetes, Minikube, and Amazon EKS
+                <span class="collapse-icon"></span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Minikube lifecycle</h3>
+<p>Start a learning cluster, check its components, open the dashboard, and clean up.</p>
+<pre><code class="language-kubernetes">minikube start --force
+minikube status
+kubectl get nodes
+minikube dashboard --url
+minikube stop
+minikube delete</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> practising Kubernetes on a single EC2 learning node.</p>
+</div>
+<div class="card">
+<h3>Create and inspect a pod</h3>
+<p>Run an image directly, then inspect status, placement, and detailed events.</p>
+<pre><code class="language-kubernetes">kubectl run todolistapp --image=&lt;image&gt;
+kubectl get pods
+kubectl get pod -o wide
+kubectl describe pod todolistapp
+kubectl get events --sort-by=.metadata.creationTimestamp</code></pre>
+<p class="command-purpose"><strong>Debug order:</strong> get → describe → events → logs.</p>
+</div>
+<div class="card">
+<h3>Expose and forward a service</h3>
+<p>Create a NodePort service or temporarily forward a local port to it.</p>
+<pre><code class="language-kubernetes">kubectl expose pod todolistapp \
+  --type=NodePort \
+  --port=80 \
+  --name=todolistapp-service
+
+kubectl get svc
+kubectl port-forward svc/todolistapp-service \
+  3000:80 --address 0.0.0.0</code></pre>
+<p class="command-purpose"><strong>Security:</strong> only expose ports required by the lab and close them after use.</p>
+</div>
+<div class="card">
+<h3>Apply and remove manifests</h3>
+<p>Prefer declarative files when resources must be repeatable and version controlled.</p>
+<pre><code class="language-kubernetes">kubectl apply -f pod.yml
+kubectl apply -f service.yml
+kubectl get all
+kubectl delete -f service.yml
+kubectl delete -f pod.yml</code></pre>
+<p class="command-purpose"><strong>Folder workflow:</strong> <code>kubectl apply -f .</code> applies every manifest in the directory.</p>
+</div>
+<div class="card">
+<h3>Minimal Pod manifest</h3>
+<p>Labels connect this pod to a service selector.</p>
+<pre><code class="language-kubernetes">apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: demo-app
+spec:
+  containers:
+    - name: nginx
+      image: nginx:latest
+      ports:
+        - containerPort: 80</code></pre>
+<p class="command-purpose"><strong>Key relationship:</strong> service selectors must match pod labels exactly.</p>
+</div>
+<div class="card">
+<h3>Minimal Service manifest</h3>
+<p>Route traffic on port 80 to pods labelled <code>app: demo-app</code>.</p>
+<pre><code class="language-kubernetes">apiVersion: v1
+kind: Service
+metadata:
+  name: demo-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: demo-app
+  ports:
+    - port: 80
+      targetPort: 80</code></pre>
+<p class="command-purpose"><strong>Cloud behaviour:</strong> a LoadBalancer service requests an external load balancer from the provider.</p>
+</div>
+<div class="card">
+<h3>Deployment and replicas</h3>
+<p>Create a managed workload instead of a standalone pod.</p>
+<pre><code class="language-kubernetes">kubectl create deployment demo-nginx \
+  --image=nginx \
+  --replicas=2 \
+  --port=80
+
+kubectl get deployment
+kubectl get replicaset
+kubectl get pods</code></pre>
+<p class="command-purpose"><strong>Benefit:</strong> the Deployment maintains replica count and supports updates.</p>
+</div>
+<div class="card">
+<h3>Connect kubectl to Amazon EKS</h3>
+<p>Check the clients, write the EKS cluster context into kubeconfig, and inspect worker nodes.</p>
+<pre><code class="language-aws">aws --version
+kubectl version --client
+eksctl version
+aws eks update-kubeconfig \
+  --name &lt;cluster-name&gt; \
+  --region &lt;region&gt;
+kubectl get nodes</code></pre>
+<p class="command-purpose"><strong>Authentication:</strong> the AWS identity needs permission to access the EKS cluster.</p>
+</div>
+<div class="card">
+<h3>Inspect and clean a namespace</h3>
+<p>Review the default namespace before removing its lab workloads.</p>
+<pre><code class="language-kubernetes">kubectl get all --namespace=default
+kubectl get deployments,svc
+kubectl delete pods,services --all --namespace=default</code></pre>
+<p class="command-purpose"><strong>Caution:</strong> namespace-wide deletion removes every matching resource, not only the current exercise.</p>
+</div>
+</div>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-orchestration)" href="../sub_pages/week-11-eks-aws-lab.html"><span class="pager__dir">← Previous</span><span class="pager__title">EKS on AWS</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-resources)" href="../sub_pages/useful-resources.html"><span class="pager__dir">Next →</span><span class="pager__title">Useful Resources</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="linux-shell"><a class="toc__link" href="#linux-shell"><span>Linux, Bash, SSH, and system administration</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="git-aws"><a class="toc__link" href="#git-aws"><span>Git collaboration and AWS access</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="java-maven-tomcat"><a class="toc__link" href="#java-maven-tomcat"><span>Java, Maven, and Tomcat delivery</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins"><a class="toc__link" href="#jenkins"><span>Jenkins continuous integration and delivery</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="docker"><a class="toc__link" href="#docker"><span>Docker images, containers, storage, and registries</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="ansible"><a class="toc__link" href="#ansible"><span>Ansible inventories, ad-hoc commands, and playbooks</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="compose-swarm"><a class="toc__link" href="#compose-swarm"><span>Docker Compose and Docker Swarm</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="kubernetes-eks"><a class="toc__link" href="#kubernetes-eks"><span>Kubernetes, Minikube, and Amazon EKS</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 8 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

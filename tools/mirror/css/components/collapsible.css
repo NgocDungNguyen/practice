@@ -1,0 +1,150 @@
+/* =============================================================================
+   Collapsible
+   Behaviour lives in js/modules/collapsible.js. A header is paired with the
+   .collapsible-content element that immediately follows it.
+
+   Markup contract:
+     <h2 class="collapsible-header start-open">Title <span class="collapse-icon"></span></h2>
+     <div class="collapsible-content"> … </div>
+   Add .start-open to expand the section on load.
+   ========================================================================== */
+
+.collapsible-header {
+    cursor: pointer;
+    display: flex;
+    font-weight: 500;
+    /* Wrapping keeps a long title from pushing the icon past the viewport
+       edge on a phone; the icon drops to its own line instead. */
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-2);
+    user-select: none;
+}
+
+.collapse-icon {
+    position: relative;
+    display: block;
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    margin-left: auto;
+    padding: 0;
+}
+
+/* Draw the minus/plus as geometric strokes instead of font glyphs. Font
+   ascenders and baselines make a text "+" look too high even when its line box
+   is mathematically centred. These bars meet at the exact centre of the icon. */
+.collapse-icon::before,
+.collapse-icon::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.8rem;
+    height: 2px;
+    border-radius: var(--radius-pill);
+    background-color: currentColor;
+    content: "";
+    transform: translate(-50%, -50%);
+}
+
+.collapse-icon::after {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transition: opacity var(--transition-fast);
+}
+
+.collapsible-header.collapsed .collapse-icon::after {
+    opacity: 1;
+}
+
+.collapsible-content {
+    /* Expanded content must not have a finite height cap: long guides can
+       otherwise be clipped even though all of their text is in the DOM. */
+    max-height: none;
+    min-width: 0;
+    overflow: visible;
+    transition: margin-top 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    opacity: 1;
+    margin-top: var(--space-3);
+}
+
+.collapsible-content.collapsed {
+    max-height: 0;
+    overflow: hidden;
+    margin-top: 0 !important;
+    opacity: 0;
+}
+
+/* --- Nested collapsible ----------------------------------------------------
+   A sub-section inside a card, one level below the section <h2>. */
+.card > h3.collapsible-header {
+    font-size: 1.5rem;
+    color: var(--heading-color);
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 500;
+}
+
+.card > h3.collapsible-header.collapsed {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.card > .collapsible-content > p {
+    margin-bottom: var(--space-3);
+}
+
+/* --- Inline toggles --------------------------------------------------------
+   Smaller collapsible headers used for optional detail inside a step. */
+
+/* Plain accent-coloured text, no rule or rail. */
+.collapsible-header--inline {
+    font-size: 1.2rem;
+    color: var(--accent-color);
+    border-left: none;
+    padding-left: 0;
+}
+
+/* A tinted chip, for "click for hints" style disclosures. */
+.collapsible-header--chip {
+    background-color: var(--accent-color-soft);
+    color: var(--accent-color);
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    margin-top: var(--space-4);
+}
+
+/* --- Subtle interaction cue -----------------------------------------------
+   Keep headings calm at rest, then reveal clickability on hover or focus. */
+.collapsible-header {
+    border-radius: var(--radius-sm);
+    transition:
+        color var(--transition-base),
+        background-color var(--transition-base);
+}
+
+.collapsible-header:hover {
+    background-color: color-mix(in srgb, var(--accent-color) 6%, transparent);
+}
+
+.collapsible-header:focus-visible {
+    outline: 2px solid var(--accent-color-line);
+    outline-offset: 2px;
+}
+
+.collapsible-header .collapse-icon {
+    border-radius: 999px;
+    background-color: var(--accent-color-soft);
+    color: var(--accent-color);
+    transition:
+        transform var(--transition-base),
+        background-color var(--transition-base);
+}
+
+.collapsible-header:hover .collapse-icon,
+.collapsible-header:focus-visible .collapse-icon {
+    background-color: color-mix(in srgb, var(--accent-color) 18%, transparent);
+}

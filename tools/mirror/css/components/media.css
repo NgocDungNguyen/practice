@@ -1,0 +1,102 @@
+/* =============================================================================
+   Media
+   Screenshot sizing inside guides, plus the multi-image rows.
+
+     .img-large       standard screenshot (70% of the card, capped at 60%)
+     .img-small       detail shot / icon (capped at 50%)
+     .card-img        legacy alias of .img-large, still used by the Swift labs
+     .image-pair      two screenshots side by side
+     .image-trio      three screenshots side by side
+     .image-quartet   four screenshots side by side
+
+   The base sizing below is written with :where() so it keeps element-level
+   specificity (0,0,1). The row layouts that follow are class selectors and
+   therefore override it without needing !important or deeper nesting.
+   ========================================================================== */
+
+:where(.instruction-step) img,
+:where(.instruction-step, .card) img:where(.img-large, .img-small),
+img:where(.card-img) {
+    width: 70%;
+    max-width: 60%;
+    display: block;
+    margin: var(--space-3) auto;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-media);
+}
+
+img:where(.img-small) {
+    max-width: 50%;
+}
+
+/* --- Image rows ------------------------------------------------------------
+   A row lays its images out edge to edge and resets the single-image sizing. */
+.image-pair,
+.image-trio,
+.image-quartet {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: var(--space-4);
+}
+
+.image-pair img,
+.image-trio img,
+.image-quartet img {
+    width: auto;
+    margin: 0;
+    object-fit: contain;
+}
+
+.image-pair {
+    gap: var(--space-4);
+}
+
+.image-pair img {
+    flex: 1 1 45%;
+    max-width: 45%;
+}
+
+.image-trio img {
+    flex: 1 1 32%;
+    max-width: 32%;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+}
+
+.image-quartet img {
+    flex: 1 1 24%;
+    max-width: 24%;
+}
+
+/* A vertical run of related screenshots, each wider than a normal figure. */
+.image-stack {
+    margin-top: var(--space-4);
+    text-align: center;
+}
+
+.image-stack img {
+    width: auto;
+    max-width: 80%;
+    margin: 0 auto var(--space-3);
+}
+
+.image-stack img:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 700px) {
+
+    .image-pair img,
+    .image-trio img,
+    .image-quartet img {
+        flex-basis: 100%;
+        max-width: 100%;
+    }
+
+    .image-stack img {
+        max-width: 100%;
+    }
+}

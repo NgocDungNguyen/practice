@@ -1,0 +1,504 @@
+/* =============================================================================
+   Print / PDF rendition
+   Applies to every page. Page-specific print tweaks live in the matching
+   css/pages/<page>.css file, which is linked after main.css.
+
+   The screen styling of the export control itself lives in
+   components/button.css; this file only describes the printed document.
+   ========================================================================== */
+
+/* Text stand-ins that JS inserts for media and broken images before printing.
+   Hidden on screen, revealed in the print rendition below. */
+.print-media-reference,
+.print-image-fallback {
+    display: none;
+}
+
+@page {
+    size: A4 portrait;
+    margin: 22mm 20mm 24mm;
+}
+
+@media print {
+    :root {
+        --bg-color: #ffffff;
+        --card-bg-color: #ffffff;
+        --text-color: #17212b;
+        --heading-color: #111827;
+        --accent-color: #b42318;
+        --border-color: #cbd5e1;
+        --shadow-color: transparent;
+        --code-bg-color: #f5f7fa;
+        --code-text-color: #111827;
+        --output-bg-color: #f8fafc;
+        --output-border-color: #cbd5e1;
+    }
+
+    html,
+    body {
+        width: auto !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        color: var(--text-color) !important;
+    }
+
+    body {
+        display: block !important;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 10.5pt;
+        line-height: 1.48;
+        overflow: visible !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+        animation: none !important;
+        text-shadow: none !important;
+        transition: none !important;
+    }
+
+    .pdf-export-container,
+    .pdf-export-button,
+    .scroll-to-top-button,
+    .back-to-home-container,
+    .collapse-icon,
+    audio,
+    video,
+    iframe {
+        display: none !important;
+    }
+
+    .container {
+        width: auto !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 2mm !important;
+    }
+
+    header {
+        margin: 0 0 9mm !important;
+        padding: 0 0 7mm !important;
+        border-bottom: 1.5pt solid var(--accent-color) !important;
+        background: #ffffff !important;
+        text-align: left;
+        break-after: avoid-page;
+    }
+
+    .university-branding {
+        justify-content: flex-start !important;
+        gap: 5mm !important;
+        margin: 0 0 6mm !important;
+    }
+
+    .logo {
+        width: auto !important;
+        height: 13mm !important;
+        max-height: 13mm !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .university-name {
+        color: var(--heading-color) !important;
+        font-size: 12pt !important;
+    }
+
+    header h1 {
+        margin: 0 !important;
+        color: var(--heading-color) !important;
+        font-size: 22pt !important;
+        font-weight: 700 !important;
+        line-height: 1.18 !important;
+    }
+
+    header h1 span {
+        color: var(--accent-color) !important;
+        font-weight: 700 !important;
+    }
+
+    header .intro {
+        max-width: none !important;
+        margin: 3mm 0 0 !important;
+        color: var(--text-color) !important;
+        font-size: 10.5pt !important;
+        line-height: 1.45 !important;
+    }
+
+    main {
+        padding: 0 !important;
+    }
+
+    main p {
+        margin: 0 0 3.2mm;
+        orphans: 3;
+        widows: 3;
+    }
+
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: var(--heading-color) !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        line-height: 1.25;
+        break-after: avoid-page;
+        page-break-after: avoid;
+    }
+
+    h2,
+    .main-section-header h2,
+    .cheatsheet-section > h2.collapsible-header {
+        margin: 8mm 0 4mm !important;
+        padding: 0 0 2mm !important;
+        border: 0 !important;
+        border-bottom: 1pt solid var(--accent-color) !important;
+        font-size: 16.5pt !important;
+        font-weight: 700 !important;
+    }
+
+    h3,
+    .card h3,
+    .subsection-title {
+        margin: 5mm 0 2.5mm !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        color: var(--heading-color) !important;
+        font-size: 13pt !important;
+        font-weight: 700 !important;
+    }
+
+    h4 {
+        margin: 4mm 0 2mm !important;
+        font-size: 11pt !important;
+    }
+
+    .main-section-header {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+    }
+
+    .cheatsheet-section {
+        display: block !important;
+        margin: 0 0 7mm !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .collapsible-header {
+        display: block !important;
+        cursor: default !important;
+        user-select: text !important;
+    }
+
+    /* Collapsible headings keep their hierarchy without returning to bold. */
+    .cheatsheet-section > h2.collapsible-header,
+    .card > h3.collapsible-header,
+    h4.collapsible-header {
+        font-weight: 500 !important;
+    }
+
+    /* Collapsed sections still belong in the exported document. */
+    .collapsible-content,
+    .collapsible-content.collapsed {
+        display: block !important;
+        max-height: none !important;
+        margin-top: 0 !important;
+        overflow: visible !important;
+        opacity: 1 !important;
+    }
+
+    .grid-container,
+    .sub-grid-container {
+        display: block !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    .card,
+    .sub-grid-container > .card {
+        display: block !important;
+        width: auto !important;
+        min-width: 0 !important;
+        margin: 0 0 5mm !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--text-color) !important;
+        text-align: left !important;
+        transform: none !important;
+    }
+
+    a.card {
+        padding: 0 0 4mm !important;
+        border-bottom: 0.5pt solid var(--border-color) !important;
+        text-decoration: none !important;
+        break-inside: avoid-page;
+    }
+
+    .instruction-step,
+    .instruction-step.card {
+        margin: 0 0 5mm !important;
+        padding: 0 0 0 4mm !important;
+        border: 0 !important;
+        border-left: 2pt solid var(--accent-color) !important;
+        break-inside: auto;
+    }
+
+    .instruction-step > h3,
+    .instruction-step.card > h3 {
+        display: block !important;
+        margin-top: 0 !important;
+        color: var(--heading-color) !important;
+    }
+
+    ul,
+    ol,
+    .card ul,
+    .card ol {
+        margin: 0 0 3.5mm !important;
+        padding-left: 7mm !important;
+        list-style-position: outside !important;
+    }
+
+    li {
+        margin: 0 0 1.5mm;
+        break-inside: avoid-page;
+    }
+
+    a,
+    a:visited {
+        color: #174ea6 !important;
+        text-decoration: underline !important;
+        text-decoration-thickness: 0.5pt !important;
+        text-underline-offset: 1pt;
+    }
+
+    .go-to-link,
+    .button,
+    .download-link {
+        display: inline !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: #174ea6 !important;
+        box-shadow: none !important;
+        font-size: 9.5pt !important;
+        text-shadow: none !important;
+    }
+
+    .go-to-link::after {
+        content: "" !important;
+    }
+
+    code {
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace !important;
+    }
+
+    :not(pre) > code {
+        padding: 0.25mm 0.8mm !important;
+        border: 0.5pt solid #d8dee8;
+        border-radius: 1mm !important;
+        background: #f1f5f9 !important;
+        color: #17212b !important;
+        font-size: 0.88em !important;
+    }
+
+    pre {
+        max-width: 100% !important;
+        margin: 3mm 0 4mm !important;
+        padding: 3mm !important;
+        overflow: visible !important;
+        border: 0.7pt solid #cbd5e1 !important;
+        border-radius: 1.5mm !important;
+        background: #f5f7fa !important;
+        color: #111827 !important;
+        font-size: 7.7pt !important;
+        line-height: 1.36 !important;
+        white-space: pre-wrap !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        break-inside: auto;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    pre code {
+        color: inherit !important;
+        white-space: inherit !important;
+    }
+
+    pre .comment { color: #52606d !important; }
+    pre .keyword { color: #9f1239 !important; font-weight: 650; }
+    pre .string { color: #166534 !important; }
+    pre .number { color: #9a3412 !important; }
+    pre .type { color: #075985 !important; }
+    pre .function,
+    pre .function-name { color: #6d28d9 !important; }
+    pre .variable,
+    pre .property { color: #0f766e !important; }
+    pre .literal,
+    pre .boolean { color: #1d4ed8 !important; }
+    pre .macro { color: #86198f !important; }
+    pre .property-wrapper { color: #854d0e !important; }
+    pre .operator { color: #111827 !important; }
+    pre .preprocessor { color: #9a3412 !important; }
+
+    pre .hl-new,
+    pre .hl-edit,
+    pre .hl-focus {
+        background: transparent !important;
+        border-left-width: 2pt !important;
+    }
+
+    .code-legend,
+    .output-box,
+    .pro-tip,
+    .callout {
+        margin: 3mm 0 4mm !important;
+        padding: 3mm !important;
+        border: 0.7pt solid var(--border-color) !important;
+        border-radius: 1.5mm !important;
+        background: #f8fafc !important;
+        color: var(--text-color) !important;
+        box-shadow: none !important;
+        break-inside: avoid-page;
+    }
+
+    .code-legend {
+        display: flex !important;
+    }
+
+    img,
+    .card-img,
+    .instruction-step img,
+    .card img,
+    .card img.img-large,
+    .card img.img-small {
+        display: block !important;
+        width: auto !important;
+        max-width: 78% !important;
+        height: auto !important;
+        max-height: 145mm !important;
+        margin: 3mm auto 4mm !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        object-fit: contain !important;
+        break-inside: avoid-page;
+        page-break-inside: avoid;
+    }
+
+    .card img.img-small {
+        max-width: 55% !important;
+        max-height: 100mm !important;
+    }
+
+    /* Keep related screenshots together at a readable document scale. */
+    .image-pair,
+    .image-trio,
+    .image-quartet {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        gap: 4mm !important;
+    }
+
+    .image-pair img {
+        flex: 0 1 calc(50% - 2mm) !important;
+        max-width: 46% !important;
+        max-height: 115mm !important;
+        margin: 2mm 0 4mm !important;
+    }
+
+    .image-trio img {
+        flex: 0 1 calc(33.333% - 3mm) !important;
+        max-width: 30% !important;
+        max-height: 95mm !important;
+        margin: 2mm 0 4mm !important;
+    }
+
+    .image-quartet img,
+    .image-quartet img.img-large {
+        flex: 0 1 calc(25% - 3mm) !important;
+        max-width: 22% !important;
+        max-height: 82mm !important;
+        margin: 2mm 0 4mm !important;
+    }
+
+    table {
+        width: 100% !important;
+        margin: 3mm 0 5mm !important;
+        border-collapse: collapse !important;
+        font-size: 8.7pt !important;
+        break-inside: auto;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    tr {
+        break-inside: avoid-page;
+        page-break-inside: avoid;
+    }
+
+    th,
+    td,
+    .card th,
+    .card td {
+        padding: 2mm !important;
+        border: 0.7pt solid #aeb8c5 !important;
+        background: #ffffff !important;
+        color: var(--text-color) !important;
+        text-align: left !important;
+        vertical-align: top !important;
+    }
+
+    th,
+    .card th {
+        background: #eef2f6 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        font-weight: 700 !important;
+    }
+
+    .print-media-reference,
+    .print-image-fallback {
+        display: block !important;
+        margin: 2mm 0 4mm !important;
+        padding: 2.5mm 3mm !important;
+        border-left: 2pt solid var(--accent-color);
+        background: #f8fafc !important;
+        color: var(--text-color) !important;
+        font-size: 9pt;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+        break-inside: avoid-page;
+    }
+
+    footer {
+        margin: 9mm 0 0 !important;
+        padding: 4mm 2mm 0 !important;
+        border-top: 0.7pt solid var(--border-color) !important;
+        color: #475569 !important;
+        font-size: 8.5pt !important;
+        text-align: left !important;
+    }
+}

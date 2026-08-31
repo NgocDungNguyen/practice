@@ -1,0 +1,5147 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="Build images, run containers, manage registries, and integrate Docker into the delivery pipeline." name="description"/>
+  <title>
+   Week 6: Docker - COSC2767
+  </title>
+  <link href="../assets/images/rmit-logo.png" rel="icon" type="image/png"/>
+  <link href="../css/main.css" rel="stylesheet"/>
+  <script src="../js/main.js" type="module">
+  </script>
+ </head>
+ <body>
+  <header>
+   <div class="container">
+    <div class="back-to-home-container">
+     <a class="back-to-home-button" href="../index.html">
+      ← Back to Home
+     </a>
+    </div>
+    <div class="university-branding">
+     <img alt="RMIT University Logo" class="logo" src="../assets/images/rmit-logo.png"/>
+     <span class="university-name">
+      RMIT University
+     </span>
+    </div>
+    <p class="course-kicker">
+     COSC2767 · Systems Deployment and Operations
+    </p>
+    <h1>
+     🐳 Week 6: Docker
+     <span>
+      Lab Guide
+     </span>
+    </h1>
+    <p class="intro">
+     Build images, run containers, manage registries, and integrate
+     <code>
+      Docker
+     </code>
+     into the delivery pipeline.
+    </p>
+   </div>
+  </header>
+  <main class="container">
+   <section class="cheatsheet-section" id="objective">
+    <h2 class="collapsible-header start-open">
+     🎯 Objective
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Week tutorial screenshot from page 1" class="img-large" loading="lazy" src="../assets/tutorials/week-6/01-objective-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           For the lab this week, we will get some hands-on experience for learning
+           <code>
+            Docker
+           </code>
+           .
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             It is important to get familiar with the basic concepts of Docker.
+            </p>
+           </li>
+           <li>
+            <p>
+             Also, practice different Docker commands to pull a Docker image from
+             <code>
+              Docker Hub
+             </code>
+             , build a
+             <code>
+              Dockerfile
+             </code>
+             from that image which can be used to create a Docker image. Eventually we will run a container based on that Docker image.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating run a container based on that Docker image." class="img-large" loading="lazy" src="../assets/tutorials/week-6/01-objective-002.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="docker-pipeline-overview">
+    <h2 class="collapsible-header">
+     🧭 Docker CI/CD pipeline overview
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         In this week lab, we will setup this
+         <code>
+          CI/CD
+         </code>
+         pipeline as below:
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating This week, we will extend the CI/CD pipeline as shown below:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/02-docker-ci-cd-pipeline-overview-001.png"/>
+        </div>
+        <p>
+         As you can see, we are dealing with two different EC2 instances which are very similar to the previous lab. However, we reuse the
+         <code>
+          Jenkins
+         </code>
+         Server from last week, and replace the old
+         <code>
+          Tomcat
+         </code>
+         Server with our new
+         <code>
+          Docker
+         </code>
+         Server.
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="lab-requirements">
+    <h2 class="collapsible-header">
+     ✅ Lab requirements
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Requirement before starting the lab" class="img-large" loading="lazy" src="../assets/tutorials/week-6/03-lab-requirements-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Make
+           </strong>
+           <strong>
+            sure
+           </strong>
+           <strong>
+            you
+           </strong>
+           <strong>
+            still
+           </strong>
+           <strong>
+            keep
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            <code>
+             Jenkins
+            </code>
+           </strong>
+           <strong>
+            server
+           </strong>
+           <strong>
+            in
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            previous
+           </strong>
+           <strong>
+            lab
+           </strong>
+           <strong>
+            as
+           </strong>
+           <strong>
+            we
+           </strong>
+           <strong>
+            continue
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            create
+           </strong>
+           <strong>
+            a
+           </strong>
+           <strong>
+            new
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+           <strong>
+            item
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            create
+           </strong>
+           <strong>
+            a
+           </strong>
+           <strong>
+            new
+           </strong>
+           <strong>
+            pipeline
+           </strong>
+           <strong>
+            which
+           </strong>
+           <strong>
+            is
+           </strong>
+           <strong>
+            integrated
+           </strong>
+           <strong>
+            with
+           </strong>
+           <strong>
+            <code>
+             Docker
+            </code>
+            .
+           </strong>
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             <strong>
+              However,
+             </strong>
+             <strong>
+              if
+             </strong>
+             <strong>
+              you
+             </strong>
+             <strong>
+              accidentally
+             </strong>
+             <strong>
+              delete
+             </strong>
+             <strong>
+              or
+             </strong>
+             <strong>
+              terminate
+             </strong>
+             <strong>
+              the
+             </strong>
+             <strong>
+              Jenkins
+             </strong>
+             <strong>
+              server,
+             </strong>
+             <strong>
+              just
+             </strong>
+             <strong>
+              setup
+             </strong>
+             <strong>
+              a
+             </strong>
+             <strong>
+              Jenkins
+             </strong>
+             <strong>
+              server
+             </strong>
+             <strong>
+              again
+             </strong>
+             <strong>
+              but
+             </strong>
+             <strong>
+              only
+             </strong>
+             <strong>
+              need
+             </strong>
+             <strong>
+              to
+             </strong>
+             <strong>
+              create
+             </strong>
+             <strong>
+              the
+             </strong>
+             <strong>
+              last
+             </strong>
+             <strong>
+              Jenkins
+             </strong>
+             <strong>
+              job
+             </strong>
+             <strong>
+              item
+             </strong>
+             <strong>
+              “BuildAndDeployJob”
+             </strong>
+             <strong>
+              from
+             </strong>
+             <strong>
+              the
+             </strong>
+             <strong>
+              previous
+             </strong>
+             <strong>
+              lab.
+             </strong>
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating item “BuildAndDeployJob” from the previous lab." class="img-large" loading="lazy" src="../assets/tutorials/week-6/03-lab-requirements-002.png"/>
+        </div>
+        <p>
+         Alright, let’s get started!
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="docker-server-workflow">
+    <h2 class="collapsible-header">
+     🐳 Docker server overview
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         The outline for this section:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Set up a Linux EC2 instance named “
+           <code>
+            Docker
+           </code>
+           "
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Install docker
+            </p>
+           </li>
+           <li>
+            <p>
+             Start docker services
+            </p>
+           </li>
+           <li>
+            <p>
+             Go through docker commands
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="create-docker-server">
+    <h2 class="collapsible-header">
+     ☁️ Create the Docker server on EC2
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         Set up the EC2 instance for the “
+         <code>
+          Docker
+         </code>
+         " Server like so:
+        </p>
+        <div class="tutorial-image-group">
+         <img alt='Screenshot illustrating Set up the EC2 instance for the “Docker" Server like so:' class="img-large" loading="lazy" src="../assets/tutorials/week-6/04-create-the-docker-server-on-ec2-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Here are the settings of the Docker Server for EC2:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Name:
+             <code>
+              Docker_Server
+             </code>
+            </p>
+           </li>
+           <li>
+            <p>
+             OS: default Amazon Linux 2023 AMI
+            </p>
+           </li>
+           <li>
+            <p>
+             Instance Type: t3.micro
+            </p>
+           </li>
+           <li>
+            <p>
+             Key pair: select and reuse your old key in other labs (
+             <code>
+              devops_project_key
+             </code>
+             )
+            </p>
+           </li>
+           <li>
+            <p>
+             Storage: Default 8 GB is plenty enough!
+            </p>
+           </li>
+           <li>
+            <p>
+             Security Group:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               Optional Name:
+               <code>
+                Docker_Security_Group
+               </code>
+              </p>
+             </li>
+             <li>
+              <p>
+               Source Type: Anywhere
+              </p>
+             </li>
+             <li>
+              <p>
+               Open two ports:
+              </p>
+              <ul class="tutorial-list tutorial-list--level-4">
+               <li>
+                <p>
+                 22 for
+                 <code>
+                  SSH
+                 </code>
+                </p>
+               </li>
+               <li>
+                <p>
+                 8080-8090 for Docker (as we want to create many containers and each exposes to different ports from the range 8080 to 8090)
+                </p>
+               </li>
+              </ul>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating each exposes to different ports from the range 8080 to 8090)" class="img-large" loading="lazy" src="../assets/tutorials/week-6/04-create-the-docker-server-on-ec2-002.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           After launching the instance then, in the EC2 dashboard you should see the
+           <code>
+            Docker_Server
+           </code>
+           EC2 running:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating EC2 running:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/04-create-the-docker-server-on-ec2-003.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           After that, let’s SSH to the Docker Server on EC2:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating After that, let’s SSH to the Docker Server on EC2:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/04-create-the-docker-server-on-ec2-004.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="install-docker">
+    <h2 class="collapsible-header">
+     🐳 Install and start Docker
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           To keep things simple without dealing with permission, let’s login as a root user and change our current directory to /root:
+          </p>
+         </li>
+        </ul>
+        <pre><code>sudo su -</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           You are now the root user and have unrestricted system privileges. You can check your current directory, which should tell you that you are at root directory:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating directory:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/05-install-and-start-docker-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Since we will work on multiple EC2 servers (
+           <code>
+            Docker
+           </code>
+           and Jenkins servers), it would be helpful to rename the hostname of each EC2 server to a meaningful name instead of the ugly internal private IP address of the EC2 so that you can easily know which EC2 server you are working just based on the host name. For example, if your instance has a private IP of
+           <code>
+            172.31.93.50
+           </code>
+           , the hostname becomes ip-172-31-93-50.
+          </p>
+         </li>
+         <li>
+          <p>
+           Let’s set a custom hostname in the instance by modifying the
+           <code>
+            /etc/hostname
+           </code>
+          </p>
+         </li>
+        </ul>
+        <pre><code>nano /etc/hostname</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating nano /etc/hostname (1 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-6/05-install-and-start-docker-002.png"/>
+         <img alt="Screenshot illustrating nano /etc/hostname (2 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-6/05-install-and-start-docker-003.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Save the hostname file and reboot the server by typing “reboot":
+          </p>
+         </li>
+        </ul>
+        <pre><code>reboot</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating reboot" class="img-large" loading="lazy" src="../assets/tutorials/week-6/05-install-and-start-docker-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Now, wait for a few minutes and let's
+           <code>
+            SSH
+           </code>
+           into the
+           <code>
+            Docker_Server
+           </code>
+           again then you will see the hostname has changed like so:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating hostname has changed like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/05-install-and-start-docker-005.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s login as a root user and install docker (with -y option, yum will install a specific package along with its dependent package without asking for confirmation):
+          </p>
+         </li>
+        </ul>
+        <pre><code>yum install docker -y</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating yum install docker -y" class="img-large" loading="lazy" src="../assets/tutorials/week-6/05-install-and-start-docker-006.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Check the current status of our docker daemon (docker background process):
+          </p>
+         </li>
+        </ul>
+        <pre><code>service docker status</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating service docker status" class="img-large" loading="lazy" src="../assets/tutorials/week-6/05-install-and-start-docker-007.png"/>
+        </div>
+        <p>
+         You will see that docker is inactive after just installed, which is normal!
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s start the docker daemon:
+          </p>
+         </li>
+        </ul>
+        <pre><code>service docker start</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Check the current status of our docker daemon again:
+          </p>
+         </li>
+        </ul>
+        <pre><code>service docker status</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating service docker status" class="img-large" loading="lazy" src="../assets/tutorials/week-6/05-install-and-start-docker-008.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="docker-basics">
+    <h2 class="collapsible-header">
+     ⌨️ Practise Docker basics with hello-world
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         Let’s run a few commands of docker to introduce them to you:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s list all docker images. There should be no images available like below screenshot:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker images</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker images" class="img-large" loading="lazy" src="../assets/tutorials/week-6/06-practise-docker-basics-with-hello-world-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s list all docker running containers:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             There should be no running containers yet.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>docker ps</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-6/06-practise-docker-basics-with-hello-world-002.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s list all docker containers regardless of their status (running or stopped or terminated, … ):
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker ps -a</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker ps -a" class="img-large" loading="lazy" src="../assets/tutorials/week-6/06-practise-docker-basics-with-hello-world-003.png"/>
+        </div>
+        <p>
+         At this moment, there is no image, or container yet so nothing is listed with above commands!
+        </p>
+        <p class="callout">
+         <strong>Lifecycle prediction:</strong> After <code>docker run hello-world</code> finishes, which new image and container states do you expect to see? Which commands would prove your prediction?
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           You can test whether your Docker installation is working by running a default “
+           <code>
+            hello-world
+           </code>
+           ” container:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker run hello-world</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker run hello-world" class="img-large" loading="lazy" src="../assets/tutorials/week-6/06-practise-docker-basics-with-hello-world-004.png"/>
+        </div>
+        <p>
+         Congrats, you have created a new container
+         <code>
+          hello-world
+         </code>
+         from the “
+         <code>
+          hello-world
+         </code>
+         ” image on the
+         <code>
+          Docker Hub
+         </code>
+         . You can read more about that “
+         <code>
+          hello-world
+         </code>
+         ” image on Docker Hub here:
+         <a href="https://hub.docker.com/_/hello-world" rel="noopener" target="_blank">
+          https://hub.docker.com/_/hello-world
+         </a>
+        </p>
+        <p>
+         Let’s run these docker commands again:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s list all docker images:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker images</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker images" class="img-large" loading="lazy" src="../assets/tutorials/week-6/06-practise-docker-basics-with-hello-world-005.png"/>
+        </div>
+        <p>
+         You should now see the image “
+         <code>
+          hello-world
+         </code>
+         ” which was pulled from the Docker Hub.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s list all docker running containers:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker ps</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-6/06-practise-docker-basics-with-hello-world-006.png"/>
+        </div>
+        <p>
+         <strong>
+          Explanation:
+         </strong>
+         there is still no container running as the “
+         <code>
+          hello-world
+         </code>
+         ” container only runs to print out the message then it stops after printing out the message.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s list all docker containers regardless of their status (running or stopped or terminated, … ):
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker ps -a</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker ps -a" class="img-large" loading="lazy" src="../assets/tutorials/week-6/06-practise-docker-basics-with-hello-world-007.png"/>
+        </div>
+        <p>
+         Explanation: As you can see, that “
+         <code>
+          hello-world
+         </code>
+         ” container was run and exited.
+        </p>
+        <p>
+         Let’s clean up everything by removing/deleting the “
+         <code>
+          hello-world
+         </code>
+         ” container and its image:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           To remove a container by its ID:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker rm &lt;container_id&gt;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker rm &lt;container_id&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-6/06-practise-docker-basics-with-hello-world-008.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Alternatively
+           </strong>
+           , you can remove all containers by running this command:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker container prune</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker container prune" class="img-large" loading="lazy" src="../assets/tutorials/week-6/06-practise-docker-basics-with-hello-world-009.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Next, let’s remove the “
+           <code>
+            hello-world
+           </code>
+           ” image:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker rmi &lt;image_id&gt;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker rmi &lt;image_id&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-6/06-practise-docker-basics-with-hello-world-010.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           To list all docker commands, you can ask for help:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker --help</code></pre>
+        <p>
+         Don’t worry, the list is long but we only need to use a few of them!
+        </p>
+        <p>
+         Alright, hopefully, you are warmed up to witness
+         <code>
+          Docker
+         </code>
+         in action!
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="docker-tomcat-image">
+    <h2 class="collapsible-header">
+     🐈 Run Tomcat from Docker Hub
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Practice with Tomcat image on Docker Hub:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Browsing
+           <code>
+            Docker Hub
+           </code>
+           (
+           <a href="https://hub.docker.com/" rel="noopener" target="_blank">
+            https://hub.docker.com/
+           </a>
+           ) and search for
+           <code>
+            Tomcat
+           </code>
+           image (
+           <code>
+            Docker
+           </code>
+           Official Image):
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Official Image):" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-002.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           In the description of the Tomcat, please read the section “How to use this image”. In short, it mentions that:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             When you use the official Tomcat Docker image, it comes with some built-in example web applications (called "
+             <strong>
+              webapps
+             </strong>
+             "). These are sample applications that demonstrate how Tomcat works.
+            </p>
+           </li>
+           <li>
+            <p>
+             For security reasons, these example webapps are no longer enabled (or active) by default in the image. This is because leaving unnecessary apps running can create security risks.
+            </p>
+           </li>
+           <li>
+            <p>
+             Even though they're not active, the example webapps haven't been completely removed. They're stored in a folder called
+             <strong>
+              webapps.dist
+             </strong>
+             inside the Docker image.
+            </p>
+           </li>
+           <li>
+            <p>
+             If you want to use these examples, you can manually move them from
+             <strong>
+              webapps.dist
+             </strong>
+             to the
+             <strong>
+              webapps
+             </strong>
+             folder to activate them.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating to the webapps folder to activate them." class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-003.png"/>
+        </div>
+        <p>
+         I have highlighted some important information to keep in mind for this Tomcat image from Docker Hub! Let’s go!
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s pull the tomcat image from Docker Hub:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker pull tomcat</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker pull tomcat" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s list all docker images:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker images</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker images" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-005.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s run a container built based on this tomcat image:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker run -d --name &lt;container_name&gt; -p &lt;outside_port_number&gt;:&lt;container_port_number&gt; &lt;image_name&gt;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker run -d --name &lt;container_name&gt; -p &lt;outside_port_number&gt;:&lt;container_port_number&gt; &lt;image_name&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-006.png"/>
+        </div>
+        <p>
+         In short, we run a container created by the tomcat image. This container got the name “
+         <code>
+          tomcat-container
+         </code>
+         ” which is a meaningful name we choose (you can choose a different name). The outside port number is
+         <strong>
+          8081
+         </strong>
+         and the port inside the container is
+         <strong>
+          8080
+         </strong>
+         . This mapping forwards host port 8081 to port 8080 inside the container.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           List all running containers:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker ps</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-007.png"/>
+        </div>
+        <p class="callout">
+         <strong>
+          Note:
+         </strong>
+         Docker shows both
+         <code>
+          0.0.0.0
+         </code>
+         :8081 and :::8081 to indicate the container port is exposed on all IPv4 and IPv6 interfaces, respectively. This means the service is accessible via both IP versions on
+         <code>
+          port 8081
+         </code>
+         .
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s open the browser via the public IP address of Docker Server EC2 with the
+           <code>
+            port 8081
+           </code>
+           . Make sure the browser use http instead of https (
+           <a href="http://[public-ip-of-ec2]:8081" rel="noopener" target="_blank">
+            http://[public-ip-of-ec2]:8081
+           </a>
+           ):
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Make sure the browser use http instead of https (http://[public-ip-of-ec2]:8081):" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-009.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Make sure the browser use http instead of https (http://[public-ip-of-ec2]:8081):" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-010.png"/>
+        </div>
+        <p>
+         We can access the tomcat server inside the container of our EC2 Docker server. However, we got a 404 error as there is no website (no WAR files or folders) inside the webapps folder. This has been explained by the official document on Docker Hub documentation:
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating explained by the official document on Docker Hub documentation:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-011.png"/>
+        </div>
+        <p>
+         So we need to copy whatever is inside the webapps.dist directory to webapps directory if we want to see the tomcat homepage dashboard.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s open the container using an interactive bash shell inside a running container. It lets you execute commands directly within the container’s environment:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker exec -it tomcat-container /bin/bash</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker exec -it tomcat-container /bin/bash" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-012.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s list files of current directory:
+          </p>
+         </li>
+        </ul>
+        <pre><code>ls -la</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating ls -la" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-013.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating ls -la" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-014.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Alright, let’s copy everything inside the webapps.dist into webapps directory so we have the tomcat manager app and some default examples like in the previous lab:
+          </p>
+         </li>
+        </ul>
+        <pre><code>cp -R webapps.dist/* webapps</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           After that, change your working directory to
+           <strong>
+            webapps
+           </strong>
+           and list all files there to make sure the
+           <strong>
+            webapps
+           </strong>
+           directory now contains folders like so:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating webapps directory now contains folders like so:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-015.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Now, please refresh the browser again to access to the tomcat manager application:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Now, please refresh the browser again to access to the tomcat manager application:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-016.png"/>
+        </div>
+        <p>
+         This is exactly what we remember the Tomcat homepage dashboard page looks like! Great job!
+        </p>
+        <p>
+         However,
+         <strong>
+          whatever
+         </strong>
+         <strong>
+          we
+         </strong>
+         <strong>
+          do
+         </strong>
+         <strong>
+          in
+         </strong>
+         <strong>
+          this
+         </strong>
+         <strong>
+          container
+         </strong>
+         <strong>
+          is
+         </strong>
+         <strong>
+          temporary
+         </strong>
+         <strong>
+          and
+         </strong>
+         <strong>
+          does
+         </strong>
+         <strong>
+          not
+         </strong>
+         <strong>
+          affect
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          Tomcat
+         </strong>
+         <strong>
+          image
+         </strong>
+         . So imagine we remove this container and create another container from the Tomcat image then we will have this same issue again! As
+         <strong>
+          images
+         </strong>
+         <strong>
+          and
+         </strong>
+         <strong>
+          containers
+         </strong>
+         <strong>
+          are
+         </strong>
+         <strong>
+          independent
+         </strong>
+         <strong>
+          of
+         </strong>
+         <strong>
+          each
+         </strong>
+         <strong>
+          other
+         </strong>
+         after creation!
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s exit interacting with the container and go back to EC2 terminal:
+          </p>
+         </li>
+        </ul>
+        <pre><code>exit</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating exit" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-017.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s test this theory! Let’s stop this container for now!
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker stop tomcat-container</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker stop tomcat-container" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-018.png"/>
+        </div>
+        <p>
+         How can you check this container status (running or stopped)?
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s create another tomcat container! We will choose a different container name (“
+           <code>
+            tomcat-container-2
+           </code>
+           ) and outside port number 8082 since 8081 port is used by the first container.
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker run -d --name &lt;container_name&gt; -p &lt;outside_port_number&gt;:&lt;container_port_number&gt; &lt;image_name&gt;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker run -d --name &lt;container_name&gt; -p &lt;outside_port_number&gt;:&lt;container_port_number&gt; &lt;image_name&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-019.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's check the browser again with the
+           <code>
+            port 8082
+           </code>
+           :
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Let's check the browser again with the port 8082:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/07-run-tomcat-from-docker-hub-020.png"/>
+        </div>
+        <p>
+         We had the same problem before! Changes made inside a container do not modify its source image, so future containers start from the unchanged image.
+        </p>
+        <p>
+         That's why we need to create a
+         <code>
+          Dockerfile
+         </code>
+         which allows us to build an image based on that Dockerfile!
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="fedora-dockerfile">
+    <h2 class="collapsible-header">
+     🏗️ Build an image from a Fedora Dockerfile
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Create your own docker image using a dockerfile (built from fedora image):" class="img-large" loading="lazy" src="../assets/tutorials/week-6/08-build-an-image-from-a-fedora-dockerfile-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's practice your first dockerfile! Let's create a dockerfile which contains instructions to build an image for
+           <code>
+            Tomcat
+           </code>
+           server from a base Fedora image from
+           <code>
+            Docker Hub
+           </code>
+           . Create a file “
+           <code>
+            Dockerfile
+           </code>
+           " and use nano to edit it:
+          </p>
+         </li>
+        </ul>
+        <pre><code>nano Dockerfile</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Here is the content of the Dockerfile to build an image of Tomcat server from the base image Fedora. I hope you recognized these commands are very similar to what we have done for the previous lab:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Below is just an example as you might need to change the version of Tomcat
+             <code>
+              v9.0.97
+             </code>
+             to the latest version of Tomcat on the Tomcat website!
+            </p>
+           </li>
+           <li>
+            <p>
+             Set <code>TOMCAT_VERSION</code> to a release that is currently available from the Tomcat download site.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="code-legend">
+         <span class="legend-item"><span class="legend-swatch hl-new"></span> Image layer</span>
+         <span class="legend-item"><span class="legend-swatch hl-focus"></span> Runtime contract</span>
+        </div>
+        <pre><code class="language-dockerfile"><span class="hl-new">FROM fedora:latest</span>
+<span class="hl-new">ARG TOMCAT_VERSION=9.0.97</span>
+<span class="hl-new">RUN yum install -y java</span>
+<span class="hl-new">RUN mkdir /opt/tomcat</span>
+<span class="hl-new">WORKDIR /opt/tomcat</span>
+<span class="hl-new">ADD https://dlcdn.apache.org/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz /opt/tomcat</span>
+<span class="hl-new">RUN tar xzfz apache*.tar.gz</span>
+<span class="hl-mv">RUN mv apache-tomcat-*/* /opt/tomcat</span>
+<span class="hl-focus">EXPOSE 8080</span>
+<span class="hl-focus">CMD ["/opt/tomcat/bin/catalina.sh", "run"]</span></code></pre>
+        <p class="callout">
+         <strong>
+          [Question]
+         </strong>
+         Can you make sense of all of the commands in this Dockerfile?
+        </p>
+        <p>
+         We use <code>fedora:latest</code> to stay consistent with the Fedora environment used earlier in the labs.
+        </p>
+        <p>
+         The last command is even suggested by the
+         <code>
+          Docker Hub
+         </code>
+         documentation for Tomcat:
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating The last command is even suggested by the Docker Hub documentation for Tomcat:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/08-build-an-image-from-a-fedora-dockerfile-002.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Alright, let's build a
+           <code>
+            Docker
+           </code>
+           image with a name
+           <strong>
+            “
+            <code>
+             my-tomcat
+            </code>
+            -image”
+           </strong>
+           from this Dockerfile:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             The -t flag stands for "tag" and is used to name the built image. It allows you to refer to the image later using that name, like when running or pushing it.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>docker build -t &lt;image_name&gt; &lt;dockerfile_location&gt;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker build -t &lt;image_name&gt; &lt;dockerfile_location&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-6/08-build-an-image-from-a-fedora-dockerfile-003.png"/>
+        </div>
+        <p>
+         Docker executes each Dockerfile instruction as a build step for our
+         <strong>
+          “
+          <code>
+           my-tomcat
+          </code>
+          -image"
+         </strong>
+         with these steps being exact commands from your Dockerfile.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all images:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker images</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker images" class="img-large" loading="lazy" src="../assets/tutorials/week-6/08-build-an-image-from-a-fedora-dockerfile-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all containers running so far:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker ps</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-6/08-build-an-image-from-a-fedora-dockerfile-005.png"/>
+        </div>
+        <p>
+         So far, we have two containers running and they used up the
+         <code>
+          port 8081
+         </code>
+         , and 8082!
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's create a container using the new
+           <strong>
+            “
+            <code>
+             my-tomcat-image
+            </code>
+            "
+           </strong>
+           image!
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker run -d --name &lt;container_name&gt; -p &lt;outside_port_number&gt;:&lt;container_port_number&gt; &lt;image_name&gt;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker run -d --name &lt;container_name&gt; -p &lt;outside_port_number&gt;:&lt;container_port_number&gt; &lt;image_name&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-6/08-build-an-image-from-a-fedora-dockerfile-006.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all containers running so far:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker ps</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-6/08-build-an-image-from-a-fedora-dockerfile-007.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's check the browser again with the
+           <code>
+            port 8083
+           </code>
+           :
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Let's check the browser again with the port 8083:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/08-build-an-image-from-a-fedora-dockerfile-008.png"/>
+        </div>
+        <p>
+         You have now created a Dockerfile that builds a custom image for running a Tomcat container.
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="tomcat-dockerfile">
+    <h2 class="collapsible-header">
+     🏗️ Build an image from a Tomcat Dockerfile
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            It
+           </strong>
+           <strong>
+            is
+           </strong>
+           <strong>
+            a
+           </strong>
+           <strong>
+            good
+           </strong>
+           <strong>
+            practice
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            build
+           </strong>
+           <strong>
+            from
+           </strong>
+           <strong>
+            a
+           </strong>
+           <strong>
+            base
+           </strong>
+           <strong>
+            OS
+           </strong>
+           <strong>
+            like
+           </strong>
+           <strong>
+            Fedora
+           </strong>
+           <strong>
+            image
+           </strong>
+           <strong>
+            from
+           </strong>
+           <strong>
+            scratch
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            understand
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            building
+           </strong>
+           <strong>
+            layers
+           </strong>
+           <strong>
+            of
+           </strong>
+           <strong>
+            a
+           </strong>
+           <strong>
+            <code>
+             Docker
+            </code>
+           </strong>
+           <strong>
+            container.
+           </strong>
+           <strong>
+            However,
+           </strong>
+           <strong>
+            it
+           </strong>
+           <strong>
+            is
+           </strong>
+           <strong>
+            much
+           </strong>
+           <strong>
+            more
+           </strong>
+           <strong>
+            efficient
+           </strong>
+           <strong>
+            and
+           </strong>
+           <strong>
+            more
+           </strong>
+           <strong>
+            convenient
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            start
+           </strong>
+           <strong>
+            with
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            actual
+           </strong>
+           <strong>
+            tomcat
+           </strong>
+           <strong>
+            image
+           </strong>
+           <strong>
+            from
+           </strong>
+           <strong>
+            Docker
+           </strong>
+           <strong>
+            Hub
+           </strong>
+           <strong>
+            so
+           </strong>
+           <strong>
+            we
+           </strong>
+           <strong>
+            can
+           </strong>
+           <strong>
+            skip
+           </strong>
+           <strong>
+            all
+           </strong>
+           <strong>
+            of
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            setup
+           </strong>
+           <strong>
+            steps
+           </strong>
+           <strong>
+            we
+           </strong>
+           <strong>
+            have
+           </strong>
+           <strong>
+            done
+           </strong>
+           <strong>
+            so
+           </strong>
+           <strong>
+            far
+           </strong>
+           <strong>
+            in
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            <code>
+             Dockerfile
+            </code>
+            .
+           </strong>
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating setup steps we have done so far in the Dockerfile." class="img-large" loading="lazy" src="../assets/tutorials/week-6/09-build-an-image-from-a-tomcat-dockerfile-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's remove the Dockerfile and start a new Dockerfile!
+          </p>
+         </li>
+        </ul>
+        <pre><code>rm Dockerfile
+nano Dockerfile</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           The Dockerfile now is way simpler as following:
+          </p>
+         </li>
+        </ul>
+        <pre><code class="language-dockerfile">FROM tomcat:latest
+RUN cp -R /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating FROM tomcat:latest RUN cp -R /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps (2 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-6/09-build-an-image-from-a-tomcat-dockerfile-003.png"/>
+        </div>
+        <p>
+         Now, our new Dockerfile is very simple compared to the previous Dockerfile!
+        </p>
+        <p>
+         We know the home of tomcat by looking at document:
+                 <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating FROM tomcat:latest RUN cp -R /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps (1 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-6/09-build-an-image-from-a-tomcat-dockerfile-002.png"/>
+        </div>
+        </p>
+
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Alright, let's build a Docker image with a name
+           <strong>
+            “
+            <code>
+             my-tomcat
+            </code>
+            -image-final”
+           </strong>
+           from this Dockerfile:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker build -t &lt;image_name&gt; &lt;dockerfile_location&gt;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker build -t &lt;image_name&gt; &lt;dockerfile_location&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-6/09-build-an-image-from-a-tomcat-dockerfile-004.png"/>
+        </div>
+        <p class="callout">
+         <strong>
+          Note:
+         </strong>
+         <strong>
+          This
+         </strong>
+         <strong>
+          image
+         </strong>
+         <strong>
+          is
+         </strong>
+         <strong>
+          built
+         </strong>
+         <strong>
+          very
+         </strong>
+         <strong>
+          fast
+         </strong>
+         <strong>
+          as
+         </strong>
+         <strong>
+          it
+         </strong>
+         <strong>
+          only
+         </strong>
+         <strong>
+          needs
+         </strong>
+         <strong>
+          to
+         </strong>
+         <strong>
+          build
+         </strong>
+         <strong>
+          two
+         </strong>
+         <strong>
+          layers
+         </strong>
+         <strong>
+          for
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          container
+         </strong>
+         <strong>
+          instead
+         </strong>
+         <strong>
+          of
+         </strong>
+         <strong>
+          multiple
+         </strong>
+         <strong>
+          layers
+         </strong>
+         <strong>
+          like
+         </strong>
+         <strong>
+          before!
+         </strong>
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's list all images:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker images</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker images" class="img-large" loading="lazy" src="../assets/tutorials/week-6/09-build-an-image-from-a-tomcat-dockerfile-005.png"/>
+        </div>
+        <p class="callout">
+         <strong>
+          Note:
+         </strong>
+         There is a large difference in Docker image size between
+         <code>
+          my-tomcat
+         </code>
+         -image-final (built from tomcat base image) and
+         <code>
+          my-tomcat
+         </code>
+         -image (built from fedora base image). The fedora-based Dockerfile produces a larger image (~1.15 GB) because it installs Java and
+         <code>
+          Tomcat
+         </code>
+         manually, adding system overhead and extra layers, while the tomcat image is preconfigured and optimized (~472 MB).
+        </p>
+        <p>
+         There is a slight difference in size between
+         <code>
+          my-tomcat-image-final
+         </code>
+         and tomcat (472MB vs 467MB) because we copy default webapps.dist to copy the webapps folder in our
+         <code>
+          my-tomcat-image-final
+         </code>
+         image.
+        </p>
+        <p>
+         This is the very basics of Docker image optimization foundation in terms of image size.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Now, let's create a tomcat container from this image!
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker run -d --name &lt;container_name&gt; -p &lt;outside_port_number&gt;:&lt;container_port_number&gt; &lt;image_name&gt;</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker run -d --name &lt;container_name&gt; -p &lt;outside_port_number&gt;:&lt;container_port_number&gt; &lt;image_name&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-6/09-build-an-image-from-a-tomcat-dockerfile-006.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Open the browser with the
+           <code>
+            port 8084
+           </code>
+           and check it out:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Open the browser with the port 8084 and check it out:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/09-build-an-image-from-a-tomcat-dockerfile-007.png"/>
+        </div>
+        <p>
+         So we have managed to run a container from an image which is created by a very simple dockerfile!
+         <strong>
+          As
+         </strong>
+         <strong>
+          you
+         </strong>
+         <strong>
+          can
+         </strong>
+         <strong>
+          see,
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          whole
+         </strong>
+         <strong>
+          step
+         </strong>
+         <strong>
+          of
+         </strong>
+         <strong>
+          installing
+         </strong>
+         <strong>
+          and
+         </strong>
+         <strong>
+          setting
+         </strong>
+         <strong>
+          up
+         </strong>
+         <strong>
+          Java
+         </strong>
+         <strong>
+          and
+         </strong>
+         <strong>
+          Tomcat
+         </strong>
+         <strong>
+          can
+         </strong>
+         <strong>
+          be
+         </strong>
+         <strong>
+          eliminated
+         </strong>
+         <strong>
+          using
+         </strong>
+         <strong>
+          Docker
+         </strong>
+         <strong>
+          and
+         </strong>
+         <strong>
+          Dockerfile!
+         </strong>
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="jenkins-docker-integration">
+    <h2 class="collapsible-header">
+     🔁 Integrate Docker with Jenkins
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Integrate Docker into Jenkins:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-001.png"/>
+        </div>
+        <p>
+         Outline:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Create a dockeradmin user and add that user to the docker group on the
+           <code>
+            Docker
+           </code>
+           Server EC2.
+          </p>
+         </li>
+         <li>
+          <p>
+           Generate an
+           <code>
+            SSH
+           </code>
+           key pair and authorise it for dockeradmin on the Docker Server.
+          </p>
+         </li>
+         <li>
+          <p>
+           Install the “SSH Agent” plugin.
+          </p>
+         </li>
+         <li>
+          <p>
+           Add the private key to Jenkins as a “SSH Username with private key” credential.
+          </p>
+         </li>
+        </ul>
+        <p>
+         Let’s go!
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            [Still
+           </strong>
+           <strong>
+            on
+           </strong>
+           <strong>
+            EC2
+           </strong>
+           <strong>
+            Docker
+           </strong>
+           <strong>
+            instance]
+           </strong>
+           First, let’s print out all information of user accounts:
+          </p>
+         </li>
+        </ul>
+        <pre><code>cat /etc/passwd</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating cat /etc/passwd" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-002.png"/>
+        </div>
+        <p>
+         In general, you can understand each row contains information about each user of your EC2 server, for example:
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating server, for example:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-003.png"/>
+        </div>
+        <ol class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Username: It is used when a user logs in.
+          </p>
+         </li>
+         <li>
+          <p>
+           Password: An x character indicates that encrypted password is stored in
+           <code>
+            /etc/shadow
+           </code>
+           file. Please note that you need to use the passwd command to computes the hash of a password typed at the CLI or to store/update the hash of the password in
+           <code>
+            /etc/shadow
+           </code>
+           file.
+          </p>
+         </li>
+         <li>
+          <p>
+           User ID (
+           <code>
+            UID
+           </code>
+           ): Each user must be assigned a user ID (
+           <code>
+            UID
+           </code>
+           ).
+           <code>
+            UID
+           </code>
+           0 (zero) is reserved for root and UIDs 1-99 are reserved for other predefined accounts. Further
+           <code>
+            UID
+           </code>
+           100-999 are reserved by system for administrative and system accounts/groups.
+          </p>
+         </li>
+         <li>
+          <p>
+           Group ID (
+           <code>
+            GID
+           </code>
+           ): The primary group ID (stored in
+           <code>
+            /etc/group
+           </code>
+           file)
+          </p>
+         </li>
+         <li>
+          <p>
+           User ID Info (
+           <code>
+            GECOS
+           </code>
+           ): The comment field. It allows you to add extra information about the users such as the user's full name, phone number etc.
+          </p>
+         </li>
+         <li>
+          <p>
+           Home directory: The absolute path to the directory the user will be in when they log in. If this directory does not exists then users directory becomes /
+          </p>
+         </li>
+         <li>
+          <p>
+           Command/shell: The absolute path of a command or shell (/bin/bash). Typically, this is a shell.
+          </p>
+         </li>
+        </ol>
+        <p>
+         I hope you understood
+         <code>
+          /etc/passwd
+         </code>
+         file format to keep track of every registered user that has access to a system.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Next, let's print out information of groups:
+          </p>
+         </li>
+        </ul>
+        <pre><code>cat /etc/group</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating cat /etc/group" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-004.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           We need to create a new
+           <strong>
+            dockeradmin
+           </strong>
+           user and add that user to the
+           <strong>
+            docker
+           </strong>
+           <strong>
+            group
+           </strong>
+           so that user can perform the activities with docker on this EC2 server:
+          </p>
+         </li>
+        </ul>
+        <pre><code>useradd dockeradmin</code></pre>
+        <p class="callout">
+         <strong>
+          [Question]
+         </strong>
+         How can you check if you have created a new user correctly? Also, how can you check which is the default group that this user belongs to?
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Next, let’s add a password for this dockeradmin user. Please choose something easy to remember:
+          </p>
+         </li>
+        </ul>
+        <pre><code>passwd dockeradmin</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating passwd dockeradmin" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-005.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s check which group the user “dockeradmin” belongs to:
+          </p>
+         </li>
+        </ul>
+        <pre><code>id dockeradmin</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating id dockeradmin" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-006.png"/>
+        </div>
+        <p>
+         Right here, I hope you realize the new dockeradmin right now belongs to the default
+         <strong>
+          dockeradmin
+         </strong>
+         <strong>
+          group
+         </strong>
+         , but you want to add that new dockeradmin user to
+         <strong>
+          docker
+         </strong>
+         <strong>
+          group
+         </strong>
+         .
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s add the dockeradmin user to the docker group:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             -a: append the user to the group(s) (used with -G).
+            </p>
+           </li>
+           <li>
+            <p>
+             -G: specifies the group(s) to add the user to.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>usermod -aG docker dockeradmin</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating usermod -aG docker dockeradmin" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-007.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           However, up to this stage,
+           <strong>
+            by
+           </strong>
+           <strong>
+            default,
+           </strong>
+           <strong>
+            EC2
+           </strong>
+           <strong>
+            server
+           </strong>
+           <strong>
+            will
+           </strong>
+           <strong>
+            not
+           </strong>
+           <strong>
+            allow
+           </strong>
+           <strong>
+            users
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            login
+           </strong>
+           <strong>
+            with
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            password
+           </strong>
+           so we
+           <strong>
+            need
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            enable
+           </strong>
+           to allow users to log in to the EC2 server with a password:
+          </p>
+         </li>
+        </ul>
+        <pre><code>nano /etc/ssh/sshd_config</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating nano /etc/ssh/sshd_config" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-008.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Enable Password Authentication like so, then save and exit from nano:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Enable Password Authentication like so, then save and exit from nano:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-009.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Alright, let’s restart the ssh service for the change to take effect:
+          </p>
+         </li>
+        </ul>
+        <pre><code>service sshd reload</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s logout from the EC2 Docker server to try to login again using the dockeradmin user with the password:
+          </p>
+         </li>
+        </ul>
+        <pre><code>exit</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating exit" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-010.png"/>
+        </div>
+        <p>
+         You might have to do it twice to exit from the root user to ec2-user to logout from the EC2 server.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s log in to the EC2 Docker server again using the dockeradmin user with the password you have set up.
+           <strong>
+            So
+           </strong>
+           <strong>
+            create
+           </strong>
+           <strong>
+            a
+           </strong>
+           <strong>
+            new
+           </strong>
+           <strong>
+            terminal
+           </strong>
+           <strong>
+            tab
+           </strong>
+           <strong>
+            and
+           </strong>
+           <strong>
+            ssh
+           </strong>
+           <strong>
+            into
+           </strong>
+           <strong>
+            Docker-Server
+           </strong>
+           <strong>
+            as
+           </strong>
+           <strong>
+            a
+           </strong>
+           <strong>
+            dockeradmin
+           </strong>
+           <strong>
+            user
+           </strong>
+           :
+          </p>
+         </li>
+        </ul>
+        <pre><code>ssh dockeradmin @EC2-public-IP-address-or-public-DNS</code></pre>
+        <p class="callout">
+         <strong>
+          Note:
+         </strong>
+         we can SSH to the EC2 without providing any pem key at all as now we can provide just the username and password.
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating just the username and password." class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-011.png"/>
+        </div>
+        <p>
+         Now, we can integrate this dockeradmin user into Jenkins in the other server for authentication and let jenkins control docker in this EC2 docker server!
+        </p>
+        <p class="callout">
+         <strong>
+          Important
+         </strong>
+         <strong>
+          Note:
+         </strong>
+         For now, we are done with the docker server, please switch back to our Jenkins server from last week.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            [Back
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            EC2
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+           <strong>
+            instance]
+           </strong>
+           This is the Jenkins server (<code>Jenkins-Server</code>) from last week's tutorial. If you deleted it, take a moment to set up the Jenkins server again 🙁
+          </p>
+         </li>
+         <li>
+          <p>
+           To keep things organized, let’s rename the hostname of the Jenkins server as well:
+          </p>
+         </li>
+        </ul>
+        <pre><code>sudo su -
+echo “jenkins-server” &gt; /etc/hostname
+reboot</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating sudo su - echo “jenkins-server” &gt; /etc/hostname reboot" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-012.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Now, let’s launch the existing Jenkins server, start the Jenkins service and open the Jenkins Dashboard page in the EC2 Jenkins-Server:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Jenkins Dashboard page in the EC2 Jenkins-Server:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-013.png"/>
+        </div>
+        <p>
+         If you start the Jenkins-Server from stopped status then you need to start the Jenkins service again!
+        </p>
+        <pre><code>sudo su -</code></pre>
+        <pre><code>service jenkins start</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           This is the Jenkins Dashboard page looks like where we left off from the previous lab:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating This is the Jenkins Dashboard page looks like where we left off from the previous lab:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-014.png"/>
+        </div>
+        <p>
+         The most important thing is that we have the “BuildAndDeployJob” job item so we can create a new Jenkins job by copying the details from that job!
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Before that, let’s install the “SSH Agent” plugin for Jenkins, so let’s go to manage plugins in Jenkins:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating manage plugins in Jenkins:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-015.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Search “
+           <strong>
+            SSH
+           </strong>
+           <strong>
+            Agent
+           </strong>
+           " plugins in the available plugins to install:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Its purpose is to load an
+             <strong>
+              SSH
+             </strong>
+             <strong>
+              private
+             </strong>
+             <strong>
+              key
+             </strong>
+             into an ssh-agent for the duration of the build, so any
+             <code>
+              ssh
+             </code>
+             ,
+             <code>
+              scp
+             </code>
+             or
+             <code>
+              rsync
+             </code>
+             command in your build steps can authenticate to a remote server without a password.
+            </p>
+           </li>
+           <li>
+            <p>
+             Specifically, in this tutorial we use it to
+             <code>
+              scp
+             </code>
+             the war file from the
+             <strong>
+              Jenkins server
+             </strong>
+             to the
+             <strong>
+              Docker server,
+             </strong>
+             then run the Linux commands over
+             <code>
+              ssh
+             </code>
+             to build the new Docker image and run the new container in one go.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating searching for the SSH Agent plugin in the available plugins" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-016.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            [Still
+           </strong>
+           <strong>
+            on
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+           <strong>
+            server]
+           </strong>
+           Generate a dedicated key pair:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             In the SSH in to the
+             <strong>
+              Jenkins
+             </strong>
+             <strong>
+              EC2
+             </strong>
+             and as root:
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               <code>
+                -N ""
+               </code>
+               means no passphrase (Jenkins can't type one)
+              </p>
+             </li>
+             <li>
+              <p>
+               <code>
+                -m PEM
+               </code>
+               keeps the format that Jenkins credentials handle most reliably.
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>ssh-keygen -t rsa -b 4096 -m PEM -f /root/jenkins_deploy_key -N ""</code></pre>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Install/Copy the public key over to dockeradmin on the Docker server (you'll be asked for the password you just set)
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             You enabled password login for dockeradmin earlier in the lab, which is exactly what makes this one command work. Use the Docker server's private IP (
+             <code>
+              172.31.x.x
+             </code>
+             ) as both instances are in the same VPC, and unlike the public IP it won't change when you stop and start the instance.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>ssh-copy-id -i /root/jenkins_deploy_key.pub dockeradmin@172.31.x.x</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating copying the public key over to dockeradmin with ssh-copy-id" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-017.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Verify before touching Jenkins:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             This should log in without a password and print the container list plus
+             <code>
+              Dockerfile
+             </code>
+             and
+             <code>
+              simpleWebProject.war
+             </code>
+             . If it does, the key works and dockeradmin has docker permissions, both things the pipeline depends on.
+            </p>
+           </li>
+           <li>
+            <p>
+             If you get permission denied on the docker socket, dockeradmin didn't pick up the docker group, then re-run
+             <code>
+              sudo usermod -aG docker dockeradmin
+             </code>
+             on the Docker server and reconnect.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>ssh -i /root/jenkins_deploy_key dockeradmin@172.31.X.X 'docker ps &amp;&amp; ls'</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating verifying the key by running docker ps over ssh as dockeradmin" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-018.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Copy the private key as a Jenkins credential:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Copy everything including the
+             <code>
+              -----BEGIN OPENSSH PRIVATE KEY-----
+             </code>
+             and
+             <code>
+              -----END ...-----
+             </code>
+             lines.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>cat /root/jenkins_deploy_key</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating printing the private key with cat to copy it into Jenkins" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-019.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Add the private key as a Jenkins credential:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             In Jenkins:
+             <strong>
+              Manage Jenkins → Credentials → System → Global → + Add Credentials
+             </strong>
+            </p>
+            <ul class="tutorial-list tutorial-list--level-3">
+             <li>
+              <p>
+               <strong>
+                Kind:
+               </strong>
+               SSH Username with private key
+              </p>
+             </li>
+             <li>
+              <p>
+               <strong>
+                ID:
+               </strong>
+               <code>
+                dockeradmin-key
+               </code>
+               (you will select this by name later)
+              </p>
+             </li>
+             <li>
+              <p>
+               <strong>
+                Username:
+               </strong>
+               <code>
+                dockeradmin
+               </code>
+              </p>
+             </li>
+             <li>
+              <p>
+               <strong>
+                Private Key:
+               </strong>
+               Enter directly → Add → paste
+              </p>
+             </li>
+             <li>
+              <p>
+               <strong>
+                Passphrase:
+               </strong>
+               leave empty
+              </p>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating the Add SSH Username with private key credential form in Jenkins" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-020.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           You should see the
+           <code>
+            dockeradmin-key
+           </code>
+           credentials like so:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating the global credentials list showing dockeradmin-key" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-021.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Now, let’s create a new job item:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Now, let’s create a new job item:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-024.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Now, let’s create a new job item:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-025.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Because the configuration was copied from an existing job, only a few sections need to change:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating change a few section only:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-026.png"/>
+        </div>
+        <p>
+         Everything else should have been configured correctly (
+         <code>
+          Maven
+         </code>
+         , Git, … )
+         <strong>
+          Note:
+         </strong>
+         <strong>
+          We
+         </strong>
+         <strong>
+          don't
+         </strong>
+         <strong>
+          want
+         </strong>
+         <strong>
+          to
+         </strong>
+         <strong>
+          deploy
+         </strong>
+         <strong>
+          directly
+         </strong>
+         <strong>
+          on
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          <code>
+           Tomcat
+          </code>
+         </strong>
+         <strong>
+          server
+         </strong>
+         <strong>
+          anymore
+         </strong>
+         <strong>
+          so
+         </strong>
+         <strong>
+          delete
+         </strong>
+         <strong>
+          it!
+         </strong>
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Post-build Actions:
+           </strong>
+           delete the "Send build artifacts over SSH" block if it's still there (red ✕).
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating deleting the Send build artifacts over SSH post-build action" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-027.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Build Environment:
+           </strong>
+           tick
+           <strong>
+            SSH Agent
+           </strong>
+           , and select dockeradmin (
+           <code>
+            dockeradmin-key
+           </code>
+           ).
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating ticking SSH Agent in the Build Environment and selecting dockeradmin" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-028.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Scroll down to
+           <strong>
+            Post Steps
+           </strong>
+           , select
+           <strong>
+            Run only if build succeeds
+           </strong>
+           , then
+           <strong>
+            Add post-build step → Execute shell
+           </strong>
+           :
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating adding an Execute shell post-build step under Post Steps" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-029.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Please use this script below:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Replace
+             <code>
+              172.31.X.X
+             </code>
+             with the actual private IP address of docker EC2 server.
+            </p>
+           </li>
+           <li>
+            <p>
+             The
+             <code>
+              StrictHostKeyChecking=no
+             </code>
+             matters, without it the first connection waits for a "yes/no" prompt nobody can answer and the build hangs or fails. The
+             <code>
+              || true
+             </code>
+             on stop/rm is so the very first run doesn't fail when there's no container to remove yet.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>DOCKER_SERVER=dockeradmin@&lt;Docker-Server-IP&gt;
+SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+# Copy only the war file into dockeradmin's home directory
+scp $SSH_OPTS target/*.war $DOCKER_SERVER:/home/dockeradmin/</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating the Execute shell command that scp's the war file to the Docker server" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-022.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Save the Jenkins job!
+          </p>
+         </li>
+        </ul>
+        <p class="callout">
+         <strong>
+          Note
+         </strong>
+         : here is the explanation why our relative path to the war file is “
+         <code>
+          target/*.war
+         </code>
+         " as the war file is built inside the folder “target” by default.
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating war file is built inside the folder “target” by default." class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-030.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Alright, let's build this job!
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Alright, let's build this job! (1 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-031.png"/>
+         <img alt="Screenshot illustrating the console output where the war file is copied to the Docker server with scp (2 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-032.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            [Back
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            Docker
+           </strong>
+           <strong>
+            server]
+           </strong>
+           Cool, let's check if the war file is actually transferred over to the Docker Server!
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             You should see the “
+             <code>
+              simpleWebProject.war
+             </code>
+             ” file is in the home directory of your dockeradmin user.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating your dockeradmin user." class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-033.png"/>
+        </div>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating your dockeradmin user." class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-034.png"/>
+        </div>
+        <p class="callout">
+         <strong>
+          Note:
+         </strong>
+         However, the war file is useless as the tomcat container has no idea about the existence of this war file.
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Thus, let's update the
+           <code>
+            Dockerfile
+           </code>
+           so every newly created Tomcat container can copy this file inside its container and serve that war file as a website!
+          </p>
+         </li>
+        </ul>
+        <pre><code>nano Dockerfile</code></pre>
+        <pre><code class="language-dockerfile">FROM tomcat:latest
+RUN cp -R /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps
+COPY ./*.war /usr/local/tomcat/webapps</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating FROM tomcat:latest RUN cp -R /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps COPY ./*.war /usr/local/tomcat/webapps (1 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-035.png"/>
+         <img alt="Screenshot illustrating FROM tomcat:latest RUN cp -R /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps COPY ./*.war /usr/local/tomcat/webapps (2 of 2)" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-036.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let’s remove dangling images, containers, volumes, and networks that are not tagged or associated with a container. This cleanup keeps the Docker host ready for the deployment job:
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker kill $(docker ps -q)
+docker system prune</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker kill $(docker ps -q) docker system prune" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-037.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Make sure your current working directory is
+           <code>
+            /home/dockeradmin
+           </code>
+           to test the Dockerfile to build a new tomcat image from it:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Dockerfile to build a new tomcat image from it:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-038.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Alright, let's build the new Tomcat image from the new Dockerfile:
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             To distinguish from the first tomcat image we created for learning purposes, we add a new tag for this tomcat image
+             <strong>
+              “v2”
+             </strong>
+             meaning
+             <strong>
+              version
+             </strong>
+             <strong>
+              2
+             </strong>
+             , which means this version of Tomcat image is more mature and serious!
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>docker build -t tomcat:v2 .</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker build -t tomcat:v2 ." class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-039.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Let's create new container named “
+           <code>
+            tomcat-v2
+           </code>
+           ” from that new image “tomcat:v2":
+          </p>
+         </li>
+        </ul>
+        <pre><code>docker run -d --name tomcat-v2 -p 8081:8080 tomcat:v2</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker run -d --name tomcat-v2 -p 8081:8080 tomcat:v2" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-040.png"/>
+        </div>
+        <p>
+         As you can see, we reuse the
+         <code>
+          port 8081
+         </code>
+         as we have removed old containers using that port!
+        </p>
+        <p>
+         So let's check out the website via that
+         <code>
+          port 8081
+         </code>
+         :
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating So let's check out the website via that port 8081:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-041.png"/>
+        </div>
+        <p>
+         Now, we have known that our image and container should work like expected! Let's clean up and delete the testing container created from the image “tomcat:v2"
+        </p>
+        <pre><code>docker stop &lt;container_id&gt;
+docker container prune</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker stop &lt;container_id&gt; docker container prune" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-042.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            [Back
+           </strong>
+           <strong>
+            to
+           </strong>
+           <strong>
+            Jenkins
+           </strong>
+           <strong>
+            server]
+           </strong>
+           Let's go back to the configuration of Jenkins job and modify:
+          </p>
+         </li>
+        </ul>
+        <pre><code>DOCKER_SERVER=dockeradmin@&lt;Docker-Server-IP&gt;
+SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+# Copy only the war file into dockeradmin's home directory
+scp $SSH_OPTS target/*.war $DOCKER_SERVER:/home/dockeradmin/
+
+# Run the docker commands remotely
+ssh $SSH_OPTS $DOCKER_SERVER '
+cd /home/dockeradmin
+docker build -t tomcat:v2 .
+docker stop tomcat-container-final || true
+docker rm tomcat-container-final || true
+docker run -d --name tomcat-container-final -p 8087:8080 tomcat:v2
+'</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating the full Execute shell script that copies the war file and rebuilds the container over SSH" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-043.png"/>
+        </div>
+        <p class="callout">
+         These commands make the container deployment repeatable by rebuilding the image and replacing the previous container:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           To be sure, we change the working directory to the home directory of the dockeradmin user.
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             We stop the existing container “
+             <code>
+              tomcat-container
+             </code>
+             -final”
+            </p>
+           </li>
+           <li>
+            <p>
+             We remove that existing container “
+             <code>
+              tomcat-container
+             </code>
+             -final”
+            </p>
+           </li>
+           <li>
+            <p>
+             Then we create a new container “
+             <code>
+              tomcat-container
+             </code>
+             -final” from the image “tomcat:v2” via port number 8087.
+            </p>
+           </li>
+           <li>
+            <p>
+             <strong>
+              Note:
+             </strong>
+             you can change the port number to be any port number you want that is available like 8080 or 8081. The reason I choose 8087 is to ensure this port is available so far as we have not created any container using this port number. Having said that, after you clean up all the containers, you can choose any port you like.
+            </p>
+           </li>
+          </ul>
+         </li>
+         <li>
+          <p>
+           Let’s trigger the build of our job:
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating the build console output where the Docker image is rebuilt on the Docker server" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-044.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           You can check out the website as following via the public IP address of Docker-Server and the
+           <code>
+            port 8087
+           </code>
+           :
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating and the port 8087:" class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-045.png"/>
+        </div>
+        <p>
+         Now, your task:
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Make a change to the website and push it to GitHub.
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             Test if the SCM polling works by automatically pull
+            </p>
+           </li>
+           <li>
+            <p>
+             Modify the
+             <code>
+              index.jsp
+             </code>
+             file to add some lines.
+            </p>
+           </li>
+           <li>
+            <p>
+             Then check the <code>BuildAndDeployOnDockerContainer</code> build history and confirm that pushing a change to GitHub triggered a build automatically.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating GitHub repo." class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-046.png"/>
+        </div>
+        <p>
+         The workflow now connects the full delivery path: development ➜ commit and push to GitHub ➜ Jenkins retrieves the change ➜ Maven builds the WAR artifact ➜ Jenkins sends it to the Docker server ➜ Docker builds and runs the application container. This is the foundation of a CI/CD pipeline; achieving true zero-downtime deployment requires an additional rollout strategy and health checks.
+        </p>
+        <p>
+         Unlike the earlier manual deployment, the container image now captures most application dependencies and configuration in a repeatable form. Congratulations on completing the main lab! You've successfully built a
+         <code>
+          CI/CD
+         </code>
+         pipeline that automates building and deploying a web application using Jenkins and Docker.
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating automates building and deploying a web application using Jenkins and Docker." class="img-large" loading="lazy" src="../assets/tutorials/week-6/10-integrate-docker-with-jenkins-047.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="challenge-1-docker-volumes">
+    <h2 class="collapsible-header">
+     🧪 Challenge 1: Persist data with Docker volumes
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         This bonus challenge tackles a fundamental problem: containers are
+         <strong>
+          ephemeral
+         </strong>
+         <strong>
+          (temporary
+         </strong>
+         <strong>
+          and
+         </strong>
+         <strong>
+          non-persistent)
+         </strong>
+         .
+         <strong>
+          When
+         </strong>
+         <strong>
+          you
+         </strong>
+         <strong>
+          remove
+         </strong>
+         <strong>
+          a
+         </strong>
+         <strong>
+          container,
+         </strong>
+         <strong>
+          any
+         </strong>
+         <strong>
+          data
+         </strong>
+         <strong>
+          created
+         </strong>
+         <strong>
+          inside
+         </strong>
+         <strong>
+          it
+         </strong>
+         <strong>
+          (like
+         </strong>
+         <strong>
+          logs,
+         </strong>
+         <strong>
+          user
+         </strong>
+         <strong>
+          uploads,
+         </strong>
+         <strong>
+          or
+         </strong>
+         <strong>
+          database
+         </strong>
+         <strong>
+          files)
+         </strong>
+         <strong>
+          is
+         </strong>
+         <strong>
+          lost
+         </strong>
+         <strong>
+          forever.
+         </strong>
+         The solution is
+         <strong>
+          <code>
+           Docker
+          </code>
+         </strong>
+         <strong>
+          Volumes
+         </strong>
+         , which are the preferred way to persist data generated by and used by Docker containers.
+        </p>
+        <p class="callout">
+         <strong>Persistence checkpoint:</strong> If Jenkins replaces the application container during every deployment, where must the logs live to survive: the writable container layer, a named volume, or the image? Why?
+        </p>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        📝 Step 1: Modify the Application to Generate Logs
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          First, we need our application to actually create some data that we want to save. We'll edit the
+          <code>
+           index.jsp
+          </code>
+          file in our local project repository to write a log entry every time the page is loaded.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Open
+            </strong>
+            <strong>
+             <code>
+              index.jsp
+             </code>
+             :
+            </strong>
+            On your local machine (not the EC2 instance), navigate to your simpleWebProject directory and open the file
+            <code>
+             src/main/webapp/index.jsp
+            </code>
+            .
+           </p>
+          </li>
+          <li>
+           <p>
+            <strong>
+             Add
+            </strong>
+            <strong>
+             Logging
+            </strong>
+            <strong>
+             Code
+            </strong>
+            : Add the following Java code snippet inside the
+            <code>
+             &lt;body&gt;
+            </code>
+            tag. This code will create a directory for our logs if it doesn't exist and then append a timestamped message to
+            <code>
+             app.log
+            </code>
+            .
+           </p>
+          </li>
+         </ul>
+         <pre><code class="language-java">&lt;%-- Add this logging code --%&gt;
+&lt;%@ page import="java.io.*, java.util.Date, java.text.SimpleDateFormat" %&gt;
+&lt;%
+try {
+    // Define the path for the log file inside the container
+    String logDirPath = "/usr/local/tomcat/logs";
+    String logFilePath = logDirPath + "/app.log";
+
+    // Ensure the log directory exists
+    File logDir = new File(logDirPath);
+    if (!logDir.exists()) {
+        logDir.mkdirs();
+    }
+
+    // Open the log file in append mode (the 'true' flag)
+    PrintWriter outLog = new PrintWriter(
+        new FileWriter(logFilePath, true)
+    );
+
+    // Create a timestamp and write the log entry
+    String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        .format(new Date());
+    outLog.println(timestamp + " - Page accessed by a user.");
+
+    // Close the writer to save the changes
+    outLog.close();
+} catch (IOException e) {
+    // Basic error handling
+    e.printStackTrace();
+}
+%&gt;
+&lt;p style="color: green;"&gt;&lt;b&gt;A new log entry was just added to
+/usr/local/tomcat/logs/app.log!&lt;/b&gt;&lt;/p&gt;
+</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Commit
+            </strong>
+            <strong>
+             and
+            </strong>
+            <strong>
+             Push
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             Changes:
+            </strong>
+            Your
+            <code>
+             Jenkins
+            </code>
+            pipeline is triggered by changes in your GitHub repository. Let's commit and push our updated code (either with Git commands or the GitHub web interface)
+           </p>
+          </li>
+         </ul>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        💾 Step 2: Update the Jenkins Job for Volumes
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          Now, we'll modify our
+          <code>
+           Jenkins
+          </code>
+          job to build a new version of our image and, most importantly, run the container using a
+          <code>
+           Docker
+          </code>
+          Volume.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Navigate
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             your
+            </strong>
+            <strong>
+             Jenkins
+            </strong>
+            <strong>
+             Job
+            </strong>
+            : Open your Jenkins dashboard and go to the BuildAndDeployOnDockerContainer job configuration page.
+           </p>
+          </li>
+          <li>
+           <p>
+            <strong>
+             Update
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             "Execute
+            </strong>
+            <strong>
+             shell"
+            </strong>
+            : Scroll down to the Post Steps section where you can configure the script.
+           </p>
+          </li>
+          <li>
+           <p>
+            <strong>
+             We
+            </strong>
+            <strong>
+             need
+            </strong>
+            <strong>
+             to
+            </strong>
+            <strong>
+             modify
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             script
+            </strong>
+            <strong>
+             to:
+            </strong>
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Create a
+              <code>
+               named volume
+              </code>
+              called
+              <code>
+               my-app-logs
+              </code>
+              . We add || true so the command doesn't fail if the volume already exists from a previous build
+             </p>
+            </li>
+            <li>
+             <p>
+              Build a new image tagged as tomcat:v3.
+             </p>
+            </li>
+            <li>
+             <p>
+              Run the new container with a new name (
+              <code>
+               tomcat-container
+              </code>
+              -final-v3) and on a new port (8088) to avoid conflicts.
+             </p>
+            </li>
+            <li>
+             <p>
+              Mount our volume using the
+              <code>
+               -v
+              </code>
+              flag:
+              <code>
+               -v
+              </code>
+              <code>
+               my-app-logs
+              </code>
+              :
+              <code>
+               /usr/local/tomcat/logs
+              </code>
+              . This maps the
+              <code>
+               my-app-logs
+              </code>
+              volume on the host to the
+              <code>
+               /usr/local/tomcat/logs
+              </code>
+              directory inside the container.
+             </p>
+            </li>
+            <li>
+             <p>
+              Replace the old script in the Exec command box with this new one:
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code class="language-yaml">DOCKER_SERVER=dockeradmin@&lt;Docker-Server-IP&gt;
+SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+scp $SSH_OPTS target/*.war $DOCKER_SERVER:/home/dockeradmin/
+
+# Create a named volume for persistent logs via “docker volume”
+# Run the new container, mapping the volume to the logs directory
+# We use port 8088 for this version
+ssh $SSH_OPTS $DOCKER_SERVER '
+cd /home/dockeradmin
+docker volume create my-app-logs || true
+docker build -t tomcat:v3 .
+docker stop tomcat-container-final-v3 || true
+docker rm tomcat-container-final-v3 || true
+docker run -d --name tomcat-container-final-v3 -p 8088:8080 -v my-app-logs:/usr/local/tomcat/logs tomcat:v3
+'</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating the Execute shell script that creates the my-app-logs volume and runs tomcat:v3 on port 8088" class="img-large" loading="lazy" src="../assets/tutorials/week-6/11-step-2-update-the-jenkins-job-for-volumes-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Save the Jenkins job configuration.
+           </p>
+          </li>
+         </ul>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🧪 Step 3: Run the Build and Test the Application
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Trigger
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             Build:
+            </strong>
+            Go to your BuildAndDeployOnDockerContainer job page and click "Build Now".
+           </p>
+          </li>
+          <li>
+           <p>
+            <strong>
+             Access
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             Application:
+            </strong>
+            Once the build is successful, open your browser and go to your application, noting the new port number:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              http://
+              <code>
+               &lt;Your-Docker-Server-IP&gt;
+              </code>
+              :
+              <strong>
+               8088
+              </strong>
+              /simpleWebProject/
+             </p>
+            </li>
+           </ul>
+          </li>
+          <li>
+           <p>
+            <strong>
+             Generate
+            </strong>
+            <strong>
+             Logs
+            </strong>
+            : Refresh the page 5-6 times. Each time you refresh, a new line is added to the log file.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating log file." class="img-large" loading="lazy" src="../assets/tutorials/week-6/12-step-3-run-the-build-and-test-the-application-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Check
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             Logs
+            </strong>
+            <strong>
+             Inside
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             Container:
+            </strong>
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <code>
+               SSH
+              </code>
+              into your
+              <code>
+               Docker
+              </code>
+              Server as the dockeradmin user.
+             </p>
+            </li>
+            <li>
+             <p>
+              Execute a shell inside your running container:
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker exec -it tomcat-container-final-v3 bash</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Now, inside the container, view the log file. You should see your log entries!
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Now, inside the container, view the log file. You should see your log entries!" class="img-large" loading="lazy" src="../assets/tutorials/week-6/12-step-3-run-the-build-and-test-the-application-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Type exit to leave the container shell.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating Type exit to leave the container shell." class="img-large" loading="lazy" src="../assets/tutorials/week-6/12-step-3-run-the-build-and-test-the-application-003.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        💾 Step 4: Test Persistence - The Magic of Volumes
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          This is the moment of truth. We will now completely destroy the container and create a new one to see if our logs survive.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Stop
+            </strong>
+            <strong>
+             and
+            </strong>
+            <strong>
+             Remove
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             Container:
+            </strong>
+            On your
+            <code>
+             Docker
+            </code>
+            Server, run:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              At this point, without a volume, your log data would be gone forever.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker stop tomcat-container-final-v3
+docker rm tomcat-container-final-v3</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker stop tomcat-container-final-v3 docker rm tomcat-container-final-v3" class="img-large" loading="lazy" src="../assets/tutorials/week-6/13-step-4-test-persistence-the-magic-of-volumes-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Inspect
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             Volume:
+            </strong>
+            Verify that the volume still exists and holds your data. The Mountpoint shows you where on the host machine the data is actually stored.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating shows you where on the host machine the data is actually stored." class="img-large" loading="lazy" src="../assets/tutorials/week-6/13-step-4-test-persistence-the-magic-of-volumes-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Re-run
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             <code>
+              Jenkins
+             </code>
+            </strong>
+            <strong>
+             Job:
+            </strong>
+            Go back to Jenkins and click "Build Now" again. This will create a brand new container from the tomcat:v3 image.
+           </p>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating brand new container from the tomcat:v3 image." class="img-large" loading="lazy" src="../assets/tutorials/week-6/13-step-4-test-persistence-the-magic-of-volumes-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Check
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             Logs
+            </strong>
+            <strong>
+             in
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             NEW
+            </strong>
+            <strong>
+             Container:
+            </strong>
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Once the build is done,
+              <code>
+               SSH
+              </code>
+              back into your Docker Server.
+             </p>
+            </li>
+            <li>
+             <p>
+              Execute a shell inside the new container (it has the same name because our script re-creates it):
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker exec -it tomcat-container-final-v3 bash</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            View the log file again inside the new container:
+           </p>
+          </li>
+         </ul>
+         <pre><code>cat /usr/local/tomcat/logs/app.log</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating cat /usr/local/tomcat/logs/app.log" class="img-large" loading="lazy" src="../assets/tutorials/week-6/13-step-4-test-persistence-the-magic-of-volumes-004.png"/>
+         </div>
+         <p>
+          <strong>
+           Success!
+          </strong>
+          You should see all the old log entries from before you destroyed the first container. The data has persisted because it lives in the volume, completely separate from the container's lifecycle. If you access the web page again, new entries will be appended to the same file.
+         </p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="challenge-2-docker-swarm">
+    <h2 class="collapsible-header">
+     🧪 Challenge 2: Scale with Docker Swarm
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         You've mastered running single containers and even persisting their data with volumes. But what happens when you need to run multiple copies of your application for high availability and to handle more traffic? And what if one of those containers crashes?
+        </p>
+        <p>
+         This is where an orchestrator comes in.
+         <strong>
+          An
+         </strong>
+         <strong>
+          orchestrator
+         </strong>
+         <strong>
+          manages
+         </strong>
+         <strong>
+          the
+         </strong>
+         <strong>
+          lifecycle
+         </strong>
+         <strong>
+          of
+         </strong>
+         <strong>
+          your
+         </strong>
+         <strong>
+          containers
+         </strong>
+         <strong>
+          across
+         </strong>
+         <strong>
+          one
+         </strong>
+         <strong>
+          or
+         </strong>
+         <strong>
+          more
+         </strong>
+         <strong>
+          machines.
+         </strong>
+         <strong>
+          <code>
+           Docker
+          </code>
+         </strong>
+         <strong>
+          <code>
+           Swarm
+          </code>
+         </strong>
+         is Docker's built-in, user-friendly orchestrator.
+        </p>
+        <p class="callout">
+         <strong>Orchestration prediction:</strong> If a service has three desired replicas and one container exits, what should Swarm do automatically? Which service command would confirm that the desired and current states match again?
+        </p>
+        <p>
+         <strong>
+          Objective:
+         </strong>
+         Deploy our web application as a replicated, fault-tolerant, and load-balanced service using
+         <code>
+          Docker Swarm
+         </code>
+         .
+        </p>
+        <p>
+         Normally, a
+         <strong>
+          multi-node
+         </strong>
+         <strong>
+          Swarm
+         </strong>
+         <strong>
+          cluster
+         </strong>
+         requires a
+         <strong>
+          central
+         </strong>
+         <strong>
+          <code>
+           registry
+          </code>
+         </strong>
+         (like
+         <strong>
+          Docker
+         </strong>
+         <strong>
+          Hub
+         </strong>
+         ) so that all "worker" nodes can pull the same image.
+        </p>
+        <p>
+         However, for this lab, we are running a
+         <strong>
+          single-node
+         </strong>
+         <strong>
+          swarm.
+         </strong>
+         This means the "manager" node is also the only "worker" node. Because the node that will run the containers is the same one where we built the image, we can skip pushing to
+         <code>
+          Docker Hub
+         </code>
+         and
+         <strong>
+          use
+         </strong>
+         <strong>
+          our
+         </strong>
+         <strong>
+          local
+         </strong>
+         <strong>
+          image
+         </strong>
+         <strong>
+          directly.
+         </strong>
+        </p>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <strong>
+            Verify
+           </strong>
+           <strong>
+            the
+           </strong>
+           <strong>
+            Local
+           </strong>
+           <strong>
+            Image
+           </strong>
+           <strong>
+            Exists:
+           </strong>
+           On your Docker Server, make sure the
+           <strong>
+            tomcat:v3
+           </strong>
+           image you created in the previous challenge is available.
+          </p>
+          <ul class="tutorial-list tutorial-list--level-2">
+           <li>
+            <p>
+             You should see tomcat with the tag v3 in the list.
+            </p>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <pre><code>docker images</code></pre>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating docker images" class="img-large" loading="lazy" src="../assets/tutorials/week-6/14-challenge-2-scale-with-docker-swarm-001.png"/>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🐝 Step 1: Initialize the Swarm
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          First, we need to switch our
+          <code>
+           Docker
+          </code>
+          engine from its standard mode to "
+          <code>
+           Swarm
+          </code>
+          mode". This command turns our Docker Server into a Swarm "Manager" node.
+         </p>
+         <pre><code>docker swarm init</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker swarm init" class="img-large" loading="lazy" src="../assets/tutorials/week-6/15-step-1-initialize-the-swarm-001.png"/>
+         </div>
+         <p>
+          Your server is now a single-node Swarm cluster!
+         </p>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🚀 Step 2: Deploy the Application as a Service
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          In
+          <code>
+           Swarm
+          </code>
+          , you don't use docker run. Instead, you declare a service, which defines the desired state of your application (e.g., "I want 3 copies of this image running at all times").
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Run
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             docker
+            </strong>
+            <strong>
+             service
+            </strong>
+            <strong>
+             create
+            </strong>
+            <strong>
+             command:
+            </strong>
+            We will tell Swarm to create
+            <strong>
+             a
+            </strong>
+            <strong>
+             service
+            </strong>
+            <strong>
+             named
+            </strong>
+            <strong>
+             <code>
+              my-webapp
+             </code>
+            </strong>
+            ,
+            <strong>
+             run
+            </strong>
+            <strong>
+             3
+            </strong>
+            <strong>
+             replicas
+            </strong>
+            of it using our
+            <strong>
+             local
+            </strong>
+            <strong>
+             tomcat:v3
+            </strong>
+            <strong>
+             image
+            </strong>
+            , and expose it on port
+            <strong>
+             8090
+            </strong>
+            . We will also mount our persistent log volume!
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <strong>
+               <code>
+                --replicas
+               </code>
+              </strong>
+              <strong>
+               3
+              </strong>
+              : This is the key! We are telling Swarm we want exactly 3 instances (tasks) of our container running.
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               <code>
+                -p
+               </code>
+              </strong>
+              <strong>
+               8090:8080
+              </strong>
+              : This creates a port mapping on Swarm's ingress routing mesh. It means any request to
+              <code>
+               port 8090
+              </code>
+              will be automatically load-balanced to one of the 3 running containers.
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               tomcat:v3
+              </strong>
+              : We are referencing our locally built image directly.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker service create \
+ --name my-webapp \
+ --replicas 3 \
+ -p 8090:8080 \
+ --mount type=volume,source=my-app-logs,destination=/usr/local/tomcat/logs \</code></pre>
+         <pre><code>tomcat:v3</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating tomcat:v3" class="img-large" loading="lazy" src="../assets/tutorials/week-6/16-step-2-deploy-the-application-as-a-service-001.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🔍 Step 3: Inspect the Service
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          Let's see what
+          <code>
+           Swarm
+          </code>
+          has done.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             List
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             Services:
+            </strong>
+            This gives a high-level overview.
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              The
+              <code>
+               REPLICAS
+              </code>
+              column shows 3/3, meaning our desired state (3) matches the current state (3).
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker service ls</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service ls" class="img-large" loading="lazy" src="../assets/tutorials/week-6/17-step-3-inspect-the-service-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Inspect
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             Service
+            </strong>
+            <strong>
+             Tasks
+            </strong>
+            : To see the individual containers that make up the service, use docker service ps.
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              You can see three distinct tasks, all in a
+              <strong>
+               Running
+              </strong>
+              state.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker service ps my-webapp</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker service ps my-webapp" class="img-large" loading="lazy" src="../assets/tutorials/week-6/17-step-3-inspect-the-service-002.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        ⚖️ Step 4: Test Load Balancing and Self-Healing
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          This is where the power of orchestration becomes clear.
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Test
+            </strong>
+            <strong>
+             Load
+            </strong>
+            <strong>
+             Balancing:
+            </strong>
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Open your browser and navigate to http://
+              <code>
+               &lt;Your-Docker-Server-IP&gt;
+              </code>
+              :
+              <strong>
+               8090
+              </strong>
+              /simpleWebProject/.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating http://&lt;Your-Docker-Server-IP&gt;: 8090 /simpleWebProject/." class="img-large" loading="lazy" src="../assets/tutorials/week-6/18-step-4-test-load-balancing-and-self-healing-001.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Refresh the page several times. It will work every time.
+            <strong>
+             Behind
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             scenes,
+            </strong>
+            <strong>
+             <code>
+              Swarm
+             </code>
+            </strong>
+            <strong>
+             is
+            </strong>
+            <strong>
+             distributing
+            </strong>
+            <strong>
+             your
+            </strong>
+            <strong>
+             requests
+            </strong>
+            <strong>
+             among
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             three
+            </strong>
+            <strong>
+             running
+            </strong>
+            <strong>
+             containers.
+            </strong>
+           </p>
+          </li>
+          <li>
+           <p>
+            <strong>
+             Test
+            </strong>
+            <strong>
+             Self-Healing:
+            </strong>
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              First, list the running containers to get one of their IDs.
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker ps</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps" class="img-large" loading="lazy" src="../assets/tutorials/week-6/18-step-4-test-load-balancing-and-self-healing-002.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Pick one of the container IDs from the list.
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              For example, I picked “1d1bde22679e” which is my third container (
+              <code>
+               my-webapp.3
+              </code>
+              ) in the
+              <code>
+               Docker Swarm
+              </code>
+              .
+             </p>
+            </li>
+            <li>
+             <p>
+              Now, ruthlessly kill that container.
+             </p>
+             <ul class="tutorial-list tutorial-list--level-3">
+              <li>
+               <p>
+                The
+                <code>
+                 -f
+                </code>
+                flag forces its removal.
+               </p>
+              </li>
+             </ul>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <pre><code>docker rm -f &lt;container_id&gt;</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker rm -f &lt;container_id&gt;" class="img-large" loading="lazy" src="../assets/tutorials/week-6/18-step-4-test-load-balancing-and-self-healing-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Quickly run docker service ps
+            <code>
+             my-webapp
+            </code>
+            again.
+           </p>
+          </li>
+         </ul>
+         <pre><code>docker service ps my-webapp</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Observe
+            </strong>
+            <strong>
+             the
+            </strong>
+            <strong>
+             magic!
+            </strong>
+            You will see an output similar to this:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              <strong>
+               Swarm
+              </strong>
+              <strong>
+               detected
+              </strong>
+              <strong>
+               that
+              </strong>
+              <strong>
+               a
+              </strong>
+              <strong>
+               task
+              </strong>
+              <strong>
+               failed.
+              </strong>
+              It
+              <strong>
+               immediately
+              </strong>
+              <strong>
+               scheduled
+              </strong>
+              <strong>
+               a
+              </strong>
+              <strong>
+               new
+              </strong>
+              <strong>
+               container
+              </strong>
+              (um9...) to replace the one we killed, automatically bringing the service back to the
+              <strong>
+               desired
+              </strong>
+              <strong>
+               state
+              </strong>
+              <strong>
+               of
+              </strong>
+              <strong>
+               3
+              </strong>
+              <strong>
+               replicas.
+              </strong>
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating service back to the desired state of 3 replicas." class="img-large" loading="lazy" src="../assets/tutorials/week-6/18-step-4-test-load-balancing-and-self-healing-004.png"/>
+         </div>
+         <p>
+          Your website via the
+          <code>
+           port 8090
+          </code>
+          should work like usual with a strong cluster of 3 containers running in the Docker Swarm!
+         </p>
+         <p>
+          Incredible! You have just deployed your application like a pro using an orchestrator. You've seen firsthand how
+          <strong>
+           <code>
+            Docker
+           </code>
+          </strong>
+          <strong>
+           Swarm
+          </strong>
+          provides:
+         </p>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <strong>
+             Scaling
+            </strong>
+            : Easily running multiple copies of your app with
+            <code>
+             --replicas
+            </code>
+            .
+           </p>
+          </li>
+          <li>
+           <p>
+            <strong>
+             Load
+            </strong>
+            <strong>
+             Balancing
+            </strong>
+            : Automatically distributing traffic across all replicas.
+           </p>
+          </li>
+          <li>
+           <p>
+            <strong>
+             Self-Healing
+            </strong>
+            : Automatically detecting failures and replacing containers to maintain the desired state.
+           </p>
+          </li>
+         </ul>
+         <p>
+          This is the foundation of building resilient, scalable, and highly available applications with Docker.
+         </p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="extra-docker-lab">
+    <h2 class="collapsible-header">
+     🎮 Extra: Practise Docker in an interactive lab
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         To practise your
+         <code>
+          Docker
+         </code>
+         skills, try these short interactive labs from Docker:
+        </p>
+        <ol class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           <a href="https://training.play-with-docker.com/beginner-linux/" rel="noopener" target="_blank">
+            Docker for Beginners: Linux (Recommended)
+           </a>
+          </p>
+         </li>
+         <li>
+          <p>
+           <a href="https://training.play-with-docker.com/microservice-orchestration/" rel="noopener" target="_blank">
+            Application Containerization and Microservice Orchestration (Recommended)
+           </a>
+          </p>
+         </li>
+         <li>
+          <p>
+           <a href="https://training.play-with-docker.com/swarm-stack-intro/" rel="noopener" target="_blank">
+            Deploying a Multi-Service App in Docker Swarm Mode (Optional)
+           </a>
+          </p>
+         </li>
+        </ol>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Deploying a Multi-Service App in Docker Swarm Mode (Optional)" class="img-large" loading="lazy" src="../assets/tutorials/week-6/19-extra-practise-docker-in-an-interactive-lab-001.png"/>
+        </div>
+        <ul class="tutorial-list tutorial-list--level-1">
+         <li>
+          <p>
+           Have fun! Always be learning!
+          </p>
+         </li>
+        </ul>
+        <div class="tutorial-image-group">
+         <img alt="Screenshot illustrating Have fun! Always be learning!" class="img-large" loading="lazy" src="../assets/tutorials/week-6/19-extra-practise-docker-in-an-interactive-lab-002.png"/>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="fun-extra-doom">
+    <h2 class="collapsible-header">
+     🎮 Fun Extra: Run Doom in Docker on EC2
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--single">
+      <div class="card tutorial-page">
+       <div class="tutorial-flow">
+        <p>
+         In this optional activity, you will run Doom inside a Docker container on your EC2 instance and control it through a web browser. This combines image pulls, environment variables, shared memory, port publishing, remote access, and container cleanup in one memorable exercise.
+        </p>
+        <p>
+         The activity uses the verified
+         <a href="https://hub.docker.com/r/kasmweb/doom" rel="noopener" target="_blank">
+          <code>
+           kasmweb/doom
+          </code>
+          image
+         </a>
+         from Kasm Technologies. The image provides a browser-accessible Linux application through KasmVNC.
+        </p>
+        <p>
+         The following visuals illustrate the browser-streamed game experience. The exact desktop, menus, and game interface may differ slightly with the container image version.
+        </p>
+        <div class="tutorial-image-group">
+         <img alt="Illustrative retro first-person shooter preview for the Doom container activity" class="img-large" loading="lazy" src="../assets/tutorials/week-6/20-fun-extra-run-doom-in-docker-on-ec2-001.png"/>
+        </div>
+        <p class="callout">
+         <strong>
+          Security first:
+         </strong>
+         Allow port
+         <code>
+          6901
+         </code>
+         only from your current public IP address. Do not expose this port to
+         <code>
+          0.0.0.0/0
+         </code>
+         , and remove the inbound rule when you finish.
+        </p>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🛡️ Step 1: Prepare the EC2 instance
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ol class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Connect to the EC2 instance that you used for the Docker lab.
+           </p>
+          </li>
+          <li>
+           <p>
+            Confirm that Docker is running and that your user can access it:
+           </p>
+           <pre><code class="language-bash">docker --version
+docker info</code></pre>
+          </li>
+          <li>
+           <p>
+            In the AWS console, select your EC2 instance, open its
+            <strong>
+             Security
+            </strong>
+            tab, and open the attached security group.
+           </p>
+          </li>
+          <li>
+           <p>
+            Edit the inbound rules and add a
+            <strong>
+             Custom TCP
+            </strong>
+            rule with port
+            <code>
+             6901
+            </code>
+            and source
+            <strong>
+             My IP
+            </strong>
+            . Save the rule.
+           </p>
+          </li>
+         </ol>
+         <p class="callout">
+          If your network changes, your public IP address might also change. Update the source address in the rule instead of opening the port to everyone.
+         </p>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        📦 Step 2: Pull the Doom image
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          Pull the tested image tag:
+         </p>
+         <pre><code class="language-bash">docker pull kasmweb/doom:1.18.0</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker pull kasmweb/doom:1.18.0 downloading the image layers" class="img-large" loading="lazy" src="../assets/tutorials/week-6/20-fun-extra-run-doom-in-docker-on-ec2-002.png"/>
+         </div>
+         <p>
+          This image is much larger than the command-line images used earlier, so the download can take several minutes. Pinning the
+          <code>
+           1.18.0
+          </code>
+          tag also makes the activity repeatable because the image will not change unexpectedly like a
+          <code>
+           latest
+          </code>
+          tag can.
+         </p>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🚀 Step 3: Start the Doom container
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          Replace
+          <code>
+           replace-with-your-own-password
+          </code>
+          with a unique password for this lab. Do not reuse your RMIT, AWS, or GitHub password.
+         </p>
+         <div class="code-legend">
+          <span class="legend-item"><span class="legend-swatch hl-new"></span> Container setup</span>
+          <span class="legend-item"><span class="legend-swatch hl-focus"></span> Resource, network, or credential setting</span>
+         </div>
+         <pre><code class="language-bash"><span class="hl-new">docker run -d \</span>
+<span class="hl-new">  --name docker-doom \</span>
+<span class="hl-focus">  --shm-size=512m \</span>
+<span class="hl-focus">  -p 6901:6901 \</span>
+<span class="hl-focus">  -e VNC_PW='replace-with-your-own-password' \</span>
+<span class="hl-new">  kasmweb/doom:1.18.0</span></code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating the docker run command starting the docker-doom container and printing its container ID" class="img-large" loading="lazy" src="../assets/tutorials/week-6/20-fun-extra-run-doom-in-docker-on-ec2-003.png"/>
+         </div>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            <code>
+             -d
+            </code>
+            runs the container in the background.
+           </p>
+          </li>
+          <li>
+           <p>
+            <code>
+             --name docker-doom
+            </code>
+            gives the container a memorable name for later commands.
+           </p>
+          </li>
+          <li>
+           <p>
+            <code>
+             --shm-size=512m
+            </code>
+            provides shared memory for the graphical application.
+           </p>
+          </li>
+          <li>
+           <p>
+            <code>
+             -p 6901:6901
+            </code>
+            maps port 6901 in the container to port 6901 on the EC2 instance.
+           </p>
+          </li>
+          <li>
+           <p>
+            <code>
+             VNC_PW
+            </code>
+            sets the password for the browser session.
+           </p>
+          </li>
+         </ul>
+         <p>
+          Confirm that the container is running:
+         </p>
+         <pre><code class="language-bash">docker ps --filter "name=docker-doom"</code></pre>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating docker ps confirming the docker-doom container is up and publishing port 6901" class="img-large" loading="lazy" src="../assets/tutorials/week-6/20-fun-extra-run-doom-in-docker-on-ec2-004.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🕹️ Step 4: Open Doom in your browser
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <ol class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Find the
+            <strong>
+             Public IPv4 address
+            </strong>
+            of your EC2 instance.
+           </p>
+          </li>
+          <li>
+           <p>
+            Open the following address and replace the placeholder with that public IP:
+           </p>
+           <pre><code>https://&lt;EC2_PUBLIC_IP&gt;:6901</code></pre>
+          </li>
+          <li>
+           <p>
+            Sign in with these details:
+           </p>
+           <ul class="tutorial-list tutorial-list--level-2">
+            <li>
+             <p>
+              Username:
+              <code>
+               kasm_user
+              </code>
+             </p>
+            </li>
+            <li>
+             <p>
+              Password: the value that you assigned to
+              <code>
+               VNC_PW
+              </code>
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ol>
+         <div class="tutorial-image-group">
+          <img alt="Screenshot illustrating the KasmVNC sign-in prompt at the https EC2 address on port 6901 using the kasm_user account" class="img-large" loading="lazy" src="../assets/tutorials/week-6/21-step-4-open-doom-in-your-browser-001.png"/>
+         </div>
+         <p class="callout">
+          Your browser may warn you about the container's self-signed certificate. Continue only after confirming that the address contains your EC2 public IP and port
+          <code>
+           6901
+          </code>
+          .
+         </p>
+         <p>
+          Doom should appear in the streamed session. If a desktop appears first, open Doom from the desktop or application menu. Audio and some other features may be limited when the image runs as a stand-alone container.
+         </p>
+         <div class="tutorial-image-group">
+          <img alt="Illustrative browser session showing the Doom container at the EC2 port 6901 URL" class="img-large" loading="lazy" src="../assets/tutorials/week-6/21-step-4-open-doom-in-your-browser-002.png"/>
+         </div>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🔎 Step 5: Troubleshoot the connection
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          If the page does not open, check the container status and recent logs:
+         </p>
+         <pre><code class="language-bash">docker ps -a --filter "name=docker-doom"
+docker logs --tail 30 docker-doom</code></pre>
+         <ul class="tutorial-list tutorial-list--level-1">
+          <li>
+           <p>
+            Confirm that the URL begins with
+            <code>
+             https://
+            </code>
+            , not
+            <code>
+             http://
+            </code>
+            .
+           </p>
+          </li>
+          <li>
+           <p>
+            Confirm that you used the EC2 public IP address, not its private IP address.
+           </p>
+          </li>
+          <li>
+           <p>
+            Confirm that the security group allows TCP port
+            <code>
+             6901
+            </code>
+            from your current public IP.
+           </p>
+          </li>
+          <li>
+           <p>
+            If the container exited, read its logs before starting it again. Repeated retries will not fix insufficient memory or disk space.
+           </p>
+          </li>
+         </ul>
+        </div>
+       </div>
+       <h4 class="collapsible-header collapsible-header--chip">
+        🧹 Step 6: Clean up and reflect
+        <span class="collapse-icon">
+        </span>
+       </h4>
+       <div class="collapsible-content">
+        <div class="tutorial-flow">
+         <p>
+          Stop and remove the container. Remove the large image too if you do not need it again:
+         </p>
+         <pre><code class="language-bash">docker stop docker-doom
+docker rm docker-doom
+docker image rm kasmweb/doom:1.18.0</code></pre>
+         <p>
+          Remove the port
+          <code>
+           6901
+          </code>
+          inbound rule from the EC2 security group. Then stop the EC2 instance and end the AWS Learner Lab as instructed by your course.
+         </p>
+         <p class="callout">
+          <strong>
+           Reflection:
+          </strong>
+          Why can you play Doom without installing a graphical desktop on the EC2 host? The application renders into a virtual display inside the container. KasmVNC sends that display to your browser through HTTPS on port
+          <code>
+           6901
+          </code>
+          , while your browser sends keyboard and mouse input back to the container.
+         </p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="cheatsheet-section" id="whats-next">
+    <h2 class="collapsible-header start-open">
+     📚 Continue the course
+     <span class="collapse-icon">
+     </span>
+    </h2>
+    <div class="collapsible-content">
+     <div class="grid-container grid-container--home">
+      <a class="card" href="week-5-jenkins-ci-cd-lab.html">
+       <h3>
+        🔧 Week 5: Jenkins for CI and CD
+       </h3>
+       <p>
+        Continue through the COSC2767 learning path.
+       </p>
+       <span class="go-to-link">
+        Previous lab
+       </span>
+      </a>
+      <a class="card" href="week-8-ansible-lab.html">
+       <h3>
+        🤖 Week 8: Ansible
+       </h3>
+       <p>
+        Continue through the COSC2767 learning path.
+       </p>
+       <span class="go-to-link">
+        Next lab
+       </span>
+      </a>
+      <a class="card" href="../index.html">
+       <h3>
+        🗓️ All weekly labs
+       </h3>
+       <p>
+        Return to the course map and review every weekly tutorial.
+       </p>
+       <span class="go-to-link">
+        Course home
+       </span>
+      </a>
+     </div>
+    </div>
+   </section>
+  </main>
+  <footer>
+   <p>
+    © Created by Tom Huynh with love ❤️
+   </p>
+  </footer>
+ </body>
+</html>
+

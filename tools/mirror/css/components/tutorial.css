@@ -1,0 +1,173 @@
+/* =============================================================================
+   Tutorial pages
+   Semantic walkthrough content reconstructed from the weekly lab materials.
+   ========================================================================== */
+
+.course-kicker {
+    margin-bottom: var(--space-2);
+    color: var(--accent-color);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.tutorial-page,
+.tutorial-flow,
+.tutorial-copy {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+}
+
+.tutorial-page {
+    gap: var(--space-3);
+}
+
+.tutorial-flow {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+
+.tutorial-page p {
+    width: 100%;
+    max-width: none;
+    margin-bottom: var(--space-1);
+}
+
+.tutorial-page strong {
+    color: var(--heading-color);
+    font-weight: 700;
+}
+
+.tutorial-page pre,
+.tutorial-flow pre,
+.tutorial-copy pre {
+    width: 100%;
+    max-width: none;
+    margin: var(--space-2) 0;
+}
+
+.tutorial-page > h3.collapsible-header {
+    margin-top: var(--space-4);
+}
+
+.tutorial-page > h3.collapsible-header:first-child,
+.tutorial-page > .tutorial-flow + h3.collapsible-header {
+    margin-top: 0;
+}
+
+.tutorial-page .collapsible-content > .tutorial-flow {
+    padding-top: var(--space-2);
+}
+
+.tutorial-page h4.collapsible-header--chip {
+    margin-top: var(--space-3);
+}
+
+/* A third-level tutorial choice, such as operating-system-specific steps. */
+.tutorial-page h5.collapsible-header--chip {
+    margin-top: var(--space-3);
+    font-size: 1.05rem;
+}
+
+/* Always-visible context labels such as Objective, Scenario, and Note. */
+.tutorial-static-heading {
+    margin: var(--space-4) 0 var(--space-2);
+    color: var(--heading-color);
+    font-size: 1.1rem;
+    font-weight: 650;
+}
+
+.tutorial-list {
+    margin: 0 0 var(--space-3);
+    padding-left: var(--space-5);
+}
+
+.tutorial-list .tutorial-list {
+    margin: var(--space-2) 0 0;
+}
+
+.tutorial-list li {
+    margin-bottom: var(--space-2);
+    padding-left: var(--space-1);
+}
+
+.tutorial-list--level-2 {
+    list-style-type: circle;
+}
+
+.tutorial-list--level-3 {
+    list-style-type: square;
+}
+
+.tutorial-list--level-4 {
+    list-style-type: disc;
+}
+
+.tutorial-image-group {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: var(--space-4);
+    align-items: start;
+    margin: var(--space-2) 0 var(--space-4);
+}
+
+.tutorial-image-group img.img-large {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: 720px;
+    margin: 0 auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    object-fit: contain;
+    box-shadow: var(--shadow-media);
+}
+
+@media (max-width: 640px) {
+    .cheatsheet-section {
+        padding: var(--space-4);
+    }
+
+    .tutorial-list {
+        padding-left: var(--space-4);
+    }
+
+    .tutorial-image-group {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media print {
+    .course-kicker {
+        margin-bottom: 2mm;
+    }
+
+    .tutorial-page,
+    .tutorial-flow,
+    .tutorial-copy {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    .tutorial-image-group {
+        display: block !important;
+    }
+
+    .tutorial-image-group img.img-large {
+        width: auto;
+        max-width: 100%;
+        max-height: 190mm;
+        margin: 0 auto 5mm;
+        border: 0;
+        box-shadow: none;
+        break-inside: avoid-page;
+    }
+}
+
+

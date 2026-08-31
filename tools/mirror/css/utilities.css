@@ -1,0 +1,23 @@
+/* =============================================================================
+   Utilities
+   A deliberately small set of single-purpose classes, added only where an
+   inline style would otherwise be repeated across pages. Prefer a component
+   class over adding to this file.
+   ========================================================================== */
+
+.u-mt-1 { margin-top: var(--space-1); }
+.u-mt-2 { margin-top: var(--space-2); }
+.u-mt-4 { margin-top: var(--space-4); }
+
+/* Reader-invisible label for assistive technology. */
+.u-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}

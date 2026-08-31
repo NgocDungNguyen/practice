@@ -1,0 +1,4469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Build Java applications with Maven and deploy packaged web applications to Apache Tomcat.">
+<title>Week 4: Java, Maven and Tomcat - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="week-4" data-stage="delivery" data-root="../" style="--stage-accent: var(--stage-delivery)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Delivery</span><span class="crumb-sep">/</span><span>Week 04</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Week 04</span><span class="chip">Delivery</span><span class="chip">Lab guide</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">☕</span>Java, Maven and Tomcat</h1>
+<p class="page-hero__intro">Build
+     <code>
+      Java
+     </code>
+     applications with
+     <code>
+      Maven
+     </code>
+     and deploy packaged web applications to
+     <code>
+      Apache Tomcat
+     </code>
+     .</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>20</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 15.5l-4.2-4.2L7 21"/></svg><strong>96</strong>&nbsp;screenshots</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>62</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>54</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="objective">
+<h2 class="collapsible-header start-open">
+     🎯 Objective
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Week tutorial screenshot from page 1" class="img-large" height="308" loading="lazy" src="../assets/tutorials/week-4/01-objective-001.png" width="637"/>
+</div>
+<p>
+         This lab has the following goals:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Set up an
+           <code>
+            EC2
+           </code>
+           instance on
+           <code>
+            AWS
+           </code>
+           .
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Install
+             <code>
+              Java
+             </code>
+             21,
+             <code>
+              Maven
+             </code>
+             (Java Build Tool) and
+             <code>
+              Tomcat
+             </code>
+             (Web Server) with basic configurations.
+            </p>
+</li>
+<li>
+<p>
+             Generate your first web application using Maven, then build the project to produce
+             <code>
+              WAR
+             </code>
+             file, and have Tomcat server to host the web application from that WAR file.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating WAR file, and have Tomcat server to host the web application from that WAR file." class="img-large" height="418" loading="lazy" src="../assets/tutorials/week-4/01-objective-002.png" width="419"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="delivery-stack-overview">
+<h2 class="collapsible-header">
+     🧭 Java, Maven, Tomcat, and EC2 architecture
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+         This week, we will build the workflow shown below:
+        </p>
+<p class="callout callout--checkpoint">
+<strong>Architecture checkpoint:</strong> Trace one source-code change to the browser. Which component compiles it, which artifact carries it, and which component serves it?
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating This week, we will build the workflow shown below:" class="img-large" height="422" loading="lazy" src="../assets/tutorials/week-4/02-java-maven-tomcat-and-ec2-architecture-001.png" width="903"/>
+</div>
+<p>
+         The workflow has these main steps:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Set up a Linux
+           <code>
+            EC2
+           </code>
+           Instance.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<code>
+              SSH
+             </code>
+             to the EC2 instance.
+            </p>
+</li>
+<li>
+<p>
+             Install
+             <code>
+              Java
+             </code>
+             .
+            </p>
+</li>
+<li>
+<p>
+             Install
+             <code>
+              Maven
+             </code>
+             .
+            </p>
+</li>
+<li>
+<p>
+             Install
+             <code>
+              Tomcat
+             </code>
+             .
+            </p>
+</li>
+<li>
+<p>
+             Use Maven to generate a web project template.
+            </p>
+</li>
+<li>
+<p>
+             Use Maven to build the project to produce a
+             <code>
+              WAR
+             </code>
+             file.
+            </p>
+</li>
+<li>
+<p>
+             Copy that WAR file to Tomcat’s hosting folder.
+            </p>
+</li>
+<li>
+<p>
+             Access the website on Tomcat server on the public IP address via
+             <code>
+              port 8080
+             </code>
+             .
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="create-ec2-instance">
+<h2 class="collapsible-header">
+     ☁️ Create the EC2 instance
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           First, let's open the
+           <code>
+            AWS
+           </code>
+           console:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating First, let's open the AWS console:" class="img-large" height="421" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-001.png" width="903"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating First, let's open the AWS console:" class="img-large" height="316" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-002.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Here are the settings of our new
+           <code>
+            EC2
+           </code>
+           Linux instance:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Here are the settings of our new EC2 Linux instance:" class="img-large" height="179" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-003.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Choosing the default AMI of AWS is the best to run on EC2 instances. Indeed, AMI of AWS is based on a version of CentOS:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating based on a version of CentOS: (1 of 2)" class="img-large" height="570" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-004.png" width="903"/>
+<img alt="Screenshot illustrating based on a version of CentOS: (2 of 2)" class="img-large" height="190" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-005.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Since the purpose of our project is learning, so let's stick with the small and sufficient tier instance type (hardware):
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Create a new key pair to securely
+             <code>
+              SSH
+             </code>
+             to your EC2 instance:
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Create a new key pair to securely SSH to your EC2 instance:" class="img-large" height="376" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-006.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We need to create a security group (firewall rules) to secure and protect our VMs:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating We need to create a security group (firewall rules) to secure and protect our VMs:" class="img-large" height="809" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-007.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           There is one more port to be open for
+           <code>
+            Tomcat
+           </code>
+           Server which is 8080 so please click on the button “Add security group rule”:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating button “Add security group rule”:" class="img-large" height="72" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-008.png" width="323"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The security group should allow the following inbound ports:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<code>
+              port 22
+             </code>
+             : ssh
+            </p>
+</li>
+<li>
+<p>
+<code>
+              port 80
+             </code>
+             : http
+            </p>
+</li>
+<li>
+<p>
+<code>
+              port 443
+             </code>
+             : https
+            </p>
+</li>
+<li>
+<p>
+<code>
+              port 8080
+             </code>
+             : tomcat
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating port 8080: tomcat" class="img-large" height="1368" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-009.png" width="617"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The default 8 GB for storage is plenty enough for our server:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating The default 8 GB for storage is plenty enough for our server:" class="img-large" height="365" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-010.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           After that, review the configuration settings and launch the instance:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating After that, review the configuration settings and launch the instance:" class="img-large" height="530" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-011.png" width="556"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           AWS will announce that it has started to create a new EC2 instance based on your configuration:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating configuration:" class="img-large" height="499" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-012.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           In the EC2 dashboard you should see the
+           <code>
+            Jenkin_Server
+           </code>
+           EC2 running:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating In the EC2 dashboard you should see the Jenkin_Server EC2 running:" class="img-large" height="83" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-013.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Alright, like in the previous lab, please SSH to your EC2 instance:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             cd to the location of your SSH key in your laptop
+            </p>
+</li>
+<li>
+<p>
+             find out what is the public ID address or public domain name of your EC2 instance
+            </p>
+</li>
+<li>
+<p>
+             run the command to SSH, like so:
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>ssh -i "devops_project_key.pem" ec2-user@[your-public-dns-of-your-EC2-instance]</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           After that, you should SSH successfully to the remote EC2 Server like below:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating After that, you should SSH successfully to the remote EC2 Server like below:" class="img-large" height="317" loading="lazy" src="../assets/tutorials/week-4/03-create-the-ec2-instance-014.png" width="904"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="install-java">
+<h2 class="collapsible-header">
+     ☕ Install Java
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Install Java on the EC2 instance:" class="img-large" height="401" loading="lazy" src="../assets/tutorials/week-4/04-install-java-001.png" width="401"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To keep things simple without dealing with permission, let’s login as a root user and change our current directory to /root:
+          </p>
+</li>
+</ul>
+<pre><code>sudo su -</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating sudo su -" class="img-large" height="58" loading="lazy" src="../assets/tutorials/week-4/04-install-java-002.png" width="551"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You are now the root user and have unrestricted system privileges. You can check your current directory, which should tell you that you are at root directory:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating directory:" class="img-large" height="48" loading="lazy" src="../assets/tutorials/week-4/04-install-java-003.png" width="359"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Second, we need to install
+           <code>
+            Java
+           </code>
+<code>
+            JDK
+           </code>
+           17 of
+           <code>
+            AWS
+           </code>
+           Corretto:
+          </p>
+</li>
+</ul>
+<pre><code>yum install java-21-amazon-corretto</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Explanation:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             yum: A package manager used in Amazon Linux, CentOS, and RHEL-based distributions to install, update or remove packages and dependencies.
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               java-21-amazon-corretto: The name of the package for Amazon Corretto 21, which is an implementation of Java 21. Amazon Corretto is developed and maintained by Amazon. Also, Java 21 is a Long-Term Support (LTS) version of Java, ensuring stability and support for production use.
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Java, ensuring stability and support for production use." class="img-large" height="88" loading="lazy" src="../assets/tutorials/week-4/04-install-java-004.png" width="496"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           After installation, verify that Java 21 is active:
+          </p>
+</li>
+</ul>
+<pre><code>java -version</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating java -version" class="img-large" height="90" loading="lazy" src="../assets/tutorials/week-4/04-install-java-005.png" width="903"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="install-maven">
+<h2 class="collapsible-header">
+     📦 Install Maven
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+         The overview of steps:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Setup
+           <code>
+            Maven
+           </code>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Setup Environment Variables
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+<code>
+                JAVA_HOME
+               </code>
+               , <code>M2</code>,
+               <code>
+                M2_HOME
+               </code>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+             Configure Maven and
+             <code>
+              Java
+             </code>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+           Let's visit the website
+           <code>
+            Apache Maven
+           </code>
+           Download to look for the binary distribution for easy installation instructions:
+           <a href="https://maven.apache.org/download.cgi" rel="noopener" target="_blank">
+            https://maven.apache.org/download.cgi
+           </a>
+           . Keep in mind that the Maven version can be different from the screenshot but please use the latest one in the website:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating website:" class="img-large" height="262" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-001.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           First, let's change the current directory to “/opt" which is reserved for the installation of add-on application software packages." This is optional as we want to keep our installation files neat in that folder.
+          </p>
+</li>
+</ul>
+<pre><code>cd /opt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You can double check the current directory again to confirm you are in the /opt folder.
+          </p>
+</li>
+</ul>
+<pre><code>pwd</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating pwd" class="img-large" height="46" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-002.png" width="356"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Ok, let’s download the binary distribution of Maven using the wget command:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Note: the example url below here can be different due to the different version number of maven on the website! Please change “x.x” accordingly!
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>wget https://dlcdn.apache.org/maven/maven-3/3.x.x/binaries/apache-maven-3.x.x-bin.tar.gz</code></pre>
+<p>
+         You should see the file “
+         <code>
+          apache-maven-3.x.x-bin.tar.gz
+         </code>
+         ” downloaded/saved in your current directory like so:
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating like so:" class="img-large" height="179" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-003.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To extract the compressed file “
+           <code>
+            apache-maven-3.x.x-bin.tar.gz
+           </code>
+           ”, we need to use the command (note that your version number could be different so just change the numbers accordingly):
+          </p>
+</li>
+</ul>
+<pre><code>tar -xvzf apache-maven-3.x.x-bin.tar.gz</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating tar -xvzf apache-maven-3.x.x-bin.tar.gz" class="img-large" height="374" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-004.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The command tar -xvzf is used in Unix and Unix-like operating systems to extract files from a tar archive. Let's break down the command:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<code>tar</code>: This is the main command used for creating and manipulating archive files in Unix and Unix-like systems. tar stands for "tape archive", a legacy name from when files were backed up to tape drives.
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+<code>-x</code>
+               : This option tells tar to extract files from an archive. Without this option, tar could be used for creating archives instead.
+              </p>
+</li>
+<li>
+<p>
+<code>
+                -v
+               </code>
+               : This is the "verbose" option. It tells tar to list the names of the files as they are being extracted. This is useful for monitoring the progress of extraction.
+              </p>
+</li>
+<li>
+<p>
+<code>-z</code>: This option tells tar to uncompress the archive using gzip. The gzip utility is commonly used to compress files in Unix-like systems, and it usually results in files ending with the
+               <code>
+                .gz
+               </code>
+               extension.
+              </p>
+</li>
+<li>
+<p>
+<code>
+                -f
+               </code>
+               : This option tells tar that the next argument will be the name of the archive file to work with. It allows tar to know which file you want to extract or create.
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>
+           So see if our extracted folder, we can use the classic command show directory ls:
+          </p>
+</li>
+</ul>
+<pre><code>ls -la</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ls -la" class="img-large" height="146" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-005.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s rename this folder with a long name to be shorter to “maven” to keep it simple:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Note: your maven version number could be different from this below example. Please change it accordingly!
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>mv apache-maven-3.x.x maven</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Run <code>ls</code> again to verify that the folder was renamed:
+          </p>
+</li>
+</ul>
+<pre><code>ls -la</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ls -la" class="img-large" height="198" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-006.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The executable maven file should be in ./maven/bin/mvn so you can test it out by trying:
+          </p>
+</li>
+</ul>
+<pre><code>./maven/bin/mvn -v</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ./maven/bin/mvn -v" class="img-large" height="124" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-007.png" width="903"/>
+</div>
+<p>
+         However, if we just run the command mvn only, it doesn't work as we need to full path “
+         <code>
+          /opt/maven/bin/mvn
+         </code>
+         ” so we need to set up a symbolic link to from the root bin to that mvn file. Thus, it will make mvn executable from anywhere.
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's set up some environment variables for Maven.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+<code>
+               JAVA_HOME
+              </code>
+</strong>
+             : Points to the installation directory of the Java Development Kit (
+             <code>
+              JDK
+             </code>
+             ), allowing other applications like Maven and
+             <code>
+              Tomcat
+             </code>
+             to find and use it.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+<code>
+               M2
+              </code>
+</strong>
+             : Defines the root installation directory for Apache Maven, which contains all of its core libraries and files.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+<code>
+               M2_HOME
+              </code>
+</strong>
+             : Specifies the path to Maven's bin directory, which holds the mvn executable command.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+           To do that, let's find out where is the Java Home (location of
+           <code>
+            JVM
+           </code>
+           ):
+          </p>
+</li>
+</ul>
+<pre><code>find / -name jvm</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating find / -name jvm" class="img-large" height="109" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-008.png" width="594"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To double check that, let's see what inside that folder:
+          </p>
+</li>
+</ul>
+<pre><code>ls -la /usr/lib/jvm</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ls -la /usr/lib/jvm" class="img-large" height="172" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-009.png" width="903"/>
+</div>
+<p>
+         So our path to the Java JDK 21 inside the
+         <code>
+          EC2
+         </code>
+         is
+         <strong>
+<code>
+           /usr/lib/jvm/java-21-amazon-corretto.x86_64
+          </code>
+</strong>
+</p>
+<p class="callout callout--note">
+<strong>
+          Note:
+         </strong>
+         your version number of java 21 can be different from this guide so note this accordingly.
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Now, set the environment variables for Maven:
+          </p>
+</li>
+<li>
+<p>
+           Go back to the home of root user:
+          </p>
+</li>
+</ul>
+<pre><code>cd ~</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Confirm the current directory location again (/root):
+          </p>
+</li>
+</ul>
+<pre><code>pwd</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating pwd" class="img-large" height="104" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-010.png" width="520"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To set these environment variables for the root user, modify the
+           <code>
+            .bash_profile
+           </code>
+           file in the home of the root user, let's list all the files:
+          </p>
+</li>
+</ul>
+<pre><code>ls -la</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ls -la" class="img-large" height="295" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-011.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To edit this file, we need to use nano command:
+          </p>
+</li>
+</ul>
+<pre><code>nano .bash_profile</code></pre>
+<p>
+         At first, the file looks like this:
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating At first, the file looks like this:" class="img-large" height="315" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-012.png" width="641"/>
+</div>
+<p>
+         The environment variables are used by the application to know where to look for other resources the application might need:
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+<code>
+             JAVA_HOME
+            </code>
+</strong>
+           is used by many Java-based applications to define the place of Java Runtime Environment (
+           <code>
+            JRE
+           </code>
+           ) installation.
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+<code>
+               M2_HOME
+              </code>
+</strong>
+             directory which points to the top directory where MAVEN is "installed" (or unzipped).
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              M2
+             </strong>
+             directory specifies to the maven application (mvn) where to find the maven repositories that are needed.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+           So please modify it so it looks like this:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating So please modify it so it looks like this:" class="img-large" height="341" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-013.png" width="903"/>
+</div>
+<p>
+         Here is the example of the
+         <code>
+          .bash_profile
+         </code>
+         :
+        </p>
+<div class="code-legend">
+<span class="legend-item"><span class="legend-swatch hl-new"></span> New line</span>
+<span class="legend-item"><span class="legend-swatch hl-edit"></span> Changed line</span>
+<span class="legend-item"><span class="legend-swatch hl-focus"></span> Line to notice</span>
+</div>
+<pre><code class="language-bash"># .bash_profile
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+  . ~/.bashrc
+fi
+# User-specific environment and startup programs
+<span class="hl-new">M2_HOME=/opt/maven</span>
+<span class="hl-new">M2=$M2_HOME/bin</span>
+<span class="hl-new">JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto.x86_64</span>
+<span class="hl-edit">PATH=$PATH:$HOME/bin:$JAVA_HOME/bin:$M2</span>
+<span class="hl-focus">export M2_HOME M2 JAVA_HOME PATH</span></code></pre>
+<p>
+         So save file in nano:
+        </p>
+<p>
+         Press Ctrl+X, then Y, then Enter to save the file under the same name.
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Press Ctrl+X, then Y, then Enter to save the file under the same name." class="img-large" height="83" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-014.png" width="840"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Press Ctrl+X, then Y, then Enter to save the file under the same name." class="img-large" height="104" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-015.png" width="563"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           When you check the system paths then nothing has changed:
+          </p>
+</li>
+</ul>
+<pre><code>echo $PATH</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating echo $PATH" class="img-large" height="55" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-016.png" width="904"/>
+</div>
+<p>
+         The current shell has not loaded the Maven and Java paths yet.
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           For the new
+           <code>
+            .bash_profile
+           </code>
+           to be effective, we need to run the command:
+          </p>
+</li>
+</ul>
+<pre><code>source .bash_profile</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Double check if the new path environment variable has been changed, so it should look like this:
+          </p>
+</li>
+</ul>
+<pre><code>echo $PATH</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating echo $PATH" class="img-large" height="49" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-017.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Now, we can call maven just using “mvn” like this instead of the long path name, yayyyy:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             We now can call the command “mvn” without providing the full path to maven folder!
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>mvn -v</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating mvn -v" class="img-large" height="121" loading="lazy" src="../assets/tutorials/week-4/05-install-maven-018.png" width="903"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="install-tomcat">
+<h2 class="collapsible-header">
+     🐈 Install Tomcat
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Install Tomcat (Web Server) on the EC2 instance:" class="img-large" height="396" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-001.png" width="396"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let's visit the website
+           <code>
+            Apache Tomcat
+           </code>
+           Download (Version 9) to look for the binary distribution for easy installation instructions:
+           <a href="https://tomcat.apache.org/download-90.cgi" rel="noopener" target="_blank">
+            https://tomcat.apache.org/download-90.cgi
+           </a>
+</p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating distribution for easy installation instructions: https://tomcat.apache.org/download-90.cgi" class="img-large" height="572" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-002.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Like before, let's change the current directory to “/opt" which is reserved for the installation of add-on application software packages." This is optional as we want to keep our installation files neat in that folder.
+          </p>
+</li>
+</ul>
+<pre><code>cd /opt</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You can double check the current directory again to confirm you are in the /opt folder.
+          </p>
+</li>
+</ul>
+<pre><code>pwd</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating pwd" class="img-large" height="54" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-003.png" width="418"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Ok, let’s download the binary distribution of
+           <code>
+            Tomcat
+           </code>
+           using the wget command:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Note: your number version of Tomcat could be different from this below example. Please change “x.xx” in the url accordingly!
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.x.xx/bin/apache-tomcat-9.x.xx.tar.gz</code></pre>
+<p>
+         You should see the file “
+         <code>
+          apache-tomcat-9.x.xx.tar.gz
+         </code>
+         ” downloaded/saved in your current directory like so:
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating so:" class="img-large" height="182" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-004.png" width="903"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To extract the compressed file “
+           <code>
+            apache-maven-3.x.x-bin.tar.gz
+           </code>
+           ”, we need to use the command (note that your version number could be different so just change the numbers accordingly):
+          </p>
+</li>
+</ul>
+<pre><code>tar -xvzf apache-tomcat-9.x.xx.tar.gz</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating tar -xvzf apache-tomcat-9.x.xx.tar.gz" class="img-large" height="201" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-005.png" width="736"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           So see if our extracted folder, we can use the classic command show directory ls:
+          </p>
+</li>
+</ul>
+<pre><code>ls -la</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ls -la" class="img-large" height="230" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-006.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s rename this folder with a long name to be shorter to “tomcat” to keep it simple:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Note: your tomcat version could be different from this below example. Please change it accordingly!
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>mv apache-tomcat-9.x.xx tomcat</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Run <code>ls</code> again to verify that the folder was renamed:
+          </p>
+</li>
+</ul>
+<pre><code>ls -la</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ls -la" class="img-large" height="258" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-007.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s change the current directory to be inside the Tomcat executables files:
+          </p>
+</li>
+</ul>
+<pre><code>cd tomcat/bin</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s list inside all executables files of Tomcat:
+          </p>
+</li>
+</ul>
+<pre><code>ls -la</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ls -la" class="img-large" height="732" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-008.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You can start the Tomcat server by running the
+           <code>
+            startup.sh
+           </code>
+           :
+          </p>
+</li>
+</ul>
+<pre><code>./startup.sh</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ./startup.sh" class="img-large" height="174" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-009.png" width="904"/>
+</div>
+<p>
+         So now the Tomcat server has started and been listening to the incoming request at
+         <strong>
+          the
+         </strong>
+<strong>
+          public
+         </strong>
+<strong>
+          IP
+         </strong>
+<strong>
+          address
+         </strong>
+<strong>
+          of
+         </strong>
+<strong>
+          the
+         </strong>
+<strong>
+<code>
+           EC2
+          </code>
+</strong>
+<strong>
+          instance
+         </strong>
+         via the
+         <strong>
+          port
+         </strong>
+<strong>
+          8080
+         </strong>
+         (which is the default port of Tomcat)
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating address of the EC2 instance via the port 8080 (which is the default port of Tomcat)" class="img-large" height="154" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-010.png" width="722"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You can check out Tomcat Dashboard Web UI by typing the URL in the browser, make sure to use the URL “
+           <a href="http://public_ip_adress" rel="noopener" target="_blank">
+            http://public_ip_adress
+           </a>
+           :
+           <strong>
+            8080
+           </strong>
+           ” for
+           <strong>
+            8080
+           </strong>
+           is the port number of Tomcat:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating use the URL “http://public_ip_adress: 8080 ” for 8080 is the port number of Tomcat:" class="img-large" height="205" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-011.png" width="998"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The highlighted arrows in the Tomcat dashboard are links to various administrative pages in Apache Tomcat:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              Server
+             </strong>
+<strong>
+              Status:
+             </strong>
+             Provides an overview of the current state of the Tomcat server. This includes information about active threads, memory usage, request processing time, and other server performance metrics.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              Manager
+             </strong>
+<strong>
+              App:
+             </strong>
+             a web-based tool for managing web applications deployed on the Tomcat server:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               Deploy, undeploy, or redeploy applications.
+              </p>
+</li>
+<li>
+<p>
+               View deployed application information.
+              </p>
+</li>
+<li>
+<p>
+               Start and stop applications.
+              </p>
+</li>
+<li>
+<p>
+               View session details for each application.
+              </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+              Host
+             </strong>
+<strong>
+              Manager
+             </strong>
+             : used for managing virtual hosts (domains/subdomains) on the Tomcat server to add or remove virtual hosts as well as view details about configured hosts.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating hosts." class="img-large" height="280" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-012.png" width="701"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           However, when you try to access Manager App of Tomcat,
+           <strong>
+            your
+           </strong>
+<strong>
+            access
+           </strong>
+<strong>
+            will
+           </strong>
+<strong>
+            be
+           </strong>
+<strong>
+            denied
+           </strong>
+           :
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating However, when you try to access Manager App of Tomcat, your access will be denied :" class="img-large" height="364" loading="lazy" src="../assets/tutorials/week-4/06-install-tomcat-013.png" width="903"/>
+</div>
+<p>
+         This happens because by default Tomcat only allows the same machine (in our case, EC2 instance) where Tomcat is running to access its dashboard. However, we want to access Tomcat from outside using our browser on our own computer so we need to edit the
+         <code>
+          context.xml
+         </code>
+         file like it suggests.
+        </p>
+<p class="callout callout--warning">
+<strong>
+          IMPORTANT
+         </strong>
+<strong>
+          NOTE:
+         </strong>
+<strong>
+          if
+         </strong>
+<strong>
+          you
+         </strong>
+<strong>
+          would
+         </strong>
+<strong>
+          like
+         </strong>
+<strong>
+          to
+         </strong>
+<strong>
+          have
+         </strong>
+<strong>
+          a
+         </strong>
+<strong>
+          minimal
+         </strong>
+<strong>
+          Tomcat
+         </strong>
+<strong>
+          setup
+         </strong>
+<strong>
+          to
+         </strong>
+<strong>
+          serve
+         </strong>
+<strong>
+          your
+         </strong>
+<strong>
+          website
+         </strong>
+<strong>
+          without
+         </strong>
+<strong>
+          having
+         </strong>
+<strong>
+          a
+         </strong>
+<strong>
+          need
+         </strong>
+<strong>
+          to
+         </strong>
+<strong>
+          access
+         </strong>
+<strong>
+          other
+         </strong>
+<strong>
+          admin
+         </strong>
+<strong>
+          dashboard
+         </strong>
+<strong>
+          or
+         </strong>
+<strong>
+          helpful
+         </strong>
+<strong>
+          resources/pages
+         </strong>
+<strong>
+          of
+         </strong>
+<strong>
+          Tomcat,
+         </strong>
+<strong>
+          then
+         </strong>
+<strong>
+          you
+         </strong>
+<strong>
+          can
+         </strong>
+<strong>
+          skip
+         </strong>
+<strong>
+          the
+         </strong>
+<strong>
+          instructions
+         </strong>
+<strong>
+          of
+         </strong>
+<strong>
+          the
+         </strong>
+<strong>
+          section“Configure
+         </strong>
+<strong>
+          Tomcat
+         </strong>
+<strong>
+          users
+         </strong>
+<strong>
+          and
+         </strong>
+<strong>
+          access"
+         </strong>
+
+<strong>
+          and
+         </strong>
+<strong>
+          continue
+         </strong>
+<strong>
+          for
+         </strong>
+<strong>
+          the
+         </strong>
+<strong>
+          section
+         </strong>
+<strong>
+          section“Create
+         </strong>
+<strong>
+          Tomcat
+         </strong>
+<strong>
+          startup
+         </strong>
+<strong>
+          shortcuts"
+         </strong>
+<strong>
+          to
+         </strong>
+<strong>
+          the
+         </strong>
+<strong>
+          end.
+         </strong>
+</p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="configure-tomcat-access">
+<h2 class="collapsible-header">
+     🔐 Optional: Configure Tomcat users and access
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating [Optional] Setup Tomcat users and remove local IP restrictions:" class="img-large" height="410" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-001.png" width="409"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s find where is the
+           <code>
+            context.xml
+           </code>
+           in
+           <code>
+            Tomcat
+           </code>
+           directory:
+          </p>
+</li>
+</ul>
+<pre><code>find /opt/tomcat/ -name context.xml</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating find /opt/tomcat/ -name context.xml (1 of 2)" class="img-large" height="145" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-002.png" width="904"/>
+<img alt="Screenshot illustrating find /opt/tomcat/ -name context.xml (2 of 2)" class="img-large" height="103" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-003.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We started to edit the first
+           <code>
+            context.xml
+           </code>
+           using nano:
+          </p>
+</li>
+</ul>
+<pre><code>nano /opt/tomcat/webapps/host-manager/META-INF/context.xml</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating nano /opt/tomcat/webapps/host-manager/META-INF/context.xml" class="img-large" height="380" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-004.png" width="904"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating nano /opt/tomcat/webapps/host-manager/META-INF/context.xml" class="img-large" height="96" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-005.png" width="904"/>
+</div>
+<p>
+         [Alternative] Another option is instead of commenting them out, you can remove those lines.
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We move on to edit the second
+           <code>
+            context.xml
+           </code>
+           using nano:
+          </p>
+</li>
+</ul>
+<pre><code>nano /opt/tomcat/webapps/manager/META-INF/context.xml</code></pre>
+<p>
+         For the same logic, we comment out the same line for this file also!
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           From Tomcat’s <code>bin</code> directory, stop and restart Tomcat so the new settings take effect:
+          </p>
+</li>
+</ul>
+<pre><code>./shutdown.sh</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ./shutdown.sh" class="img-large" height="161" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-006.png" width="904"/>
+</div>
+<pre><code>./startup.sh</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ./startup.sh" class="img-large" height="176" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-007.png" width="904"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating ./startup.sh" class="img-large" height="283" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-008.png" width="541"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You can check out Tomcat Dashboard Web UI by typing the URL in the browser again:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating You can check out Tomcat Dashboard Web UI by typing the URL in the browser again:" class="img-large" height="360" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-009.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           It will ask for username and passwords:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating It will ask for username and passwords:" class="img-large" height="373" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-010.png" width="480"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Alright, we need to add a few users with the right permissions to use Tomcat. Indeed, we can define them in the file
+           <code>
+            tomcat-users.xml
+           </code>
+           (
+           <code>
+            /opt/tomcat/conf/tomcat-users.xml
+           </code>
+           ). Let’s edit that file:
+          </p>
+</li>
+</ul>
+<pre><code>nano /opt/tomcat/conf/tomcat-users.xml</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating nano /opt/tomcat/conf/tomcat-users.xml" class="img-large" height="450" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-011.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To keep it simple for this lab, we only created a user “admin" with the password “s3cret" who got all roles to play around with Tomcat:
+          </p>
+</li>
+</ul>
+<pre><code class="language-xml">&lt;role rolename="admin-gui"/&gt;
+&lt;role rolename="manager-gui"/&gt;
+&lt;role rolename="manager-script"/&gt;
+&lt;role rolename="manager-jmx"/&gt;
+&lt;role rolename="manager-status"/&gt;
+&lt;user username=" admin " password=" s3cret " roles="admin-gui,manager-gui, manager-script,
+manager-jmx, manager-status"/&gt;</code></pre>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating &lt;role rolename="admin-gui"/&gt; &lt;role rolename="manager-gui"/&gt; &lt;role rolename="manager-script"/&gt; &lt;role rolename="manager-jmx"/&gt; &lt;role rolename="manager-status"/&gt; &lt;user usern' class="img-large" height="349" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-012.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Now, shutdown and startup Tomcat again and check out the Tomcat Manager Web UI again:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Now, shutdown and startup Tomcat again and check out the Tomcat Manager Web UI again:" class="img-large" height="356" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-013.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Now, you can log in these pages now with the new user “admin" with the password “s3cret”:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt='Screenshot illustrating Now, you can log in these pages now with the new user “admin" with the password “s3cret”:' class="img-large" height="446" loading="lazy" src="../assets/tutorials/week-4/07-optional-configure-tomcat-users-and-access-014.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           There are some default web applications of Tomcat server for you to try, which are highlighted in the above screenshot:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              /docs
+             </strong>
+             : This application provides comprehensive documentation and guides for Tomcat, including configuration details, examples, and operational instructions.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              /examples
+             </strong>
+             : This is a collection of servlets and JSPs that demonstrate various features of Tomcat and provide a practical reference for developers.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              /host-manager:
+             </strong>
+             This web app offers a user interface for managing virtual hosts in a Tomcat server environment, allowing administrators to add, remove, and configure hosts.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              /manager:
+             </strong>
+             It's an administrative tool that provides a user interface for managing the web applications deployed on the server, including deploying, undeploying, starting, stopping, and reloading applications.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+           However, you might not be able to access
+           <strong>
+            /docs
+           </strong>
+           or
+           <strong>
+            /examples
+           </strong>
+           as you need to comment out the IP address restriction in these two files respectively, which is up to you:
+           <code>
+            /opt/tomcat/webapps/docs/META-INF/context.xml
+           </code>
+           or
+           <code>
+            /opt/tomcat/webapps/examples/META-INF/context.xml
+           </code>
+</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="tomcat-shortcuts">
+<h2 class="collapsible-header">
+     🔗 Create Tomcat startup shortcuts
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Setup symbolic links as shortcuts to start up or shut down Tomcat:" class="img-large" height="457" loading="lazy" src="../assets/tutorials/week-4/08-create-tomcat-startup-shortcuts-001.png" width="459"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           So far, every time, we shutdown and startup
+           <code>
+            Tomcat
+           </code>
+           , we need to use the relative path or absolute path of the scripts. Let's create symbolic links of these scripts in the system bin directory so we can just call “tomcatup” and “tomcatdown":
+          </p>
+</li>
+</ul>
+<pre><code>ln -s /opt/tomcat/bin/startup.sh /usr/local/bin/tomcatup</code></pre>
+<pre><code>ln -s /opt/tomcat/bin/shutdown.sh /usr/local/bin/tomcatdown</code></pre>
+<p>
+         Now, when you run “tomcatup", it will try to find the executable files in the
+         <code>
+          /usr/local/bin
+         </code>
+         and found the symbolic link which points to “
+         <code>
+          /opt/tomcat/bin/startup.sh
+         </code>
+         ” then run that script! Similar thing happens to “tomcatdown"! Yayyy!
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           You can try it!
+          </p>
+</li>
+</ul>
+<pre><code>tomcatdown</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating tomcatdown" class="img-large" height="157" loading="lazy" src="../assets/tutorials/week-4/08-create-tomcat-startup-shortcuts-002.png" width="904"/>
+</div>
+<pre><code>tomcatup</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating tomcatup" class="img-large" height="184" loading="lazy" src="../assets/tutorials/week-4/08-create-tomcat-startup-shortcuts-003.png" width="904"/>
+</div>
+<p>
+         Now, our Tomcat is working and ready to serve any web application in the webapps directory!
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="generate-maven-webapp">
+<h2 class="collapsible-header">
+     🏗️ Generate a Maven web application
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Generate a web project using Maven Archetype:" class="img-large" height="441" loading="lazy" src="../assets/tutorials/week-4/09-generate-a-maven-web-application-001.png" width="489"/>
+</div>
+<p>
+         Let's generate a very simple “Hello World"
+         <code>
+          Java
+         </code>
+<code>
+          JSP
+         </code>
+         application using
+         <code>
+          Maven
+         </code>
+         !
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Let’s go back to the home directory to keep our project directory organised there:
+          </p>
+</li>
+</ul>
+<pre><code>cd ~</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           We can generate a Maven web template project directories using one line of archetype (Maven project templating toolkit):
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+<strong>
+              -DgroupId
+             </strong>
+             (Group ID): Group or organization that the project belongs to. Often expressed as an inverted domain name.
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              -DartifactId
+             </strong>
+             (Artifact ID): Name to be given to the project’s library artifact (for example, the name of its
+             <code>
+              JAR
+             </code>
+             or
+             <code>
+              WAR
+             </code>
+             file).
+            </p>
+</li>
+<li>
+<p>
+<strong>
+              -DarchetypeArtifactId
+             </strong>
+             (the type of archetype): “
+             <strong>
+<code>
+               maven-archetype-webapp
+              </code>
+</strong>
+             ” is an archetype to generate a sample Maven Webapp project.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>mvn archetype:generate -DgroupId=vn.edu.rmit -DartifactId=helloWorld -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating mvn archetype:generate -DgroupId=vn.edu.rmit -DartifactId=helloWorld -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false" class="img-large" height="144" loading="lazy" src="../assets/tutorials/week-4/09-generate-a-maven-web-application-002.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Maven creates a project directory whose name matches the <code>artifactId</code>:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Maven creates a project directory whose name matches the &lt;code&gt;artifactId&lt;/code&gt;:" class="img-large" height="46" loading="lazy" src="../assets/tutorials/week-4/09-generate-a-maven-web-application-003.png" width="351"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The whole directory structure of this project looks like this:
+          </p>
+</li>
+</ul>
+<pre><code>helloWorld
+├── helloWorld/pom.xml
+└── helloWorld/src
+   └── helloWorld/src/main
+       ├── helloWorld/src/main/resources
+       └── helloWorld/src/main/webapp
+          ├── helloWorld/src/main/webapp/index.jsp
+          └── helloWorld/src/main/webapp/WEB-INF
+              └── helloWorld/src/main/webapp/WEB-INF/web.xml</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Try to explore what inside this project:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Try to explore what inside this project:" class="img-large" height="70" loading="lazy" src="../assets/tutorials/week-4/09-generate-a-maven-web-application-004.png" width="479"/>
+</div>
+<p>
+         We can see that there is a “
+         <strong>
+<code>
+           pom.xml
+          </code>
+</strong>
+         ” file which is at the top level of this project directory!
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The homepage web page is at
+           <code>
+            src/main/webapp/index.jsp
+           </code>
+           , so let’s modify it:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating The homepage web page is at src/main/webapp/index.jsp, so let’s modify it:" class="img-large" height="82" loading="lazy" src="../assets/tutorials/week-4/09-generate-a-maven-web-application-005.png" width="903"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating The homepage web page is at src/main/webapp/index.jsp, so let’s modify it:" class="img-large" height="185" loading="lazy" src="../assets/tutorials/week-4/09-generate-a-maven-web-application-006.png" width="904"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="build-maven-webapp">
+<h2 class="collapsible-header">
+     📦 Build the web application with Maven
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Compile and Package (Build) the web project using Maven:" class="img-large" height="531" loading="lazy" src="../assets/tutorials/week-4/10-build-the-web-application-with-maven-001.png" width="533"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Make sure you cd to the root of the maven project first (where the
+           <code>
+            pom.xml
+           </code>
+           is)
+          </p>
+</li>
+<li>
+<p>
+           The package goal will compile your
+           <code>
+            Java
+           </code>
+           code, run any tests, and finish by packaging the code up in a
+           <code>
+            WAR
+           </code>
+           file within the target directory. Let’s compile and build the project to produce a
+           <strong>
+            WAR
+           </strong>
+<strong>
+            file
+           </strong>
+           :
+          </p>
+<p class="callout callout--checkpoint">
+<strong>Build checkpoint:</strong> If <code>mvn package</code> fails while running tests, should a WAR file be copied to Tomcat? What evidence should an automated deployment check before continuing?
+          </p>
+</li>
+</ul>
+<pre><code>mvn package</code></pre>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating mvn package" class="img-large" height="280" loading="lazy" src="../assets/tutorials/week-4/10-build-the-web-application-with-maven-002.png" width="810"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="deploy-war-to-tomcat">
+<h2 class="collapsible-header">
+     🚀 Deploy the WAR file to Tomcat
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Deploy the WAR artifacts on Tomcat server:" class="img-large" height="378" loading="lazy" src="../assets/tutorials/week-4/11-deploy-the-war-file-to-tomcat-001.png" width="379"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Nicely done! Let’s copy this
+           <code>
+            helloWorld.war
+           </code>
+           inside the webapps of
+           <code>
+            Tomcat
+           </code>
+           !
+          </p>
+</li>
+</ul>
+<pre><code>cp /root/helloWorld/target/helloWorld.war /opt/tomcat/webapps/</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           The website should be available at the URL:
+           <code>
+            ec2_public_ip_address
+           </code>
+           :8080/helloWorld/. You can check your web application in the glorious form:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating can check your web application in the glorious form:" class="img-large" height="180" loading="lazy" src="../assets/tutorials/week-4/11-deploy-the-war-file-to-tomcat-002.png" width="718"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check out the Tomcat Manager Web UI again here to access the website:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Check out the Tomcat Manager Web UI again here to access the website:" class="img-large" height="356" loading="lazy" src="../assets/tutorials/week-4/11-deploy-the-war-file-to-tomcat-003.png" width="904"/>
+</div>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Check out the Tomcat Manager Web UI again here to access the website:" class="img-large" height="412" loading="lazy" src="../assets/tutorials/week-4/11-deploy-the-war-file-to-tomcat-004.png" width="768"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Check your web application in the glorious form:
+          </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Check your web application in the glorious form:" class="img-large" height="180" loading="lazy" src="../assets/tutorials/week-4/11-deploy-the-war-file-to-tomcat-005.png" width="718"/>
+</div>
+<p>
+         Now, whenever you want to modify something of your web application, you follow the same process of modifying the
+         <code>
+          JSP
+         </code>
+         file, build the project using
+         <code>
+          Maven
+         </code>
+         and copy that
+         <code>
+          WAR
+         </code>
+         file into the webapps directory of Tomcat.
+        </p>
+<p>
+         That’s a pretty long and boring process! However, we can speed up this process later on in other labs using automation tools like Jenkins! Stay tuned!
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating using automation tools like Jenkins! Stay tuned!" class="img-large" height="345" loading="lazy" src="../assets/tutorials/week-4/11-deploy-the-war-file-to-tomcat-006.png" width="345"/>
+</div>
+<p>
+         Important Note for the future assignment or in-class tests:
+        </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           To set up a minimal Tomcat server just to serve your website, then you can skip all the steps in the section “Setup Tomcat users and remove local IP restrictions” for commenting out or removing the IP address restriction in
+           <code>
+            context.xml
+           </code>
+           files and the steps of creating tomcat users.
+          </p>
+</li>
+<li>
+<p>
+           In fact, you can setup Tomcat server to be shown its homepage on the URL at public IP address via the
+           <code>
+            port 8080
+           </code>
+           then you can copy the WAR package file into the
+           <code>
+            /opt/tomcat/webapps/
+           </code>
+           then the website can be accessed at URL: Public IP address:8080/
+           <code>
+            the_website_name
+           </code>
+           .
+          </p>
+</li>
+</ol>
+<p>
+         Hopefully, this lab has prepared you for what you need to do in the future assignments!
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Hopefully, this lab has prepared you for what you need to do in the future assignments!" class="img-large" height="376" loading="lazy" src="../assets/tutorials/week-4/11-deploy-the-war-file-to-tomcat-007.png" width="501"/>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="your-challenges">
+<h2 class="collapsible-header">
+     🧪 Challenge overview
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+         Here are several challenges that build upon the tutorial. These challenges are designed to deepen your understanding of
+         <code>
+          Java
+         </code>
+         ,
+         <code>
+          Maven
+         </code>
+         ,
+         <code>
+          Tomcat
+         </code>
+         , and
+         <code>
+          AWS
+         </code>
+<code>
+          EC2
+         </code>
+         , as well as introduce some essential DevOps practices.
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-1-dynamic-content">
+<h2 class="collapsible-header">
+     🧪 Challenge 1: Display dynamic content
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+<strong>
+          Objective
+         </strong>
+         : Enhance your
+         <code>
+          Maven
+         </code>
+         -generated web application to display dynamic content using
+         <code>
+          JSP
+         </code>
+         (JavaServer Pages).
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating (JavaServer Pages)." class="img-large" height="264" loading="lazy" src="../assets/tutorials/week-4/12-challenge-1-display-dynamic-content-001.png" width="904"/>
+</div>
+<p>
+<strong>
+          Guidance:
+         </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Modify
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            JSP
+           </strong>
+<strong>
+            File:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Locate the
+             <code>
+              index.jsp
+             </code>
+             file in your Maven project's
+             <code>
+              src/main/webapp
+             </code>
+             directory.
+            </p>
+</li>
+<li>
+<p>
+             Update the file to include dynamic content, such as displaying the current server date and time.
+             <strong>
+              Hint
+             </strong>
+             : Use JSP scripting elements to embed
+             <code>
+              Java
+             </code>
+             code within your HTML. Research how to use expressions or scriptlets in JSP to output dynamic data.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Rebuild
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Project:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Use Maven to rebuild your project so that the changes in your JSP file are compiled into the new
+             <code>
+              WAR
+             </code>
+             file.
+             <strong>
+              Tip
+             </strong>
+             : Ensure you're in your project's root directory when running Maven commands.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Redeploy
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Application:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Deploy the newly built WAR file to your
+             <code>
+              Tomcat
+             </code>
+             server's webapps directory.
+             <strong>
+              Hint
+             </strong>
+             : You may need to stop and start Tomcat to redeploy the application properly.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Verify
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Changes:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Access your web application in a browser using your
+             <code>
+              EC2
+             </code>
+             instance's public IP address.
+            </p>
+</li>
+<li>
+<p>
+             Confirm that the page now displays the dynamic content as intended.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-2-port-80">
+<h2 class="collapsible-header">
+     🧪 Challenge 2: Run Tomcat on port 80
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+<strong>
+          Objective
+         </strong>
+         : Modify
+         <code>
+          Tomcat
+         </code>
+         's configuration to listen on
+         <code>
+          port 80
+         </code>
+         , allowing users to access your web application without specifying a port number.
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating application without specifying a port number." class="img-large" height="272" loading="lazy" src="../assets/tutorials/week-4/13-challenge-2-run-tomcat-on-port-80-001.png" width="904"/>
+</div>
+<p>
+<strong>
+          Guidance
+         </strong>
+         :
+        </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Edit
+           </strong>
+<strong>
+            Tomcat
+           </strong>
+<strong>
+            Configuration:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Locate the
+             <code>
+              server.xml
+             </code>
+             file in the conf directory of your Tomcat installation (e.g.,
+             <code>
+              /opt/tomcat/conf/server.xml
+             </code>
+             ).
+            </p>
+</li>
+<li>
+<p>
+             Open the file for editing and find the
+             <code>
+              &lt;Connector&gt;
+             </code>
+             element that defines the HTTP connector.
+             <strong>
+              Hint
+             </strong>
+             : Look for a line that specifies port="8080".
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Change
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Port
+           </strong>
+<strong>
+            Number:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Modify the port attribute of the HTTP
+             <code>
+              &lt;Connector&gt;
+             </code>
+             element from 8080 to 80. Tip: Be cautious when editing XML files to maintain proper syntax.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Update
+           </strong>
+<strong>
+<code>
+             AWS
+            </code>
+</strong>
+<strong>
+            Security
+           </strong>
+<strong>
+            Group:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Ensure that your
+             <code>
+              EC2
+             </code>
+             instance's security group allows inbound traffic on
+             <code>
+              port 80
+             </code>
+             .
+             <strong>
+              Tip
+             </strong>
+             : You might have already configured this when setting up your instance, but double-check to confirm.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Restart
+           </strong>
+<strong>
+            Tomcat:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Restart the Tomcat server to apply the configuration changes.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Verify
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Configuration:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Access your application using
+             <a href="http://your-ec2-ip/helloWorld/" rel="noopener" target="_blank">
+              http://your-ec2-ip/helloWorld/
+             </a>
+             without specifying a port.
+            </p>
+</li>
+<li>
+<p>
+             Confirm that the application loads correctly on
+             <code>
+              port 80
+             </code>
+             .
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-3-deploy-script">
+<h2 class="collapsible-header">
+     🧪 Challenge 3: Automate deployment with Bash
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+<strong>
+          Objective
+         </strong>
+         : Create a shell script to automate the build and deployment process of your
+         <code>
+          Maven
+         </code>
+         web application to
+         <code>
+          Tomcat
+         </code>
+         .
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating application to Tomcat." class="img-large" height="332" loading="lazy" src="../assets/tutorials/week-4/14-challenge-3-automate-deployment-with-bash-001.png" width="904"/>
+</div>
+<p>
+<strong>
+          Guidance:
+         </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Create
+           </strong>
+<strong>
+            a
+           </strong>
+<strong>
+            Deployment
+           </strong>
+<strong>
+            Script:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             In your home directory or project directory, create a new shell script file (e.g.,
+             <code>
+              deploy.sh
+             </code>
+             ).
+            </p>
+</li>
+<li>
+<p>
+             The script should automate the steps of cleaning the project, building it, and deploying it to Tomcat.
+             <strong>
+<em>
+               Hint
+              </em>
+</strong>
+<em>
+              :
+             </em>
+             Think about the commands you run manually to perform these tasks and include them in the script.
+            </p>
+<p class="callout callout--checkpoint">
+<strong>Failure-handling checkpoint:</strong> Which build, copy, or restart steps must stop the script when they fail? Why could continuing after an earlier failure make the deployed application less reliable?
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Make
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Script
+           </strong>
+<strong>
+            Executable:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Modify the script's permissions to make it executable.
+             <strong>
+              Tip
+             </strong>
+             : Use the chmod command to change file permissions.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Incorporate
+           </strong>
+<strong>
+            Deployment
+           </strong>
+<strong>
+            Steps:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Include commands in the script to:
+            </p>
+<ul class="tutorial-list tutorial-list--level-3">
+<li>
+<p>
+               Navigate to your project's directory.
+              </p>
+</li>
+<li>
+<p>
+               Run Maven commands to clean and package your application.
+              </p>
+</li>
+<li>
+<p>
+               Copy the generated
+               <code>
+                WAR
+               </code>
+               file to Tomcat's webapps directory.
+              </p>
+</li>
+<li>
+<p>
+               Restart the Tomcat server to deploy the new version.
+              </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Test
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Script:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Make a change to your web application's content (e.g., update
+             <code>
+              index.jsp
+             </code>
+             ).
+            </p>
+</li>
+<li>
+<p>
+             Run the deployment script to see if it automates the process successfully.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Verify
+           </strong>
+<strong>
+            Deployment:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Access your application in the browser to ensure the latest changes are reflected.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-4-tomcat-service">
+<h2 class="collapsible-header">
+     🧪 Challenge 4: Run Tomcat as a service
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+<strong>
+          Objective
+         </strong>
+         : Configure
+         <code>
+          Tomcat
+         </code>
+         to start automatically when your
+         <code>
+          EC2
+         </code>
+         instance boots by setting it up as a system service.
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating system service." class="img-large" height="317" loading="lazy" src="../assets/tutorials/week-4/15-challenge-4-run-tomcat-as-a-service-001.png" width="903"/>
+</div>
+<p>
+<strong>
+          Guidance
+         </strong>
+         :
+        </p>
+<p>
+         There are several ways to set up Tomcat as a service to start automatically on your EC2 instance:
+        </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Systemd
+           </strong>
+<strong>
+            Service
+           </strong>
+<strong>
+            Unit
+           </strong>
+           (Recommended for modern Linux distributions):
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Create a
+             <code>
+              systemd
+             </code>
+             service file (e.g.,
+             <code>
+              /etc/systemd/system/tomcat.service
+             </code>
+             ).
+            </p>
+</li>
+<li>
+<p>
+             Define service parameters, including environment variables and execution commands.
+            </p>
+</li>
+<li>
+<p>
+             Enable the service with
+             <code>
+              systemctl
+             </code>
+             to start on boot.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Cron
+           </strong>
+<strong>
+            Job
+           </strong>
+           with @reboot:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Add a cron job using the @reboot directive to start Tomcat when the system boots.
+            </p>
+</li>
+<li>
+<p>
+             Example: @reboot /path/to/tomcat/bin/
+             <code>
+              startup.sh
+             </code>
+</p>
+</li>
+</ul>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-5-maven-path">
+<h2 class="collapsible-header">
+     🧪 Challenge 5: Resolve “mvn: command not found”
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+<strong>
+          Objective:
+         </strong>
+         Investigate why the
+         <strong>
+          mvn
+         </strong>
+         command is not recognized in certain contexts and resolve the issue for all users on the
+         <code>
+          EC2
+         </code>
+         instance. The
+         <strong>
+          mvn
+         </strong>
+         command works only when using
+         <strong>
+          sudo
+         </strong>
+<strong>
+          su
+         </strong>
+<strong>
+          -
+         </strong>
+         but fails with
+         <strong>
+          sudo
+         </strong>
+<strong>
+          su
+         </strong>
+         or as the
+         <strong>
+          ec2-user.
+         </strong>
+         This inconsistency likely arises from environment variable configuration or PATH settings. Your challenge is to understand and fix this issue.
+        </p>
+<p>
+<strong>
+          Guidance:
+         </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Replicate
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Problem:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Log in to the EC2 instance as the ec2-user.
+            </p>
+</li>
+<li>
+<p>
+             Try running the mvn
+             <code>
+              -v
+             </code>
+             command. Observe and note the error message.
+            </p>
+</li>
+<li>
+<p>
+             Use sudo su and try running the same command. Note the result.
+            </p>
+</li>
+<li>
+<p>
+             Use sudo su - and confirm that the command works in this context.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Use sudo su - and confirm that the command works in this context." class="img-large" height="245" loading="lazy" src="../assets/tutorials/week-4/16-challenge-5-resolve-mvn-command-not-found-001.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           Analyze the Environment Variables:
+          </p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Compare the environment variables available in each context
+            </p>
+</li>
+<li>
+<p>
+             Run env as the ec2-user.
+            </p>
+</li>
+<li>
+<p>
+             Run env after using sudo su.
+            </p>
+</li>
+<li>
+<p>
+             Run env after using sudo su -.
+            </p>
+</li>
+</ul>
+</li>
+</ul>
+<p>
+         Identify differences, particularly in the PATH variable.
+        </p>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Identify differences, particularly in the PATH variable." class="img-large" height="244" loading="lazy" src="../assets/tutorials/week-4/16-challenge-5-resolve-mvn-command-not-found-002.png" width="904"/>
+</div>
+<p>
+<strong>
+          Hint:
+         </strong>
+         Research the difference between a "login shell" and a "non-login shell" and how environment variables are loaded in each.
+        </p>
+<p>
+<strong>
+          Plan
+         </strong>
+<strong>
+          a
+         </strong>
+<strong>
+          Solution:
+         </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           How can you ensure the necessary environment variables (e.g.,
+           <strong>
+<code>
+             JAVA_HOME
+            </code>
+            ,
+           </strong>
+<strong>
+<code>
+             M2_HOME
+            </code>
+            ,
+           </strong>
+           and
+           <strong>
+            PATH
+           </strong>
+           ) are
+           <strong>
+            available
+           </strong>
+<strong>
+            for
+           </strong>
+<strong>
+            all
+           </strong>
+<strong>
+            users,
+           </strong>
+           regardless of the context?
+          </p>
+</li>
+<li>
+<p>
+           Would setting environment variables globally in a shared profile file (e.g.,
+           <strong>
+<code>
+             /etc/profile
+            </code>
+</strong>
+           or
+           <strong>
+<code>
+             /etc/profile.d/
+            </code>
+</strong>
+           ) be a good approach? Why or why not?
+          </p>
+</li>
+</ul>
+<p>
+<strong>
+          Hint
+         </strong>
+<strong>
+          1:
+         </strong>
+         Look into how system-wide environment variables are managed in Linux and the role of files like
+         <strong>
+<code>
+           .bash_profile
+          </code>
+</strong>
+         ,
+         <strong>
+<code>
+           .bashrc
+          </code>
+</strong>
+         ,
+         <strong>
+<code>
+           /etc/profile
+          </code>
+</strong>
+         , and
+         <strong>
+<code>
+           /etc/profile.d/
+          </code>
+</strong>
+         .
+        </p>
+<p>
+<strong>
+          Hint
+         </strong>
+<strong>
+          2:
+         </strong>
+         To make
+         <strong>
+          sudo
+         </strong>
+<strong>
+          su
+         </strong>
+         works without “-”, you can just only focus on
+         <strong>
+<code>
+           /root/.bashrc
+          </code>
+</strong>
+         to keep it simple. Can you try to duplicate what you have done for
+         <code>
+          /root/.bash_profile
+         </code>
+         to it and see what will happen
+         <strong>
+          (Recommended
+         </strong>
+<strong>
+          solution)
+         </strong>
+<strong>
+          Hint
+         </strong>
+<strong>
+          3:
+         </strong>
+         To make mvn works for all users including ec2-user then it will be more complicated to involve
+         <strong>
+<code>
+           /etc/profile
+          </code>
+</strong>
+         or
+         <strong>
+<code>
+           /etc/profile.d
+          </code>
+</strong>
+         (You can ignore this solution for now but it is helpful to know the purpose of these files for now)
+        </p>
+<p>
+<strong>
+          Implement
+         </strong>
+<strong>
+          and
+         </strong>
+<strong>
+          Test:
+         </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+           After updating the environment variables, how can you verify the changes are effective?
+          </p>
+</li>
+<li>
+<p>
+           What command can you use to reload environment variables without restarting the system?
+          </p>
+</li>
+</ul>
+<p>
+<strong>
+          Hint:
+         </strong>
+         you can use the
+         <strong>
+          mvn
+         </strong>
+<strong>
+<code>
+           -v
+          </code>
+</strong>
+         command to test.
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="challenge-6-full-automation">
+<h2 class="collapsible-header">
+     🚀 Challenge 6: Automate the complete setup
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<div class="tutorial-flow">
+<p>
+<strong>
+          Objective:
+         </strong>
+         Write a bash script that automates all the steps from the tutorial to set up
+         <code>
+          Java
+         </code>
+         ,
+         <code>
+          Maven
+         </code>
+         , and
+         <code>
+          Tomcat
+         </code>
+<strong>
+          on
+         </strong>
+<strong>
+          a
+         </strong>
+<strong>
+          new
+         </strong>
+<strong>
+<code>
+           AWS
+          </code>
+</strong>
+<strong>
+<code>
+           EC2
+          </code>
+</strong>
+<strong>
+          instance.
+         </strong>
+         The script should also generate a Maven web application, build it, and deploy it to Tomcat.
+        </p>
+<p>
+<strong>
+          Guidance:
+         </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+            Outline
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Steps:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Begin by listing all the tasks you performed manually in the tutorial.
+            </p>
+</li>
+<li>
+<p>
+             Identify the commands and configurations needed for each step.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Automate
+           </strong>
+<strong>
+            System
+           </strong>
+<strong>
+            Preparation:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Automate system updates and installations of necessary packages like
+             <strong>
+              Java
+             </strong>
+<strong>
+              21
+             </strong>
+             (Amazon Corretto).
+            </p>
+</li>
+<li>
+<p>
+             Ensure your script handles dependencies and checks for successful installations.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Set
+           </strong>
+<strong>
+            Environment
+           </strong>
+<strong>
+            Variables:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Include commands to set up environment variables for
+             <strong>
+              Java
+             </strong>
+             (
+             <code>
+              JAVA_HOME
+             </code>
+             ) and
+             <strong>
+              Maven
+             </strong>
+             (
+             <code>
+              M2_HOME
+             </code>
+             , M2).
+            </p>
+</li>
+<li>
+<p>
+             Make sure these variables are exported so that they are available to all users or the intended user.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Install
+           </strong>
+<strong>
+            and
+           </strong>
+<strong>
+            Configure
+           </strong>
+<strong>
+            Maven:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Automate the download and extraction of
+             <strong>
+              Maven
+             </strong>
+             .
+            </p>
+</li>
+<li>
+<p>
+             Set up the necessary directory structures and permissions.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Install
+           </strong>
+<strong>
+            and
+           </strong>
+<strong>
+            Configure
+           </strong>
+<strong>
+            Tomcat:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Script the download, extraction, and setup of
+             <strong>
+              Tomcat
+             </strong>
+             .
+            </p>
+</li>
+<li>
+<p>
+             Configure
+             <strong>
+              Tomcat
+             </strong>
+             settings as needed, such as ports and user access (if required).
+            </p>
+</li>
+<li>
+<p>
+             Set up symbolic links or service files to manage Tomcat easily.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Generate
+           </strong>
+<strong>
+            and
+           </strong>
+<strong>
+            Build
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Maven
+           </strong>
+<strong>
+            Project:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Use
+             <strong>
+              Maven
+             </strong>
+             commands within the script to generate a new web application using the appropriate archetype.
+            </p>
+</li>
+<li>
+<p>
+             Automate any modifications to project files, such as editing the
+             <strong>
+<code>
+               index.jsp
+              </code>
+              .
+             </strong>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Deploy
+           </strong>
+<strong>
+            the
+           </strong>
+<strong>
+            Application
+           </strong>
+<strong>
+            to
+           </strong>
+<strong>
+            Tomcat:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Include commands to build the project and produce the
+             <strong>
+<code>
+               WAR
+              </code>
+</strong>
+             file.
+            </p>
+</li>
+<li>
+<p>
+             Automate the deployment by copying the
+             <strong>
+              WAR
+             </strong>
+             file to
+             <strong>
+              Tomcat
+             </strong>
+             's webapps directory.
+            </p>
+</li>
+<li>
+<p>
+             Manage the
+             <strong>
+              Tomcat
+             </strong>
+             server by including start and stop commands within the script.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Handle
+           </strong>
+<strong>
+            Permissions
+           </strong>
+<strong>
+            and
+           </strong>
+<strong>
+            Ownership:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Ensure that the script accounts for file and directory permissions, especially when running commands with
+             <strong>
+              sudo
+             </strong>
+             .
+            </p>
+</li>
+<li>
+<p>
+             Consider the user context in which the script will run.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Include
+           </strong>
+<strong>
+            Error
+           </strong>
+<strong>
+            Checking
+           </strong>
+<strong>
+            and
+           </strong>
+<strong>
+            Logging:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Add checks after critical commands to verify they completed successfully.
+            </p>
+</li>
+<li>
+<p>
+             Optionally, include logging to a file for easier troubleshooting.
+            </p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<strong>
+            Test
+           </strong>
+<strong>
+            Your
+           </strong>
+<strong>
+            Script:
+           </strong>
+</p>
+<ul class="tutorial-list tutorial-list--level-2">
+<li>
+<p>
+             Run your script on a fresh EC2 instance to ensure it works from start to finish.
+            </p>
+</li>
+<li>
+<p>
+             Make adjustments as necessary based on any errors or issues encountered.
+            </p>
+</li>
+<li>
+<p>
+             The ultimate goal for us is to see the website available via the url:
+             <a href="http://[public-ip-address-of-ec2]/[website-name]/" rel="noopener" target="_blank">
+              http://[public-ip-address-of-ec2]/[website-name]/
+             </a>
+             with the
+             <code>
+              port 80
+             </code>
+</p>
+</li>
+</ul>
+</li>
+</ul>
+<p class="callout callout--note">
+<strong>
+          Note:
+         </strong>
+         This exercise is an opportunity to practice automation and scripting skills, which are essential in DevOps. Focus on understanding how each command contributes to the overall setup and consider how automating these steps can improve efficiency and reduce the potential for errors.
+        </p>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="sample-solutions">
+<h2 class="collapsible-header">
+     🛟 Sample solutions for Challenges 1–5 (try them yourself first)
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--single">
+<div class="card tutorial-page">
+<h3 class="collapsible-header start-open">
+        ⚡ Challenge 1: Modify the Web Application to Display Dynamic Content
+        <span class="collapse-icon">
+</span>
+</h3>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+<strong>
+           Objective:
+          </strong>
+          Enhance the
+          <code>
+           Maven
+          </code>
+          -generated web application to display dynamic content using
+          <code>
+           JSP
+          </code>
+          .
+         </p>
+</div>
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Modify
+            </strong>
+<strong>
+<code>
+              index.jsp
+             </code>
+             :
+            </strong>
+            Update the
+            <code>
+             index.jsp
+            </code>
+            file to display the current server date and time.
+           </p>
+</li>
+</ul>
+<pre><code class="language-xml">&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Dynamic Date and Time&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Hello, World!&lt;/h1&gt;
+  &lt;p&gt;The current server date and time is: &lt;%= new java.util.Date() %&gt;&lt;/p&gt;
+&lt;/body&gt;</code></pre>
+<pre><code class="language-xml">&lt;/html&gt;</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Rebuild
+            </strong>
+<strong>
+             and
+            </strong>
+<strong>
+             Redeploy:
+            </strong>
+            Use Maven to rebuild the
+            <code>
+             WAR
+            </code>
+            file and deploy it to
+            <code>
+             Tomcat
+            </code>
+            .
+           </p>
+</li>
+</ul>
+<pre><code>mvn package
+cp target/helloWorld.war /opt/tomcat/webapps/
+tomcatdown &amp;&amp; tomcatup</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Verify
+            </strong>
+            : Access the web application via the browser to ensure it displays the dynamic content.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Verify : Access the web application via the browser to ensure it displays the dynamic content." class="img-large" height="264" loading="lazy" src="../assets/tutorials/week-4/17-challenge-1-modify-the-web-application-to-display-dynamic-001.png" width="904"/>
+</div>
+</div>
+</div></div>
+<h3 class="collapsible-header">
+        🌐 Challenge 2: Configure Tomcat to Run on Port 80
+        <span class="collapse-icon">
+</span>
+</h3>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+<strong>
+           Objective:
+          </strong>
+          Modify
+          <code>
+           Tomcat
+          </code>
+          's configuration to listen on
+          <code>
+           port 80
+          </code>
+          , the default HTTP port.
+         </p>
+</div>
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Edit
+            </strong>
+<strong>
+             Server
+            </strong>
+<strong>
+             Configuration:
+            </strong>
+            Open the
+            <strong>
+<code>
+              server.xml
+             </code>
+</strong>
+            file in Tomcat's
+            <strong>
+             conf
+            </strong>
+            directory.
+           </p>
+</li>
+</ul>
+<pre><code>nano /opt/tomcat/conf/server.xml</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Change Connector Port:
+           </p>
+</li>
+</ul>
+<pre><code class="language-xml">&lt;Connector port="80" protocol="HTTP/1.1"
+      connectionTimeout="20000"
+      redirectPort="8443"
+      maxParameterCount="1000"
+      /&gt;</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Update
+            </strong>
+<strong>
+             Security
+            </strong>
+<strong>
+             Group:
+            </strong>
+            In
+            <code>
+             AWS
+            </code>
+            , modify the
+            <code>
+             EC2
+            </code>
+            instance's security group to allow inbound traffic on
+            <code>
+             port 80
+            </code>
+            (which we did already but if you have not done it, please do so)
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating traffic on port 80 (which we did already but if you have not done it, please do so)" class="img-large" height="395" loading="lazy" src="../assets/tutorials/week-4/18-challenge-2-configure-tomcat-to-run-on-port-80-001.png" width="904"/>
+</div>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Start the Tomcat server
+           </p>
+</li>
+<li>
+<p>
+            Verify: Access your application via
+            <a href="http://your-ec2-ip/helloWorld/" rel="noopener" target="_blank">
+             http://your-ec2-ip/helloWorld/
+            </a>
+            .
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Verify: Access your application via http://your-ec2-ip/helloWorld/." class="img-large" height="271" loading="lazy" src="../assets/tutorials/week-4/18-challenge-2-configure-tomcat-to-run-on-port-80-002.png" width="904"/>
+</div>
+</div>
+</div></div>
+<h3 class="collapsible-header">
+        🤖 Challenge 3: Automate Deployment with a Shell Script
+        <span class="collapse-icon">
+</span>
+</h3>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+<strong>
+           Objective:
+          </strong>
+          Create a shell script to automate the build and deployment process.
+         </p>
+</div>
+<div class="tutorial-flow">
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Create
+            <strong>
+<code>
+              deploy.sh
+             </code>
+</strong>
+            Script:
+           </p>
+</li>
+</ul>
+<pre><code>#!/bin/bash
+cd ~/helloWorld
+mvn clean package
+cp target/helloWorld.war /opt/tomcat/webapps/
+tomcatdown
+tomcatup</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Make the Script Executable:
+           </p>
+</li>
+</ul>
+<pre><code>chmod +x deploy.sh</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Run the Script:
+           </p>
+</li>
+</ul>
+<pre><code>./deploy.sh</code></pre>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Make some changes to the
+            <code>
+             index.js
+            </code>
+            then run the deploy script to test it!
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             Verify
+            </strong>
+            : Ensure that the application is redeployed successfully.
+           </p>
+</li>
+</ul>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating Verify : Ensure that the application is redeployed successfully." class="img-large" height="331" loading="lazy" src="../assets/tutorials/week-4/19-challenge-3-automate-deployment-with-a-shell-script-001.png" width="904"/>
+</div>
+</div>
+</div></div>
+<h3 class="collapsible-header">
+        ⚙️ Challenge 4: Set Up Tomcat as a Service
+        <span class="collapse-icon">
+</span>
+</h3>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+<strong>
+           Objective:
+          </strong>
+          Configure
+          <code>
+           Tomcat
+          </code>
+          to start automatically when the
+          <code>
+           EC2
+          </code>
+          instance boots.
+         </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Easy
+            </strong>
+<strong>
+             solution
+            </strong>
+<strong>
+             (using
+            </strong>
+<strong>
+             cron
+            </strong>
+<strong>
+             scheduler)
+            </strong>
+</p>
+</li>
+</ol>
+<p>
+          A very simple way to run a command at startup is to use a cron job with the special @reboot directive.
+         </p>
+<p class="callout callout--note">
+<strong>
+           What
+          </strong>
+<strong>
+           is
+          </strong>
+<strong>
+           cron?
+          </strong>
+</p>
+<p class="callout callout--note">
+<strong>
+           cron
+          </strong>
+          is a time-based job scheduler in Unix-like operating systems. You can tell it to run commands at specific times or, in this case, every time the system boots.
+         </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Edit the crontab for the root user. You need sudo because you're modifying a system-level schedule. The -e flag means "edit".
+           </p>
+</li>
+</ol>
+<pre><code>sudo crontab -e</code></pre>
+<p>
+          If it's the first time you're running this, it might ask you to choose an editor. Just press Enter to select the default (usually nano).
+         </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Add the @reboot command. Go to the bottom of the file and add this single line:
+           </p>
+</li>
+</ol>
+<pre><code>@reboot /opt/tomcat/bin/startup.sh</code></pre>
+<p>
+          This line tells the cron scheduler: "Every time the system reboots, execute the Tomcat startup script."
+         </p>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            In nano, press Ctrl+X, then Y to confirm, and Enter to save.
+           </p>
+</li>
+<li>
+<p>
+            That's it! You're done. Now, when you reboot the EC2 instance, cron will automatically run the startup script for you.
+           </p>
+</li>
+<li>
+<p>
+            Verify: Check the status of the Tomcat service.
+           </p>
+</li>
+</ol>
+<pre><code>sudo systemctl status tomcat</code></pre>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            Can you check if the HelloWorld website is available via the new public IP address of EC2: “
+            <a href="http://[your-public-ip-address-of-ec2]/helloWorld/" rel="noopener" target="_blank">
+             http://[your-public-ip-address-of-ec2]/helloWorld/
+            </a>
+            ”
+           </p>
+</li>
+</ol>
+<div class="tutorial-image-group">
+<img alt="Screenshot illustrating “http://[your-public-ip-address-of-ec2]/helloWorld/”" class="img-large" height="316" loading="lazy" src="../assets/tutorials/week-4/20-challenge-4-set-up-tomcat-as-a-service-001.png" width="903"/>
+</div>
+<p>
+<strong>
+           However
+          </strong>
+          , this solution is easier but not better:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             No
+            </strong>
+<strong>
+             Logging:
+            </strong>
+<strong>
+             s
+            </strong>
+            ystemd automatically captures all the output from your service into a central log (journalctl). With cron, the output is often emailed to the user or discarded, making troubleshooting harder.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             No
+            </strong>
+<strong>
+             Automatic
+            </strong>
+<strong>
+             Restart:
+            </strong>
+            If Tomcat crashes for some reason,
+            <code>
+             systemd
+            </code>
+            can be configured to automatically restart it. cron will not; it only runs the command once at boot.
+           </p>
+</li>
+</ul>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Hard
+            </strong>
+<strong>
+             solution
+            </strong>
+<strong>
+             (using
+            </strong>
+<strong>
+             SystemD
+            </strong>
+<strong>
+             Service)
+            </strong>
+</p>
+</li>
+</ol>
+<p>
+          For a lab, cron @reboot is a fantastic, simple shortcut. For a real server, systemd is far more robust and reliable.
+         </p>
+<p>
+          The systemd method is powerful but requires creating a multi-section configuration file. Enough helping from me, could you do it? At least try, please!
+         </p>
+</div>
+</div></div>
+<h3 class="collapsible-header">
+        🔍 Challenge 5: Investigate and Resolve "Command Not Found" for mvn
+        <span class="collapse-icon">
+</span>
+</h3>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="tutorial-flow">
+<p>
+          This problem is a classic Linux environment puzzle. The key is understanding how different shells load their configuration.
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+            sudo su - (Login Shell): The - (or
+            <code>
+             --login
+            </code>
+            ) is the magic part. It tells su to start a login shell. A login shell simulates a fresh login. It sources system-wide profiles like
+            <code>
+             /etc/profile
+            </code>
+            and then the user's specific login profile, which for root is
+            <code>
+             /root/.bash_profile
+            </code>
+            . In the lab, you added the
+            <code>
+             Maven
+            </code>
+            paths to
+            <code>
+             /root/.bash_profile
+            </code>
+            , which is why this works.
+           </p>
+</li>
+<li>
+<p>
+            sudo su (Non-Login Shell): Without the -, su starts a non-login shell. This type of shell does not read
+            <code>
+             /root/.bash_profile
+            </code>
+            . It typically reads
+            <code>
+             /root/.bashrc
+            </code>
+            . Since the Maven path isn't in
+            <code>
+             .bashrc
+            </code>
+            , the mvn command is not found.
+           </p>
+</li>
+<li>
+<p>
+            ec2-user: The ec2-user is a completely different user with its own home directory (
+            <code>
+             /home/ec2-user/
+            </code>
+            ) and its own
+            <code>
+             .bash_profile
+            </code>
+            . You never modified this user's profile, so it has no knowledge of where Maven is installed.
+           </p>
+</li>
+</ul>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Easy
+            </strong>
+<strong>
+             solution
+            </strong>
+<strong>
+             (Use
+            </strong>
+<strong>
+             a
+            </strong>
+<strong>
+             Symbolic
+            </strong>
+<strong>
+             Link):
+            </strong>
+</p>
+</li>
+</ol>
+<p>
+          The problem is that the mvn command is not in a directory listed in the PATH for all users. The "proper" solution fixes the PATH environment variable for everyone. A more direct, "brute force" solution is to simply place a link to the mvn command in a directory that is already in everyone's PATH.
+         </p>
+<p>
+          The
+          <code>
+           /usr/local/bin
+          </code>
+          directory is the standard place for manually installed executables and is included in the default PATH for all users on almost every Linux system.
+         </p>
+<p>
+<strong>
+           1a.Create
+          </strong>
+<strong>
+           a
+          </strong>
+<strong>
+           symbolic
+          </strong>
+<strong>
+           link
+          </strong>
+<strong>
+           (shortcut)
+          </strong>
+<strong>
+           to
+          </strong>
+<strong>
+           the
+          </strong>
+<strong>
+           mvn
+          </strong>
+<strong>
+           executable
+          </strong>
+</p>
+<pre><code>sudo ln -s /opt/maven/bin/mvn /usr/local/bin/mvn</code></pre>
+<p>
+          The ln -s command creates a symbolic link. The first argument is the real file (
+          <code>
+           /opt/maven/bin/mvn
+          </code>
+          ), and the second argument is where you want the link to be (
+          <code>
+           /usr/local/bin/mvn
+          </code>
+          ).
+         </p>
+<p>
+          That's it! The change is immediate. You don't need to log out or reload anything.
+         </p>
+<p>
+          Now, log in as ec2-user (or use sudo su) and run the command. It will work instantly.
+         </p>
+<pre><code># As ec2-user
+mvn -v
+# Or with sudo su
+sudo su
+mvn -v</code></pre>
+<p>
+          The shell will look for mvn in the directories in its PATH, find it in
+          <code>
+           /usr/local/bin
+          </code>
+          , and follow the link to the actual executable.
+         </p>
+<p>
+<strong>
+           However
+          </strong>
+          , this solution is easier but not better:
+         </p>
+<ul class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             It's
+            </strong>
+<strong>
+             an
+            </strong>
+<strong>
+             Incomplete
+            </strong>
+<strong>
+             Fix
+            </strong>
+            : This only makes the mvn command itself available. It does not set the crucial
+            <code>
+             JAVA_HOME
+            </code>
+            or
+            <code>
+             M2_HOME
+            </code>
+            environment variables for all users. Maven often relies on
+            <code>
+             JAVA_HOME
+            </code>
+            to find the
+            <code>
+             Java
+            </code>
+            compiler. While it might work in many cases (because it can often infer the Java location), it can fail in more complex scenarios or with other Java-based tools that strictly require
+            <code>
+             JAVA_HOME
+            </code>
+            to be set.
+           </p>
+</li>
+<li>
+<p>
+<strong>
+             Less
+            </strong>
+<strong>
+             Maintainable
+            </strong>
+            : If you install many tools this way, you'll have dozens of symbolic links in
+            <code>
+             /usr/local/bin
+            </code>
+            . The
+            <code>
+             /etc/profile.d
+            </code>
+            approach keeps the configuration for each tool contained in its own file, which is cleaner.
+           </p>
+</li>
+</ul>
+<ol class="tutorial-list tutorial-list--level-1">
+<li>
+<p>
+<strong>
+             Hard
+            </strong>
+<strong>
+             solution
+            </strong>
+<strong>
+             (Use
+            </strong>
+<strong>
+             system-wide
+            </strong>
+<strong>
+<code>
+              /etc/profile.d/
+             </code>
+             ):
+            </strong>
+</p>
+</li>
+</ol>
+<p>
+          The best solution is to create a script in the
+          <code>
+           /etc/profile.d/
+          </code>
+          directory. Any file ending in
+          <code>
+           .sh
+          </code>
+          in this directory is automatically executed for every user upon login.
+         </p>
+<p>
+          Enough helping from me, could you do it? At least try, please!
+         </p>
+</div>
+</div></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="whats-next">
+<h2 class="collapsible-header start-open">
+     📚 Continue the course
+     <span class="collapse-icon">
+</span>
+</h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--home">
+<a class="card" href="week-3-git-aws-lab.html">
+<h3>
+        🔀 Week 3: Git and AWS
+       </h3>
+<p>
+        Continue through the COSC2767 learning path.
+       </p>
+<span class="go-to-link">
+        Previous lab
+       </span>
+</a>
+<a class="card" href="week-5-jenkins-ci-cd-lab.html">
+<h3>
+        🔧 Week 5: Jenkins for CI and CD
+       </h3>
+<p>
+        Continue through the COSC2767 learning path.
+       </p>
+<span class="go-to-link">
+        Next lab
+       </span>
+</a>
+<a class="card" href="../index.html">
+<h3>
+        🗓️ All weekly labs
+       </h3>
+<p>
+        Return to the course map and review every weekly tutorial.
+       </p>
+<span class="go-to-link">
+        Course home
+       </span>
+</a>
+</div>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-foundations)" href="../sub_pages/week-3-git-aws-lab.html"><span class="pager__dir">← Previous</span><span class="pager__title">Git and AWS</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-delivery)" href="../sub_pages/week-5-jenkins-ci-cd-lab.html"><span class="pager__dir">Next →</span><span class="pager__title">Jenkins for CI and CD</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="objective"><a class="toc__link" href="#objective"><span>Objective</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="delivery-stack-overview"><a class="toc__link" href="#delivery-stack-overview"><span>Java, Maven, Tomcat, and EC2 architecture</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="create-ec2-instance"><a class="toc__link" href="#create-ec2-instance"><span>Create the EC2 instance</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="install-java"><a class="toc__link" href="#install-java"><span>Install Java</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="install-maven"><a class="toc__link" href="#install-maven"><span>Install Maven</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="install-tomcat"><a class="toc__link" href="#install-tomcat"><span>Install Tomcat</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="configure-tomcat-access"><a class="toc__link" href="#configure-tomcat-access"><span>Optional: Configure Tomcat users and access</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="tomcat-shortcuts"><a class="toc__link" href="#tomcat-shortcuts"><span>Create Tomcat startup shortcuts</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="generate-maven-webapp"><a class="toc__link" href="#generate-maven-webapp"><span>Generate a Maven web application</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="build-maven-webapp"><a class="toc__link" href="#build-maven-webapp"><span>Build the web application with Maven</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="deploy-war-to-tomcat"><a class="toc__link" href="#deploy-war-to-tomcat"><span>Deploy the WAR file to Tomcat</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="your-challenges"><a class="toc__link" href="#your-challenges"><span>Challenge overview</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-1-dynamic-content"><a class="toc__link" href="#challenge-1-dynamic-content"><span>Challenge 1: Display dynamic content</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-2-port-80"><a class="toc__link" href="#challenge-2-port-80"><span>Challenge 2: Run Tomcat on port 80</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-3-deploy-script"><a class="toc__link" href="#challenge-3-deploy-script"><span>Challenge 3: Automate deployment with Bash</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-4-tomcat-service"><a class="toc__link" href="#challenge-4-tomcat-service"><span>Challenge 4: Run Tomcat as a service</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-5-maven-path"><a class="toc__link" href="#challenge-5-maven-path"><span>Challenge 5: Resolve “mvn: command not found”</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="challenge-6-full-automation"><a class="toc__link" href="#challenge-6-full-automation"><span>Challenge 6: Automate the complete setup</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="sample-solutions"><a class="toc__link" href="#sample-solutions"><span>Sample solutions for Challenges 1–5 (try them yourself first)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="whats-next"><a class="toc__link" href="#whats-next"><span>Continue the course</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 20 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Stand up the full COSC2767 delivery stack — Docker, Maven, Tomcat, and Jenkins — from a blank machine, verify every layer, then reset it to a clean slate for another practice run.">
+<title>Practice Environment Setup - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=acac72b936">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=62a264de0e"></script>
+</head>
+<body data-page="setup" data-stage="resources" data-root="../" style="--stage-accent: var(--stage-resources)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Reference</span><span class="crumb-sep">/</span><span>Practice Environment Setup</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="8"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Reference</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">🧰</span>Practice Environment Setup</h1>
+<p class="page-hero__intro">Stand up the Weeks 4–6 delivery stack — <code>Docker</code>, <code>Maven</code>, <code>Tomcat</code>, and <code>Jenkins</code> — from a blank machine, verify every layer, then reset it to a clean slate so you can drill the whole build again with <code>/grill-me</code>.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>11</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>30</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>23</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="setup-overview">
+<h2 class="collapsible-header start-open">🎯 What you are building<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>The practice topology</h3>
+<p>The course runs the delivery stack across small Amazon Linux 2023 EC2 instances. Two servers reproduce the Week 4–5 architecture; Docker gets its own host in Week 6.</p>
+<pre><code class="language-bash">jenkins-server : 8080  # Jenkins UI, builds the WAR with Maven
+tomcat-server  : 8080  # Tomcat 9, receives and serves the WAR
+docker-host    : —     # Docker Engine, images and containers</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> you want a faithful rebuild of the lab environment. One instance can host everything if you move ports around — see the port-clash drill below.</p>
+</div>
+<div class="card">
+<h3>The install order</h3>
+<p>Each layer depends on the one before it, which is why the sequence matters and is worth memorising.</p>
+<pre><code class="language-bash">1. Java (Corretto 21)   # Maven, Tomcat, and Jenkins all run on the JVM
+2. Maven                # builds the WAR; needs a JDK, not just a JRE
+3. Tomcat 9             # serves the WAR; needs a JRE
+4. Jenkins LTS          # orchestrates 2 → 3; needs Java 17 or 21
+5. Docker               # independent of the JVM stack</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> Java first, always. Everything except Docker is a JVM application.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Why separate servers:</strong> Jenkins and Tomcat both default to port 8080, and keeping them apart also separates credentials, blast radius, and resource contention — the same reasoning the Week 5 lab asks you about.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-clean-machines">
+<h2 class="collapsible-header">☁️ Start from clean machines<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Launch the EC2 instances</h3>
+<p>In the AWS console launch Amazon Linux 2023 instances (t2.micro or t3.micro is enough), all sharing one key pair so practice stays simple.</p>
+<pre><code class="language-bash"># Security group inbound rules
+SSH   22    My IP        # shell access
+HTTP  8080  My IP        # Jenkins UI / Tomcat UI
+# plus 8080 from the Jenkins SG on the Tomcat SG (deployment)</code></pre>
+<p class="command-purpose"><strong>Security:</strong> never open 8080 to 0.0.0.0/0 — an unlocked Jenkins on the open internet is compromised within hours.</p>
+</div>
+<div class="card">
+<h3>Connect and orient yourself</h3>
+<p>SSH in with your key and confirm what machine you are on before installing anything — the Week 2 reflex.</p>
+<pre><code class="language-bash">ssh -i labsuser.pem ec2-user@&lt;public-ip&gt;
+whoami
+cat /etc/os-release
+sudo yum update -y</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> every fresh instance, before any install. <code>yum update</code> first avoids stale-package surprises later.</p>
+</div>
+<div class="card">
+<h3>Ghostty: make clear work on EC2</h3>
+<p>Ghostty sets <code>TERM=xterm-ghostty</code>, which Amazon Linux does not have in its terminfo database — so <code>clear</code>, <code>top</code>, and <code>nano</code> complain about an unknown terminal. Send your terminal's terminfo to the instance once, from your Mac:</p>
+<pre><code class="language-bash">infocmp -x xterm-ghostty | \
+    ssh -i "devops_key.pem" ec2-user@&lt;ec2-endpoint&gt; -- sudo tic -x -</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> with <code>sudo</code>, the entry lands in root's <code>~/.terminfo</code> (covers <code>sudo su -</code> shells); run it again without <code>sudo</code> for plain <code>ec2-user</code> sessions. Quick fallback either way: <code>export TERM=xterm-256color</code>.</p>
+</div>
+</div>
+<p class="callout callout--warning"><strong>Cost and cleanup:</strong> stop instances when you finish a practice session and terminate them when you finish the drill entirely. The clean-slate section below covers both paths.</p>
+<p class="callout callout--note"><strong>No AWS credit to spare?</strong> The macOS section near the end shows how to practise the same yum commands inside an <code>amazonlinux:2023</code> Docker container for free.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-java">
+<h2 class="collapsible-header">☕ Step 1 — Java 21 (Corretto)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Install the JDK</h3>
+<p>Amazon Corretto is AWS's OpenJDK build. On the build machine install the <code>-devel</code> package so you get <code>javac</code> — Maven compiles source, so a JRE alone is not enough.</p>
+<pre><code class="language-bash">sudo yum install -y java-21-amazon-corretto-devel
+java -version
+javac -version</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> the labs install <code>java-21-amazon-corretto</code>; the <code>-devel</code> variant adds the compiler and JDK tools. On a Tomcat-only box the plain package is fine.</p>
+</div>
+<div class="card">
+<h3>Set JAVA_HOME persistently</h3>
+<p>Maven and Tomcat resolve the JVM through <code>JAVA_HOME</code>. Derive it from the real <code>java</code> binary so the line survives any architecture or version change.</p>
+<pre><code class="language-bash">echo 'export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))' &gt;&gt; ~/.bashrc
+source ~/.bashrc
+echo $JAVA_HOME</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> <code>JAVA_HOME</code> points at the JVM install directory; <code>PATH</code> decides which executables your shell finds. They solve different problems.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> <code>java -version</code>, <code>javac -version</code>, and <code>echo $JAVA_HOME</code> all report Corretto 21 — including in a brand-new SSH session.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-maven">
+<h2 class="collapsible-header">📦 Step 2 — Maven<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Download and unpack to /opt</h3>
+<p>Maven ships as a binary tarball from the Apache CDN — pinned here to 3.9.16. If the download ever 404s, the version was superseded: grab the new one from <a href="https://maven.apache.org/download.cgi" rel="noopener" target="_blank">maven.apache.org/download.cgi</a>.</p>
+<pre><code class="language-bash">cd /tmp
+wget https://dlcdn.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz
+sudo tar -xzf apache-maven-3.9.16-bin.tar.gz -C /opt
+sudo ln -s /opt/apache-maven-3.9.16 /opt/maven</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> the <code>/opt/maven</code> symlink means upgrades only ever touch the link — your <code>PATH</code> line never changes.</p>
+</div>
+<div class="card">
+<h3>Put mvn on the PATH and verify</h3>
+<p>A tarball install is invisible to your shell until its <code>bin</code> directory is on the <code>PATH</code> — this is exactly the Week 4 "mvn: command not found" challenge.</p>
+<pre><code class="language-bash">echo 'export PATH=/opt/maven/bin:$PATH' &gt;&gt; ~/.bashrc
+source ~/.bashrc
+mvn -version</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> <code>mvn: command not found</code> — it is almost always a PATH problem, not a broken install.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> <code>mvn -version</code> prints the Maven version and the Corretto 21 JVM it found via <code>JAVA_HOME</code>.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-tomcat">
+<h2 class="collapsible-header">🐈 Step 3 — Tomcat 9<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Download, unpack, and start</h3>
+<p>Same tarball pattern as Maven — pinned here to 9.0.120. If the download ever 404s, grab the current 9.0.x from <a href="https://tomcat.apache.org/download-90.cgi" rel="noopener" target="_blank">tomcat.apache.org/download-90.cgi</a>.</p>
+<pre><code class="language-bash">cd /tmp
+wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.120/bin/apache-tomcat-9.0.120.tar.gz
+sudo tar -xzf apache-tomcat-9.0.120.tar.gz -C /opt
+sudo ln -s /opt/apache-tomcat-9.0.120 /opt/tomcat
+sudo /opt/tomcat/bin/startup.sh
+curl -I http://localhost:8080</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> <code>curl</code> returns <code>HTTP/1.1 200</code>, Tomcat is up; then open <code>http://&lt;tomcat-ip&gt;:8080</code> in a browser for the cat splash page.</p>
+</div>
+<div class="card">
+<h3>Create the manager user Jenkins will use</h3>
+<p>Remote deployment goes through Tomcat's manager application, which ships with no users at all. Add one to <code>/opt/tomcat/conf/tomcat-users.xml</code> just above the closing tag.</p>
+<pre><code class="language-xml">&lt;role rolename="manager-gui"/&gt;
+&lt;role rolename="manager-script"/&gt;
+&lt;user username="deployer" password="&lt;strong-password&gt;"
+      roles="manager-gui,manager-script"/&gt;</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> <code>manager-gui</code> is for humans in a browser; <code>manager-script</code> is the text/API interface Jenkins uses. Jenkins needs <code>manager-script</code>.</p>
+</div>
+<div class="card">
+<h3>Allow the manager app to be reached remotely</h3>
+<p>By default the manager app only accepts connections from localhost via a <code>RemoteAddrValve</code> in <code>webapps/manager/META-INF/context.xml</code>. Comment the valve out, then restart.</p>
+<pre><code class="language-bash">sudo nano /opt/tomcat/webapps/manager/META-INF/context.xml
+# wrap the &lt;Valve className="...RemoteAddrValve".../&gt; element
+# in &lt;!-- ... --&gt; comment markers
+sudo /opt/tomcat/bin/shutdown.sh
+sudo /opt/tomcat/bin/startup.sh</code></pre>
+<p class="command-purpose"><strong>Security:</strong> in anything beyond a lab, restrict the valve's <code>allow</code> pattern to the Jenkins server's IP instead of removing it.</p>
+</div>
+<div class="card">
+<h3>Optional: startup shortcuts or a systemd service</h3>
+<p>Symlinks give you quick manual control; a systemd unit (the Week 4 challenge) makes Tomcat survive reboots like a real service.</p>
+<pre><code class="language-bash">sudo ln -s /opt/tomcat/bin/startup.sh  /usr/local/bin/tomcatup
+sudo ln -s /opt/tomcat/bin/shutdown.sh /usr/local/bin/tomcatdown
+tomcatup
+sudo systemctl status tomcat   # only after the Challenge 4 unit file exists</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> if you write the systemd unit, stop using the shortcut scripts — mixing the two leaves systemd's view of the service state wrong.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the Tomcat splash page loads from your browser, and <code>http://&lt;tomcat-ip&gt;:8080/manager/html</code> accepts the <code>deployer</code> login.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-jenkins">
+<h2 class="collapsible-header">🤵 Step 4 — Jenkins LTS<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Add the repo and install</h3>
+<p>Jenkins is not in the Amazon Linux repos — add the official Jenkins yum repository and its signing key first, exactly as in Week 5. Install on its <em>own</em> server (or plan ports first).</p>
+<pre><code class="language-bash">sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+sudo yum upgrade -y
+sudo yum install -y fontconfig java-21-amazon-corretto
+sudo yum install -y jenkins git</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> <code>fontconfig</code> is a real dependency (Jenkins renders images headlessly), and Jenkins needs Git on the box to clone your repository.</p>
+</div>
+<div class="card">
+<h3>Start it and unlock the UI</h3>
+<p>Enable the service, then trade the generated secret for your first admin account in the browser.</p>
+<pre><code class="language-bash">sudo systemctl daemon-reload
+sudo systemctl enable --now jenkins
+sudo systemctl status jenkins
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> the unlock screen at <code>http://&lt;jenkins-ip&gt;:8080</code> asks for the initial admin password — paste the secret, choose <em>Install suggested plugins</em>, create your admin user.</p>
+</div>
+<div class="card">
+<h3>Install the two lab plugins</h3>
+<p>Under <em>Manage Jenkins → Plugins → Available</em>, add the two plugins the Week 5 pipeline depends on, then restart if prompted.</p>
+<pre><code class="language-bash">Maven Integration     # adds the "Maven project" job type
+Deploy to container   # adds the WAR-to-Tomcat post-build action</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> "Deploy to container" talks to Tomcat's <code>manager-script</code> role — that is why you created the <code>deployer</code> user in Step 3.</p>
+</div>
+<div class="card">
+<h3>Tell Jenkins where its tools are</h3>
+<p>Under <em>Manage Jenkins → Tools</em>, register the JDK and Maven so jobs can resolve them by name.</p>
+<pre><code class="language-bash">JDK    name: corretto-21   JAVA_HOME: output of `echo $JAVA_HOME`
+Maven  name: maven-3.9     MAVEN_HOME: /opt/maven
+# or tick "Install automatically" for Maven</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> the names you choose here are what job configuration dropdowns show later — keep them descriptive.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> you can log in to Jenkins at <code>http://&lt;jenkins-ip&gt;:8080</code>, and both plugins appear under <em>Installed plugins</em>.</p>
+<p class="callout callout--warning"><strong>Security:</strong> the unlock secret lives at <code>/var/lib/jenkins/secrets/initialAdminPassword</code> and everything Jenkins knows lives under <code>/var/lib/jenkins</code> — treat that directory as the crown jewels.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-docker">
+<h2 class="collapsible-header">🐳 Step 5 — Docker Engine<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Install, enable, and join the docker group</h3>
+<p>On Amazon Linux, Docker installs straight from the default repos. Adding <code>ec2-user</code> to the <code>docker</code> group removes the need for <code>sudo</code> on every command.</p>
+<pre><code class="language-bash">sudo yum install -y docker
+sudo systemctl enable --now docker
+sudo usermod -aG docker ec2-user
+exit   # group membership loads on next login — reconnect now</code></pre>
+<p class="command-purpose"><strong>Security:</strong> docker-group membership is effectively root on that host (containers can mount <code>/</code>). Fine in a lab; a real decision in production.</p>
+</div>
+<div class="card">
+<h3>Verify with hello-world</h3>
+<p>The canonical smoke test pulls a tiny image and runs it — proving the daemon, the registry connection, and your group membership in one go.</p>
+<pre><code class="language-bash">docker run hello-world
+docker ps -a
+docker images</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> "Hello from Docker!" prints without <code>sudo</code>, the engine is ready for the Week 6 Tomcat-image labs.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> <code>docker run hello-world</code> succeeds as <code>ec2-user</code> with no <code>sudo</code>.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-wire-pipeline">
+<h2 class="collapsible-header">🔁 Wire it together: one WAR through the pipeline<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Generate and build a webapp with Maven</h3>
+<p>The Week 4 archetype gives you a minimal WAR project — build it once by hand so you know what Jenkins is about to automate, then push it to GitHub.</p>
+<pre><code class="language-bash">mvn archetype:generate -DgroupId=com.rmit.practice \
+    -DartifactId=practice-webapp \
+    -DarchetypeArtifactId=maven-archetype-webapp \
+    -DinteractiveMode=false
+cd practice-webapp
+mvn clean package
+ls target/*.war</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> <code>clean</code> deletes <code>target/</code>, <code>package</code> compiles and zips the WAR. The WAR is just a zip with a mandated layout.</p>
+</div>
+<div class="card">
+<h3>Create the Jenkins job</h3>
+<p>This is the Week 5 flow end-to-end: source from Git, build with Maven, ship to Tomcat as a post-build action.</p>
+<pre><code class="language-bash">New Item → Maven project (or Freestyle)
+  Source Code Management : Git → your repo URL
+  Build                  : clean package
+  Post-build             : Deploy war/ear to a container
+    WAR/EAR files : **/target/*.war
+    Context path  : /practice
+    Container     : Tomcat 9.x
+    Credentials   : deployer / &lt;strong-password&gt;
+    Tomcat URL    : http://&lt;tomcat-ip&gt;:8080</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> use the Tomcat server's <em>private</em> IP if both instances share a VPC — traffic stays inside the network and survives public-IP changes on stop/start.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> <em>Build Now</em> goes green and <code>http://&lt;tomcat-ip&gt;:8080/practice/</code> serves the archetype's "Hello World!" page. That is the entire delivery stack working.</p>
+<p class="callout callout--task"><strong>Task:</strong> break it on purpose — stop Tomcat and rebuild, mistype the credentials, delete the WAR glob — and read each failure in the Jenkins console output. Diagnosing these is prime <code>/grill-me</code> material.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-clean-slate">
+<h2 class="collapsible-header">🧹 Reset to a clean slate<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Undeploy, keep the stack</h3>
+<p>The lightest reset: remove your app but leave every tool installed, ready for the next practice deployment.</p>
+<pre><code class="language-bash">sudo rm -rf /opt/tomcat/webapps/practice*
+rm -rf ~/.m2/repository       # force Maven to re-download everything
+rm -rf ~/practice-webapp      # regenerate from the archetype next run</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> you want to re-drill the Maven → Jenkins → Tomcat flow without reinstalling the tools.</p>
+</div>
+<div class="card">
+<h3>Factory-reset Jenkins</h3>
+<p>Jenkins keeps all state — jobs, plugins, credentials, users — in one directory. Deleting it returns you to the unlock screen.</p>
+<pre><code class="language-bash">sudo systemctl stop jenkins
+sudo rm -rf /var/lib/jenkins
+sudo systemctl start jenkins
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> one directory, all state — this is also why backing up <code>/var/lib/jenkins</code> <em>is</em> backing up Jenkins.</p>
+</div>
+<div class="card">
+<h3>Factory-reset Tomcat</h3>
+<p>Because Tomcat lives in one directory from a tarball, a reset is delete-and-re-extract.</p>
+<pre><code class="language-bash">sudo /opt/tomcat/bin/shutdown.sh
+sudo rm -rf /opt/apache-tomcat-9.0.120 /opt/tomcat
+sudo tar -xzf /tmp/apache-tomcat-9.0.120.tar.gz -C /opt
+sudo ln -s /opt/apache-tomcat-9.0.120 /opt/tomcat</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> keep the downloaded tarballs in <code>/tmp</code> (or re-download) — re-extracting is faster than re-configuring.</p>
+</div>
+<div class="card">
+<h3>Wipe Docker clean</h3>
+<p>One command removes every stopped container, unused image, network, and — with the flag — every volume.</p>
+<pre><code class="language-bash">docker system prune -a --volumes
+docker ps -a      # empty
+docker images     # empty</code></pre>
+<p class="command-purpose"><strong>Warning:</strong> <code>--volumes</code> deletes data volumes too. In a practice lab that is the point; on a shared box it is a career moment.</p>
+</div>
+</div>
+<p class="callout callout--warning"><strong>Cost and cleanup:</strong> the true clean slate is terminating the EC2 instances in the AWS console — no instance, no bill. Rebuilding from this page afterwards <em>is</em> the practice.</p>
+<p class="callout callout--task"><strong>Challenge:</strong> script the whole rebuild (Steps 1–4 on a fresh instance) in a single Bash file — that is Week 4's Challenge 6, and being able to explain each line is exactly what <code>/grill-me</code> will probe.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-local-macos">
+<h2 class="collapsible-header">💻 Local fallback on macOS<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Native tools via Homebrew</h3>
+<p>For quick Maven practice on your Mac, Homebrew covers the build side of the stack.</p>
+<pre><code class="language-bash">brew install openjdk@21 maven
+brew install --cask docker    # Docker Desktop; launch it once
+java -version &amp;&amp; mvn -version &amp;&amp; docker run hello-world</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> follow Homebrew's caveat about linking <code>openjdk@21</code> into your PATH — <code>brew info openjdk@21</code> reprints it.</p>
+</div>
+<div class="card">
+<h3>Jenkins and Tomcat as containers</h3>
+<p>Containers give the cleanest reset story on a laptop: state lives in named volumes, and different host ports sidestep the 8080 clash.</p>
+<pre><code class="language-bash">docker run -d --name jenkins -p 8090:8080 \
+    -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts-jdk21
+docker run -d --name tomcat -p 8081:8080 tomcat:9.0
+# full reset:
+docker rm -f jenkins tomcat &amp;&amp; docker volume rm jenkins_home</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> Jenkins at <code>localhost:8090</code>, Tomcat at <code>localhost:8081</code> — two 8080-native apps coexisting because port <em>mapping</em> decouples host from container.</p>
+</div>
+<div class="card">
+<h3>Drill the exact lab commands for free</h3>
+<p>The labs use <code>yum</code> on Amazon Linux, not <code>brew</code> — so practise the real commands inside a throwaway Amazon Linux container.</p>
+<pre><code class="language-bash">docker run -it --rm amazonlinux:2023 bash
+# now inside the container:
+yum install -y java-21-amazon-corretto-devel wget tar gzip
+# ...run Steps 1–3 exactly as written above, then `exit` — all gone</code></pre>
+<p class="command-purpose"><strong>Tip:</strong> <code>--rm</code> deletes the container on exit — every run starts from a genuinely clean slate, which is ideal for repetition drills.</p>
+</div>
+</div>
+<p class="callout callout--warning"><strong>Important:</strong> <code>systemctl</code> does not run inside these containers and Homebrew paths differ from the labs — when <code>/grill-me</code> asks, answer with the Amazon Linux commands, not the macOS ones.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="setup-grill-drills">
+<h2 class="collapsible-header">🎓 Drill yourself with /grill-me<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>How to run a drill</h3>
+<p>Open this page (or the Week 4–6 labs) in a Claude Code session and run <code>/grill-me</code> — answer from memory first, then verify against the page and, ideally, against a live practice machine.</p>
+<pre><code class="language-bash">1. Reset to a clean slate (previous section)
+2. /grill-me            # answer before you peek
+3. Rebuild the stack from memory, page closed
+4. Diff what you typed against this page</code></pre>
+<p class="command-purpose"><strong>Remember:</strong> typing the commands on a real machine beats re-reading them — recall practice is the whole point of the clean-slate loop.</p>
+</div>
+<div class="card">
+<h3>What you should be able to answer cold</h3>
+<p>If any of these feels shaky, that is the section to rebuild from scratch today.</p>
+<pre><code class="language-bash">- the install order, and why Java is first
+- JAVA_HOME vs PATH, and where each is set
+- why Maven needs -devel (JDK) but Tomcat runs on a JRE
+- what clashes when Jenkins and Tomcat share a box, and 2 fixes
+- manager-gui vs manager-script, and which one Jenkins needs
+- the Jenkins unlock-secret path, and the one directory holding all state
+- why usermod -aG docker, and its security trade-off
+- the clean-reset commands for Maven, Tomcat, Jenkins, Docker</code></pre>
+<p class="command-purpose"><strong>Use when:</strong> deciding what to drill next — each line maps to one section of this page.</p>
+</div>
+</div>
+<p class="callout callout--task"><strong>Question:</strong> a build goes green in Jenkins but <code>/practice/</code> returns 404 on Tomcat. List, in order, the three places you would look — then go break your practice stack the same way and check your answer.</p>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-resources)" href="../sub_pages/useful-resources.html"><span class="pager__dir">← Previous</span><span class="pager__title">Useful Resources</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-resources)" href="../sub_pages/challenge-6-setup-script.html"><span class="pager__dir">Next →</span><span class="pager__title">Challenge 6 Setup Script</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="setup-overview"><a class="toc__link" href="#setup-overview"><span>What you are building</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-clean-machines"><a class="toc__link" href="#setup-clean-machines"><span>Start from clean machines</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-java"><a class="toc__link" href="#setup-java"><span>Step 1 — Java 21 (Corretto)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-maven"><a class="toc__link" href="#setup-maven"><span>Step 2 — Maven</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-tomcat"><a class="toc__link" href="#setup-tomcat"><span>Step 3 — Tomcat 9</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-jenkins"><a class="toc__link" href="#setup-jenkins"><span>Step 4 — Jenkins LTS</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-docker"><a class="toc__link" href="#setup-docker"><span>Step 5 — Docker Engine</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-wire-pipeline"><a class="toc__link" href="#setup-wire-pipeline"><span>Wire it together: one WAR through the pipeline</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-clean-slate"><a class="toc__link" href="#setup-clean-slate"><span>Reset to a clean slate</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-local-macos"><a class="toc__link" href="#setup-local-macos"><span>Local fallback on macOS</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="setup-grill-drills"><a class="toc__link" href="#setup-grill-drills"><span>Drill yourself with /grill-me</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 11 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>
