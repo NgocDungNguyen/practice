@@ -11,6 +11,7 @@ import { initSyntaxHighlighting } from './modules/syntax-highlight.js';
 import { initSections } from './modules/sections.js';
 import { initCollapsibles } from './modules/collapsible.js';
 import { initProgress } from './modules/progress.js';
+import { initChecklists } from './modules/checklist.js';
 import { initToc } from './modules/toc.js';
 import { initSearch } from './modules/search.js';
 import { initLightbox } from './modules/lightbox.js';
@@ -30,6 +31,7 @@ const FEATURES = [
     ['section enrichment', initSections],       // before collapsible + progress
     ['collapsible sections', initCollapsibles],
     ['progress tracking', initProgress],
+    ['done-when checklists', initChecklists],
     ['table of contents', initToc],
     ['search palette', initSearch],
     ['screenshot lightbox', initLightbox],
