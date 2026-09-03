@@ -36,7 +36,10 @@ STAGES = {
     "automation": {"label": "Automation", "weeks": "Weeks 6, 8–9"},
     "orchestration": {"label": "Operations", "weeks": "Weeks 10–11"},
     "resources": {"label": "Reference", "weeks": ""},
+    "archive": {"label": "Assignment 1 archive", "weeks": ""},
 }
+# Sidebar groups rendered closed unless they hold the active page.
+COLLAPSED_STAGES = {"archive"}
 
 PAGES = [
     # key, file, stage, num chip, short nav label
@@ -50,14 +53,15 @@ PAGES = [
     ("week-9", "week-9-docker-compose-swarm-lab.html", "automation", "09", "Docker Compose and Swarm"),
     ("week-10", "week-10-kubernetes-lab.html", "orchestration", "10", "Kubernetes"),
     ("week-11", "week-11-eks-aws-lab.html", "orchestration", "11", "EKS on AWS"),
-    ("cheatsheet", "devops-cheatsheet.html", "resources", "CS", "DevOps Cheatsheet"),
-    ("resources", "useful-resources.html", "resources", "RX", "Useful Resources"),
-    ("setup", "setup.html", "resources", "SU", "Practice Environment Setup"),
-    ("challenge6", "challenge-6-setup-script.html", "resources", "C6", "Challenge 6 Setup Script"),
-    ("sshagent-debug", "debug-jenkins-ssh-agent.html", "resources", "DL", "Debug Log: Jenkins SSH Agent"),
-    ("sshkeys", "ssh-keys-github.html", "resources", "SK", "SSH Keys & GitHub Access"),
     ("rmit-manual-deploy", "rmit-store-manual-deploy.html", "resources", "A2", "RMIT Store: Manual Deploy (A–E)"),
     ("rmit-alerting", "rmit-store-alerting.html", "resources", "AL", "RMIT Store: Automated Alerting"),
+    ("sshkeys", "ssh-keys-github.html", "resources", "SK", "SSH Keys & GitHub Access"),
+    ("cheatsheet", "devops-cheatsheet.html", "resources", "CS", "DevOps Cheatsheet"),
+    ("resources", "useful-resources.html", "resources", "RX", "Useful Resources"),
+    # Assignment 1 (Java / Maven / Tomcat / Jenkins) material, kept but shelved.
+    ("setup", "setup.html", "archive", "SU", "Practice Environment Setup"),
+    ("challenge6", "challenge-6-setup-script.html", "archive", "C6", "Challenge 6 Setup Script"),
+    ("sshagent-debug", "debug-jenkins-ssh-agent.html", "archive", "DL", "Debug Log: Jenkins SSH Agent"),
 ]
 
 PAGE_BY_KEY = {p[0]: p for p in PAGES}
@@ -323,8 +327,18 @@ def sidebar_html(root: str, active_key: str, totals: dict) -> str:
                 f'<span class="sidenav__done">{ICONS["check"]}</span></a></li>'
             )
         weeks = f"<small>{stage['weeks']}</small>" if stage["weeks"] else ""
+        accent = f'style="--group-accent: var(--stage-{stage_key}, var(--rmit-red))"'
+        if stage_key in COLLAPSED_STAGES:
+            is_open = " open" if any(p[0] == active_key for p in items) else ""
+            groups.append(
+                f'<details class="sidenav__group sidenav__group--collapsible" {accent}{is_open}>'
+                f'<summary class="sidenav__stage-label">{stage["label"]}{weeks}'
+                f'<span class="sidenav__chevron" aria-hidden="true"></span></summary>'
+                f'<ul class="sidenav__list">{"".join(lis)}</ul></details>'
+            )
+            continue
         groups.append(
-            f'<div class="sidenav__group" style="--group-accent: var(--stage-{stage_key}, var(--rmit-red))">'
+            f'<div class="sidenav__group" {accent}>'
             f'<div class="sidenav__stage-label">{stage["label"]}{weeks}</div>'
             f'<ul class="sidenav__list">{"".join(lis)}</ul></div>'
         )

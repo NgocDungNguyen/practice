@@ -109,8 +109,9 @@ password  the 16-char app password, no spaces</code></pre>
 # A throwaway Jenkins for testing the alerting module on a laptop.
 FROM jenkins/jenkins:lts-jdk17
 
-# skip the "unlock Jenkins" wizard; JCasC configures everything instead
-ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+# skip the "unlock Jenkins" wizard (JCasC configures everything instead) and
+# let the git plugin clone from file:///repo, which it blocks by default
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true"
 ENV CASC_JENKINS_CONFIG=/var/jenkins_home/casc
 
 RUN jenkins-plugin-cli --plugins \

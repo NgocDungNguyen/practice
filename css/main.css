@@ -25,6 +25,7 @@
     --stage-delivery: #b25309;
     --stage-automation: #6a4bc4;
     --stage-orchestration: #0b66c2;
+    --stage-archive: #6b7280;
 
     /* light "paper" theme */
     --bg: #f6f4ef;
@@ -101,6 +102,7 @@
     --stage-delivery: #e58f3d;
     --stage-automation: #a08aeb;
     --stage-orchestration: #5ba3ea;
+    --stage-archive: #9aa3b2;
 
     --code-bg: #0f131a;
     --code-bg-header: #151b25;
@@ -410,6 +412,23 @@ kbd {
 }
 
 .sidenav__list { list-style: none; margin: 0; padding: 0; }
+
+/* Collapsible sidebar group (Assignment 1 archive) */
+.sidenav__group--collapsible > summary { cursor: pointer; list-style: none; user-select: none; }
+.sidenav__group--collapsible > summary::-webkit-details-marker { display: none; }
+.sidenav__group--collapsible > summary:hover { color: var(--ink); }
+.sidenav__chevron {
+    margin-left: auto;
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.18s ease;
+    flex: none;
+}
+.sidenav__group--collapsible[open] .sidenav__chevron { transform: rotate(45deg); }
+.sidenav__group--collapsible .sidenav__stage-label small { margin-left: 0; }
 
 .sidenav__link {
     position: relative;

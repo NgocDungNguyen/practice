@@ -720,31 +720,25 @@ curl -s http://&lt;api-elastic-ip&gt;:8000/readyz/</code></pre>
 <li class="step">
 <span class="step__marker">C8</span>
 <div class="step__main">
-<div class="step__head"><h3>Provision the frontend-server</h3><span class="where where--web">🌐 frontend-server</span><span class="kind">run</span></div>
+<div class="step__head"><h3>Provision the frontend-server</h3><span class="where where--web">🌐 frontend-server</span><span class="where where--laptop">💻 laptop</span><span class="kind">run</span></div>
 <p>This box only serves static files. <strong>No Python, no database</strong> — just Node (to build the SPA) and nginx (to serve it).</p>
 <pre><code class="language-bash">sudo dnf update -y
 sudo dnf install -y git nginx
 curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
 sudo dnf install -y nodejs
 sudo systemctl enable --now nginx</code></pre>
-<p><strong>Copy the deploy key from C5</strong> so this box can clone too. You're SSH'd into both boxes from your laptop, so copy the key text across — no <code>.pem</code> juggling needed.</p>
-<div class="two-up">
-<div>
-<p class="two-up__label"><span class="where where--api">🐍 api-server</span> print both halves, copy each block</p>
-<pre><code class="language-bash">cat ~/.ssh/id_ed25519        # the PRIVATE key (starts -----BEGIN ...)
-cat ~/.ssh/id_ed25519.pub    # the PUBLIC key  (one line, ssh-ed25519 ...)</code></pre>
-</div>
-<div>
-<p class="two-up__label"><span class="where where--web">🌐 frontend-server</span> paste each block into a file</p>
-<pre><code class="language-bash">mkdir -p ~/.ssh &amp;&amp; chmod 700 ~/.ssh
+<p><strong>Copy the deploy key from C5</strong> so this box can clone too. Do it from your <strong>laptop</strong> with two <code>scp</code> hops — no copy-pasting key text into nano.</p>
+<p class="command-purpose"><span class="where where--laptop">💻 laptop</span> <strong>Three moves:</strong> pull the key off the api-server, push it to the frontend-server, then delete the local copy.</p>
+<pre><code class="language-bash"># 1. pull both halves from the api-server
+scp -i &lt;your-key&gt;.pem ec2-user@&lt;api-elastic-ip&gt;:'~/.ssh/id_ed25519*' .
 
-nano ~/.ssh/id_ed25519       # paste the PRIVATE block, save
-nano ~/.ssh/id_ed25519.pub   # paste the PUBLIC block, save
+# 2. push them to the frontend-server (with the right perms)
+ssh -i &lt;your-key&gt;.pem ec2-user@&lt;frontend-elastic-ip&gt; 'mkdir -p ~/.ssh &amp;&amp; chmod 700 ~/.ssh'
+scp -i &lt;your-key&gt;.pem id_ed25519 id_ed25519.pub ec2-user@&lt;frontend-elastic-ip&gt;:~/.ssh/
+ssh -i &lt;your-key&gt;.pem ec2-user@&lt;frontend-elastic-ip&gt; 'chmod 600 ~/.ssh/id_ed25519'
 
-# lock the private key down (git/ssh refuses loose perms)
-chmod 600 ~/.ssh/id_ed25519</code></pre>
-</div>
-</div>
+# 3. don't leave the private key lying on your laptop
+rm id_ed25519 id_ed25519.pub</code></pre>
 <p class="callout callout--warning"><strong>Careful:</strong> <code>~/.ssh/id_ed25519</code> is the <em>private</em> key — the secret. Only paste it onto <em>your own</em> instances, never into GitHub, chat, or the report.</p>
 <p>Now clone and build the SPA:</p>
 <pre><code class="language-bash">cd ~
