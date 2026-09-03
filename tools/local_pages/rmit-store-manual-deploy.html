@@ -550,6 +550,17 @@ ALLOWED_HOSTS=&lt;api-server-public-dns&gt;,&lt;api-private-ip&gt;,127.0.0.1</co
 <h3>C6 · Shared media with S3 (images stop breaking)</h3>
 <p>Uploads land on <em>one</em> API box's <code>server/media/</code>. Add a second API box and half the images 404, intermittently. S3 gives every box one shared store — <strong>no code change</strong>, the backend is chosen by config.</p>
 <p class="callout"><strong>Run this on the api-server</strong> (it has the AWS CLI and, after C7, an IAM role that's allowed to make buckets). Or run it from your laptop if you have <code>aws configure</code> set up. Either way it only needs to be run <em>once</em> — a bucket is global, not per-box.</p>
+
+<h4>Hit "Unable to locate credentials"? (Learner Lab)</h4>
+<p>That error means the api-server has <strong>no AWS credentials yet</strong>. In Learner Lab, attach the lab role to the instance — no keys needed:</p>
+<ol>
+<li>EC2 console → click your <strong>api-server</strong> instance.</li>
+<li><strong>Actions → Security → Modify IAM role</strong>.</li>
+<li>Pick <strong>LabInstanceProfile</strong> (or <strong>LabRole</strong>) → <strong>Update IAM role</strong>.</li>
+<li>Back in the terminal, re-run the same <code>aws s3api create-bucket</code> command. Credentials now just work.</li>
+</ol>
+<p class="command-purpose">This is the same instance role you set up properly in <strong>C7</strong> — attaching it here means no access keys ever sit in a file.</p>
+
 <p>Bucket names are <strong>global and unique</strong> — swap <code>&lt;yourteam&gt;</code> for something like <code>group7</code>. If you get <code>BucketAlreadyExists</code>, pick a different suffix.</p>
 
 <h4>If you're in us-east-1 (the common case)</h4>

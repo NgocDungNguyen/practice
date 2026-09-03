@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Assignment 2 walkthrough: build the automated alerting module for the RMIT Store pipeline — a Groovy notify module plus Jenkins Configuration as Code that emails the team on build, test and deploy failures. Tested end to end on a throwaway Jenkins in Docker before hand-off to the pipeline owner.">
+<title>RMIT Store: Automated Alerting - COSC2767</title>
+</head>
+<body>
+<header>
+<div class="container">
+<h1>🚨 RMIT Store: Automated Alerting</h1>
+<p class="intro">Core requirement 8 — <strong>email the team when a build, test or deployment fails</strong> — built as a small, drop-in module for whoever owns the Jenkins pipeline. You write one Groovy file and one YAML file, prove them on a <strong>throwaway Jenkins on your laptop</strong>, then hand the pipeline teammate three lines to paste. No Jenkins server, no pipeline stages, no Slack: just the alerting.</p>
+</div>
+</header>
+<main class="container">
+
+<section class="cheatsheet-section" id="alert-overview">
+<h2 class="collapsible-header start-open">🎯 What you are building, and where it plugs in<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>The requirement, in one line</h3>
+<p>Core requirement 8: <em>implement email notifications to the team for build, test, and deployment failures.</em> Requirement 4 adds: <em>if testing fails, notify the team and do not update production.</em> Both are the same mechanism — when a pipeline stage goes red, an email goes out.</p>
+<pre><code class="language-bash">Jenkins pipeline (teammate's job)      Alerting module (your job)
+------------------------------------   -----------------------------------------
+stage Build   ─┐                       jenkins/notify.groovy    the code that sends
+stage Test    ─┼─ any stage fails ──►  jenkins/casc/*.yaml      what Jenkins needs (SMTP, creds)
+stage Deploy  ─┘                       3 lines in the Jenkinsfile to call it</code></pre>
+<p class="command-purpose"><strong>You do not build Jenkins or the pipeline.</strong> You build a small piece that any Jenkinsfile can call, and you prove it works on a throwaway Jenkins on your laptop.</p>
+</div>
+<div class="card">
+<h3>Why a <code>post</code> block</h3>
+<p>A declarative Jenkinsfile has <code>stages { ... }</code>, then an optional <code>post { ... }</code> that runs <em>after</em> the stages no matter what happened. <code>post { always { ... } }</code> is the one place that sees every outcome: success, failure, aborted. That is where the alert hook goes.</p>
+<pre><code class="language-groovy">pipeline {
+    agent any
+    stages {
+        stage('Build')  { steps { ... } }
+        stage('Test')   { steps { ... } }   // if this fails, Deploy never runs
+        stage('Deploy') { steps { ... } }
+    }
+    post {
+        always { script { load('jenkins/notify.groovy').notifyTeam() } }
+    }
+}</code></pre>
+<p class="command-purpose"><strong>Groovy</strong> is the language Jenkinsfiles are written in. It looks like Java with less ceremony. <code>load</code> reads a <code>.groovy</code> file from the checked-out repo and hands back its methods.</p>
+</div>
+<div class="card">
+<h3>What goes in the repo</h3>
+<p>All of it lives under a new <code>jenkins/</code> folder at the repo root (the folder holding <code>server/</code> and <code>client/</code>). Nothing here touches the app code.</p>
+<pre><code class="language-bash">jenkins/
+├── notify.groovy              # the module: sends the email
+├── Jenkinsfile.alert-test     # fake pipeline that fails on purpose (testing only)
+├── casc/
+│   ├── alerting.yaml          # Jenkins config: SMTP, credential, ALERT_EMAILS  -&gt; hand to teammate
+│   └── local.yaml             # laptop-only: admin login + URL                  -&gt; never hand over
+└── local/
+    └── Dockerfile             # throwaway Jenkins image for your laptop</code></pre>
+<p class="command-purpose"><strong>Secrets never go in git.</strong> The Gmail app password is passed as an environment variable and referenced from the YAML as <code>${GMAIL_APP_PASSWORD}</code>.</p>
+</div>
+</div>
+<p class="callout"><strong>The three ideas that make this work.</strong> (1) <code>post { always }</code> runs after every build, so one hook catches build, test <em>and</em> deploy failures. (2) Jenkins <strong>Configuration as Code</strong> (JCasC, a plugin that reads YAML at boot) means the SMTP setup is a file in the repo, not clicks in a UI. (3) A failing <code>Test</code> stage stops the pipeline before <code>Deploy</code>, so "notify and do not update production" comes for free.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="alert-gmail">
+<h2 class="collapsible-header">📧 Step 1 — Make the shared team Gmail<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>1.1 · Create the account</h3>
+<p><strong>Where:</strong> a browser, signed out of your personal Google account.</p>
+<p>Go to <code>accounts.google.com/signup</code> and make a fresh account for the team, e.g. <code>rmit.store.alerts@gmail.com</code>. Use a strong password and store it in the team's password manager or a shared vault note. This account only ever <em>sends</em> mail; nobody reads it.</p>
+<p class="command-purpose"><strong>Why a new account:</strong> nobody's personal password ends up inside a shared Jenkins, and the sender name in the demo reads "RMIT Store CI", not a teammate's name.</p>
+</div>
+<div class="card">
+<h3>1.2 · Turn on 2-Step Verification</h3>
+<p><strong>Where:</strong> <code>myaccount.google.com/security</code>, signed in as the new account.</p>
+<p>Under <em>How you sign in to Google</em>, open <strong>2-Step Verification</strong> and turn it on with a phone number. Google only lets you create app passwords once this is on.</p>
+<p class="command-purpose"><strong>Do not skip.</strong> Without 2-Step Verification the app-passwords page in 1.3 does not exist.</p>
+</div>
+<div class="card">
+<h3>1.3 · Create an app password</h3>
+<p><strong>Where:</strong> <code>myaccount.google.com/apppasswords</code>.</p>
+<p>Give it a name like <code>Jenkins CI</code> and click <strong>Create</strong>. Google shows a 16-character password once. Copy it, <strong>remove the spaces</strong>, and save it next to the account password. This is the SMTP password Jenkins uses.</p>
+<pre><code class="language-bash"># Gmail SMTP facts you will need later
+host      smtp.gmail.com
+port      465          (SSL)   - or 587 (TLS/STARTTLS)
+username  rmit.store.alerts@gmail.com
+password  the 16-char app password, no spaces</code></pre>
+<p class="command-purpose"><strong>Security:</strong> an app password is a full-access password for this account. Never paste it into a chat, a commit, or a YAML file. It only ever goes into an environment variable.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> you have a team Gmail address, 2-Step Verification is on, and a 16-character app password is saved somewhere private. Nothing is in the repo yet.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="alert-local-jenkins">
+<h2 class="collapsible-header">🐳 Step 2 — A throwaway Jenkins on your laptop<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>2.1 · The image</h3>
+<p><strong>Where:</strong> repo root. Make <code>jenkins/local/Dockerfile</code>.</p>
+<p>Start from the official Jenkins LTS image, disable the setup wizard, and pre-install the five plugins we need. <code>CASC_JENKINS_CONFIG</code> tells the Configuration as Code plugin which folder to read at boot.</p>
+<pre><code class="language-dockerfile"># jenkins/local/Dockerfile
+# A throwaway Jenkins for testing the alerting module on a laptop.
+FROM jenkins/jenkins:lts-jdk17
+
+# skip the "unlock Jenkins" wizard; JCasC configures everything instead
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+ENV CASC_JENKINS_CONFIG=/var/jenkins_home/casc
+
+RUN jenkins-plugin-cli --plugins \
+    configuration-as-code \
+    email-ext \
+    workflow-aggregator \
+    git \
+    pipeline-stage-view</code></pre>
+<p class="command-purpose"><strong>Plugins:</strong> <code>configuration-as-code</code> reads the YAML, <code>email-ext</code> sends rich email, <code>workflow-aggregator</code> is the Pipeline suite, <code>git</code> clones, <code>pipeline-stage-view</code> draws the stage boxes you will screenshot for the report.</p>
+</div>
+<div class="card">
+<h3>2.2 · Laptop-only config</h3>
+<p><strong>Where:</strong> <code>jenkins/casc/local.yaml</code>.</p>
+<p>With the wizard off, Jenkins would boot with no login at all. This file gives it one admin user (password from an env var) and tells it its own URL, which the email needs for the console link.</p>
+<pre><code class="language-yaml"># jenkins/casc/local.yaml
+# LAPTOP ONLY. Gives the throwaway Jenkins a login and a URL.
+# Do NOT hand this file to the Jenkins teammate - it would overwrite their users.
+
+jenkins:
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: admin
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy: loggedInUsersCanDoAnything
+
+unclassified:
+  location:
+    url: http://localhost:8080/
+    adminAddress: "RMIT Store CI &lt;${GMAIL_USER}&gt;"</code></pre>
+<p class="command-purpose"><strong>Important:</strong> this file is for your laptop only. Handing it to the Jenkins teammate would replace their users with yours.</p>
+</div>
+<div class="card">
+<h3>2.3 · The alerting config</h3>
+<p><strong>Where:</strong> <code>jenkins/casc/alerting.yaml</code>. This is the file the teammate gets later.</p>
+<p>Three things: a global env var <code>ALERT_EMAILS</code> (the recipients, one place to edit), a <code>usernamePassword</code> credential with id <code>gmail-smtp</code>, and the Email Extension plugin pointed at Gmail using that credential.</p>
+<pre><code class="language-yaml"># jenkins/casc/alerting.yaml
+# Everything the Jenkins server needs so notify.groovy can send email.
+# Loaded by the Configuration as Code plugin (CASC_JENKINS_CONFIG points at this folder).
+# The two ${...} values are read from environment variables on the Jenkins host -
+# secrets never live in this file.
+
+jenkins:
+  globalNodeProperties:
+    - envVars:
+        env:
+          - key: ALERT_EMAILS
+            value: "s4103952@rmit.edu.vn, s4119406@rmit.edu.vn, s4043097@rmit.edu.vn, s4046025@rmit.edu.vn, s4071162@rmit.edu.vn"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: gmail-smtp
+              description: "Shared team Gmail (app password) used for CI alert emails"
+              username: "${GMAIL_USER}"
+              password: "${GMAIL_APP_PASSWORD}"
+
+unclassified:
+  email-ext:
+    mailAccount:
+      smtpHost: smtp.gmail.com
+      smtpPort: "465"
+      useSsl: true
+      credentialsId: gmail-smtp
+    charset: UTF-8
+    defaultContentType: text/html
+    defaultSuffix: ""</code></pre>
+<p class="command-purpose"><strong>Check the addresses.</strong> The list uses the five student IDs at <code>rmit.edu.vn</code>. Swap in whatever inboxes the team actually reads.</p>
+</div>
+<div class="card">
+<h3>2.4 · Build and run it</h3>
+<p><strong>Where:</strong> repo root, in a terminal. Fill in the three real values first.</p>
+<pre><code class="language-bash">cd app                                      # the repo root (has server/ client/ jenkins/)
+
+export GMAIL_USER='rmit.store.alerts@gmail.com'
+export GMAIL_APP_PASSWORD='xxxxxxxxxxxxxxxx'     # the 16 chars, no spaces
+export JENKINS_ADMIN_PASSWORD='admin'            # laptop only
+
+docker build -t rmit-jenkins-local -f jenkins/local/Dockerfile jenkins/local
+
+docker run -d --name jenkins-alerts -p 8080:8080 \
+  -e GMAIL_USER -e GMAIL_APP_PASSWORD -e JENKINS_ADMIN_PASSWORD \
+  -v jenkins_alerts_home:/var/jenkins_home \
+  -v "$PWD/jenkins/casc:/var/jenkins_home/casc:ro" \
+  -v "$PWD:/repo:ro" \
+  rmit-jenkins-local
+
+docker logs -f jenkins-alerts               # wait for "Jenkins is fully up and running", then Ctrl-C</code></pre>
+<p class="command-purpose"><strong>Two mounts do the work:</strong> <code>casc/</code> is read at boot, and the whole repo is mounted at <code>/repo</code> so Jenkins can clone it without GitHub.</p>
+</div>
+<div class="card">
+<h3>2.5 · Verify the config landed</h3>
+<p><strong>Where:</strong> browser, <code>http://localhost:8080</code>. Log in as <code>admin</code> / your <code>JENKINS_ADMIN_PASSWORD</code>.</p>
+<pre><code class="language-bash">Manage Jenkins -&gt; System
+  Global properties -&gt; Environment variables      ALERT_EMAILS is listed
+  Extended E-mail Notification                    SMTP server smtp.gmail.com, port 465, SSL, credential gmail-smtp
+Manage Jenkins -&gt; Credentials                     gmail-smtp (username/password) exists
+Manage Jenkins -&gt; Configuration as Code           shows both yaml files loaded, no errors</code></pre>
+<p>Still on the <em>Extended E-mail Notification</em> section, scroll to <strong>Test configuration by sending test e-mail</strong>, enter your own address, click the button. If you get an email, the whole Gmail leg works.</p>
+<p class="command-purpose"><strong>If the test email fails:</strong> the usual causes are spaces left in the app password, 2-Step Verification off, or port 465 without SSL ticked. Fix the YAML or the env var, then <code>docker restart jenkins-alerts</code>.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> Jenkins is up on <code>localhost:8080</code>, JCasC reports both files loaded, and a test email from the System page actually arrived in your inbox. You have not written any Groovy yet — the plumbing is proven first.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="alert-notify">
+<h2 class="collapsible-header">✉️ Step 3 — Write the module: <code>notify.groovy</code><span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>3.1 · The whole file</h3>
+<p><strong>Where:</strong> <code>jenkins/notify.groovy</code>. Read it top to bottom before pasting; every decision from the design is in here.</p>
+<pre><code class="language-groovy">// jenkins/notify.groovy
+// Email the team when a build / test / deploy stage fails, and once more when
+// main goes back to green. Nothing is sent for a normal green build.
+//
+// Use from a Jenkinsfile:
+//   post { always { script { load('jenkins/notify.groovy').notifyTeam() } } }
+
+def notifyTeam() {
+    def result   = currentBuild.currentResult ?: 'SUCCESS'
+    def previous = currentBuild.previousBuild?.result
+    def branch   = (env.BRANCH_NAME ?: env.GIT_BRANCH ?: gitOut('rev-parse --abbrev-ref HEAD')).replace('origin/', '')
+    def commit   = (env.GIT_COMMIT ?: gitOut('rev-parse HEAD')).take(8)
+    def author   = gitOut('log -1 --pretty=%an')
+    def message  = gitOut('log -1 --pretty=%s')
+    def stage    = env.FAILED_STAGE ?: 'see the log tail below'
+    def onMain   = branch in ['main', 'master']
+
+    def failed = (result != 'SUCCESS')
+    def fixed  = !failed &amp;&amp; onMain &amp;&amp; previous != null &amp;&amp; previous != 'SUCCESS'
+    if (!failed &amp;&amp; !fixed) {
+        echo "notifyTeam: ${result} on ${branch} - nothing to send"
+        return
+    }
+
+    def to = env.ALERT_EMAILS
+    if (!to) {
+        echo 'notifyTeam: ALERT_EMAILS is not set on this Jenkins - no email sent'
+        return
+    }
+
+    def tag    = failed ? "FAILED (${result})" : 'FIXED'
+    def colour = failed ? '#c62828' : '#2e7d32'
+
+    // Groovy fills in ${...} here...
+    def head = """
+&lt;h2 style="color:${colour}"&gt;${tag}: ${env.JOB_NAME} #${env.BUILD_NUMBER}&lt;/h2&gt;
+&lt;table cellpadding="4"&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Stage&lt;/b&gt;&lt;/td&gt;&lt;td&gt;${failed ? stage : 'all stages green again'}&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Branch&lt;/b&gt;&lt;/td&gt;&lt;td&gt;${branch}&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Commit&lt;/b&gt;&lt;/td&gt;&lt;td&gt;${commit} - ${message}&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Pushed by&lt;/b&gt;&lt;/td&gt;&lt;td&gt;${author}&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Console log&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;a href="${env.BUILD_URL}console"&gt;${env.BUILD_URL}console&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+"""
+    // ...but this ${BUILD_LOG} is in single quotes, so Groovy leaves it alone
+    // and the Email Extension plugin expands it into the last 50 log lines.
+    def tail = failed ? '&lt;h3&gt;Last 50 lines of the log&lt;/h3&gt;&lt;pre&gt;${BUILD_LOG, maxLines=50, escapeHtml=true}&lt;/pre&gt;' : ''
+
+    emailext(
+        to:       to,
+        subject:  "${tag} - ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${branch}",
+        mimeType: 'text/html',
+        body:     head + tail
+    )
+}
+
+// Run a git command in the workspace; return trimmed output, or '' if it fails.
+def gitOut(String args) {
+    return sh(script: "git ${args} 2&gt;/dev/null || true", returnStdout: true).trim()
+}
+
+return this</code></pre>
+<p class="command-purpose"><strong><code>return this</code> at the end is not optional.</strong> It is what lets <code>load(...)</code> hand back an object whose <code>notifyTeam()</code> you can call.</p>
+</div>
+<div class="card">
+<h3>3.2 · How to read it</h3>
+<p>Follow the flow, it is short:</p>
+<pre><code class="language-bash">1. Ask Jenkins what happened      currentBuild.currentResult      SUCCESS / FAILURE / UNSTABLE / ABORTED
+2. Ask about the previous build   currentBuild.previousBuild      to detect "was red, now green"
+3. Ask git who/what               git log -1, rev-parse           branch, commit, author, message
+4. Decide                          failed?  -&gt; send a red email on ANY branch
+                                   fixed?   -&gt; send a green email, main only, only if last run was red
+                                   else     -&gt; print one line to the console and stop
+5. Recipients                      env.ALERT_EMAILS               set by casc/alerting.yaml
+6. Send                            emailext(...)                  HTML body + last 50 log lines</code></pre>
+<p class="command-purpose"><strong>Two kinds of <code>${...}</code>:</strong> in the triple-quoted <code>head</code> string Groovy fills them in. In the single-quoted <code>tail</code> string Groovy leaves <code>${BUILD_LOG, ...}</code> alone so the Email Extension plugin can expand it later. Mixing those up is the most common bug.</p>
+</div>
+<div class="card">
+<h3>3.3 · Naming the stage that broke</h3>
+<p>Jenkins does not hand a <code>post</code> block the name of the failing stage. The module reads <code>env.FAILED_STAGE</code> if someone set it, else says <em>see the log tail</em>. The log tail always contains the <code>[Pipeline] { (Test)</code> marker, so the answer is in the email either way.</p>
+<pre><code class="language-groovy">// optional, inside any stage - one line, makes the email say "Stage: Test"
+post { failure { script { env.FAILED_STAGE = env.STAGE_NAME } } }</code></pre>
+<p class="command-purpose"><strong>Why optional:</strong> it keeps the ask of the Jenkins teammate to three lines. They can add the per-stage line later if they want prettier emails.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> <code>jenkins/notify.groovy</code> exists, ends in <code>return this</code>, and you can explain in one sentence each why the red email goes to every branch but the green one only on <code>main</code>.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="alert-test">
+<h2 class="collapsible-header">🧪 Step 4 — Break it on purpose, watch the email land<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>4.1 · A fake pipeline</h3>
+<p><strong>Where:</strong> <code>jenkins/Jenkinsfile.alert-test</code>. It pretends to build, fails in Test, and never reaches Deploy — exactly the shape of a real failure.</p>
+<pre><code class="language-groovy">// jenkins/Jenkinsfile.alert-test
+// A fake pipeline whose only job is to exercise notify.groovy.
+// Build -&gt; Test (fails on purpose) -&gt; Deploy (never reached).
+
+pipeline {
+    agent any
+
+    environment {
+        BREAK_THE_TESTS = 'yes'   // flip to 'no' to see the FIXED email
+    }
+
+    stages {
+        stage('Build') {
+            steps { echo 'pretend: docker build both tiers' }
+        }
+        stage('Test') {
+            steps {
+                sh '''
+                  echo "running the test suite..."
+                  if [ "$BREAK_THE_TESTS" = "yes" ]; then
+                    echo "FAIL test_cart_total: expected 42.00, got 41.99"
+                    exit 1
+                  fi
+                  echo "all tests passed"
+                '''
+            }
+            // optional: remember which stage broke, so the email can name it
+            post { failure { script { env.FAILED_STAGE = env.STAGE_NAME } } }
+        }
+        stage('Deploy') {
+            steps { echo 'pretend: deploy to staging' }
+        }
+    }
+
+    post {
+        always {
+            script { load('jenkins/notify.groovy').notifyTeam() }
+        }
+    }
+}</code></pre>
+<p class="command-purpose"><strong>This is a test fixture,</strong> not the team pipeline. It stays in the repo so anyone can re-prove alerting in two minutes.</p>
+</div>
+<div class="card">
+<h3>4.2 · Commit, because Jenkins clones</h3>
+<p><strong>Where:</strong> repo root.</p>
+<p>Jenkins will <code>git clone /repo</code>, and a clone only sees <em>committed</em> files. Commit on a branch; no push needed for this step.</p>
+<pre><code class="language-bash">git checkout -b feature/alerting
+git add jenkins/
+git commit -m "Add email alerting module for Jenkins (notify.groovy + JCasC)"
+
+# if the job later says "dubious ownership" about /repo, run once:
+docker exec jenkins-alerts git config --global --add safe.directory /repo</code></pre>
+<p class="command-purpose"><strong>Every edit to <code>notify.groovy</code> needs a new commit</strong> before rerunning the job. <code>git commit --amend --no-edit</code> keeps the history tidy while you iterate.</p>
+</div>
+<div class="card">
+<h3>4.3 · Create the job</h3>
+<p><strong>Where:</strong> <code>http://localhost:8080</code> → <strong>New Item</strong>.</p>
+<pre><code class="language-bash">Name              alert-test
+Type              Pipeline                      -&gt; OK
+Definition        Pipeline script from SCM
+SCM               Git
+Repository URL    file:///repo
+Branch Specifier  */feature/alerting
+Script Path       jenkins/Jenkinsfile.alert-test
+                  -&gt; Save</code></pre>
+<p class="command-purpose"><strong>Why "from SCM":</strong> it makes Jenkins check the code out, which is what <code>load('jenkins/notify.groovy')</code> needs. A pasted inline script has no workspace file to load.</p>
+</div>
+<div class="card">
+<h3>4.4 · Run it red</h3>
+<p>Click <strong>Build Now</strong>. Stage view goes Build green, Test red, Deploy skipped. Open the console; the last lines should be the module talking, then the email step.</p>
+<pre><code class="language-bash">[Pipeline] { (Test)
++ echo running the test suite...
+FAIL test_cart_total: expected 42.00, got 41.99
+[Pipeline] }
+...
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] load
+[Pipeline] sh   git rev-parse --abbrev-ref HEAD
+[Pipeline] emailext
+Sending email to: s4103952@rmit.edu.vn s4119406@rmit.edu.vn ...
+Finished: FAILURE</code></pre>
+<p>Check the inbox. Subject <code>FAILED (FAILURE) - alert-test #1 - feature/alerting</code>, a table with stage <code>Test</code>, your commit hash, your git name, a console link, and the last 50 lines of the log.</p>
+<p class="command-purpose"><strong>Screenshot this.</strong> Stage view + the email side by side is the evidence for requirement 8 in the report.</p>
+</div>
+<div class="card">
+<h3>4.5 · Fix it, see the green email</h3>
+<p><strong>Where:</strong> <code>jenkins/Jenkinsfile.alert-test</code>. Flip <code>BREAK_THE_TESTS</code> to <code>'no'</code>, commit, Build Now.</p>
+<pre><code class="language-bash">sed -i '' "s/BREAK_THE_TESTS = 'yes'/BREAK_THE_TESTS = 'no'/" jenkins/Jenkinsfile.alert-test
+git commit -am "alert-test: make it pass"
+# Build Now -&gt; all green. Console says:
+#   notifyTeam: SUCCESS on feature/alerting - nothing to send</code></pre>
+<p>No email. That is <em>correct</em>: the FIXED email is <code>main</code> only, and this is a feature branch. To see it, temporarily change the job's Branch Specifier to a branch named <code>main</code>, or edit the <code>onMain</code> line to include your branch, run red then green, then put it back.</p>
+<p class="command-purpose"><strong>Expected subject when it does fire:</strong> <code>FIXED - alert-test #3 - main</code>, with the table and no log tail.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> a red run produced a failure email with stage, commit, author, link and log tail. A green run after it produced either a FIXED email (on <code>main</code>) or a quiet "nothing to send" (elsewhere). Put <code>BREAK_THE_TESTS</code> back to <code>'yes'</code> and commit, so the fixture stays a failing test for the demo.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="alert-github">
+<h2 class="collapsible-header">🐙 Step 5 — Once more, the real way, from GitHub<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>5.1 · Push the branch</h3>
+<p><strong>Where:</strong> repo root.</p>
+<pre><code class="language-bash">git push -u origin feature/alerting</code></pre>
+<p class="command-purpose"><strong>Why bother:</strong> <code>file:///repo</code> proved the code. Cloning from GitHub proves the exact path the teammate's Jenkins will use, including credentials for the private repo.</p>
+</div>
+<div class="card">
+<h3>5.2 · Point the job at GitHub</h3>
+<p><strong>Where:</strong> <code>alert-test</code> → <strong>Configure</strong>.</p>
+<pre><code class="language-bash">Repository URL    https://github.com/rmit-vietnam-computing-technologies/2026b-cosc2767-a2-sg-mother-duckers.git
+Credentials       add -&gt; Username with password
+                    username: your GitHub username
+                    password: a GitHub personal access token with repo read scope
+Branch Specifier  */feature/alerting
+                  -&gt; Save -&gt; Build Now</code></pre>
+<p class="command-purpose"><strong>The repo is private,</strong> so Jenkins needs a token. See the <em>SSH Keys &amp; GitHub Access</em> page for the PAT-vs-deploy-key trade-off; a PAT is fastest for a laptop test.</p>
+</div>
+<div class="card">
+<h3>5.3 · Same red email, real clone</h3>
+<p>Build Now. Same red email as 4.4, but now the console shows a GitHub clone and the commit link points at a real SHA on the remote. Screenshot the console header for the report.</p>
+<p class="command-purpose"><strong>Done with the laptop.</strong> When the teammate's Jenkins exists, this exact job definition (URL, credential, script path) is what they recreate.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> the job clones from GitHub over HTTPS with a token and still sends the failure email. Everything in <code>jenkins/</code> is pushed on <code>feature/alerting</code>, ready for a pull request.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="alert-handoff">
+<h2 class="collapsible-header">🤝 Step 6 — Hand-off to the Jenkins teammate<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>6.1 · What they paste into the Jenkinsfile</h3>
+<p>Three lines at the bottom. Nothing else in their pipeline changes.</p>
+<pre><code class="language-groovy">// Add to the very end of the Jenkinsfile, after `stages { ... }`:
+post {
+    always {
+        script { load('jenkins/notify.groovy').notifyTeam() }
+    }
+}
+
+// Optional, per stage, so the email names the stage that broke:
+stage('Test') {
+    steps { ... }
+    post { failure { script { env.FAILED_STAGE = env.STAGE_NAME } } }
+}</code></pre>
+<p class="command-purpose"><strong>Requirement 4 is covered by shape alone:</strong> when Test fails, Jenkins skips Deploy, and <code>post { always }</code> sends the email. No extra logic.</p>
+</div>
+<div class="card">
+<h3>6.2 · What they put on the Jenkins server (JCasC way)</h3>
+<p><strong>Where:</strong> their Jenkins EC2 box, native install under systemd.</p>
+<pre><code class="language-bash"># 1. plugins: Manage Jenkins -&gt; Plugins -&gt; Available -&gt; install
+#    "Configuration as Code" and "Email Extension", then restart
+
+# 2. the yaml
+sudo mkdir -p /var/lib/jenkins/casc
+sudo cp jenkins/casc/alerting.yaml /var/lib/jenkins/casc/     # ONLY alerting.yaml, never local.yaml
+sudo chown -R jenkins:jenkins /var/lib/jenkins/casc
+
+# 3. secrets as env vars for the jenkins service
+sudo systemctl edit jenkins
+#   [Service]
+#   Environment="CASC_JENKINS_CONFIG=/var/lib/jenkins/casc"
+#   Environment="GMAIL_USER=rmit.store.alerts@gmail.com"
+#   Environment="GMAIL_APP_PASSWORD=xxxxxxxxxxxxxxxx"
+sudo systemctl restart jenkins
+
+# 4. verify: Manage Jenkins -&gt; Configuration as Code -&gt; alerting.yaml listed, no errors
+#            Manage Jenkins -&gt; System -&gt; Extended E-mail Notification -&gt; send test e-mail</code></pre>
+<p class="command-purpose"><strong>Also set</strong> Manage Jenkins → System → <em>Jenkins Location</em> → System Admin e-mail address to the team Gmail, so the From header matches the sending account. Their URL must be the public one, or console links in emails will point at <code>localhost</code>.</p>
+</div>
+<div class="card">
+<h3>6.3 · Fallback: the same thing by clicking</h3>
+<p>If their Jenkins cannot take the YAML for any reason, the UI equivalent is five stops. Same values as <code>alerting.yaml</code>.</p>
+<pre><code class="language-bash">Manage Jenkins -&gt; Plugins            install "Email Extension"
+Manage Jenkins -&gt; Credentials        add Username with password
+                                       id: gmail-smtp   user: team gmail   pass: app password
+Manage Jenkins -&gt; System
+  Jenkins Location                   System Admin e-mail address = team gmail
+  Global properties                  tick Environment variables -&gt; ALERT_EMAILS = the five addresses
+  Extended E-mail Notification       SMTP server smtp.gmail.com, port 465, tick Use SSL,
+                                     credentials gmail-smtp, Default Content Type HTML
+                                     -&gt; "Test configuration by sending test e-mail" </code></pre>
+<p class="command-purpose"><strong>Either route ends the same way:</strong> a test email from the System page arrives. Until it does, do not debug <code>notify.groovy</code>.</p>
+</div>
+<div class="card">
+<h3>6.4 · The pull request</h3>
+<p>Open a PR from <code>feature/alerting</code> to <code>main</code>. In the description, link to this page and list what the reviewer should check.</p>
+<pre><code class="language-bash">Adds the automated alerting module (core requirement 8, supports requirement 4).
+
+- jenkins/notify.groovy           sends failure emails (any branch) and a FIXED email (main)
+- jenkins/casc/alerting.yaml      Jenkins config: SMTP via Gmail, credential, ALERT_EMAILS
+- jenkins/casc/local.yaml         laptop-only login for the throwaway Jenkins
+- jenkins/local/Dockerfile        throwaway Jenkins image
+- jenkins/Jenkinsfile.alert-test  fixture that fails on purpose
+
+For the pipeline owner: paste the post block from step 6.1, apply alerting.yaml per 6.2.
+Tested: red + green runs on local Jenkins, and a red run cloning from GitHub (screenshots attached).</code></pre>
+<p class="command-purpose"><strong>Tidy up your laptop</strong> when done: <code>docker rm -f jenkins-alerts &amp;&amp; docker volume rm jenkins_alerts_home</code>.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> the teammate has three things from you: the <code>post</code> snippet, <code>alerting.yaml</code> plus the systemd env vars, and the click-through fallback. They should not need to read <code>notify.groovy</code> to use it.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="alert-demo">
+<h2 class="collapsible-header">🎬 Step 7 — The demo, scripted<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>7.1 · Sixty seconds in the video</h3>
+<p>The marker wants to <em>see</em> the email arrive. Have the inbox open in a second window before you start.</p>
+<pre><code class="language-bash">0:00  "Requirement 8: email on build, test or deploy failure. Here is the hook."
+      show the 3-line post block in the Jenkinsfile, then notify.groovy for 5 seconds
+0:15  push a commit that breaks one unit test (or flip BREAK_THE_TESTS to 'yes')
+0:25  Jenkins stage view: Build green, Test red, Deploy skipped
+      "Test failed, so production was not touched - requirement 4."
+0:35  switch to the inbox: the FAILED email. Open it. Point at stage, commit, author, log tail.
+0:50  push the fix. Green run. "On main, the team also gets one FIXED email - and then silence."
+1:00  show the FIXED email. Done.</code></pre>
+<p class="command-purpose"><strong>Rehearse the timing once.</strong> Gmail delivery is usually under ten seconds, but have the previous run's email ready as a backup so the video never waits on SMTP.</p>
+</div>
+<div class="card">
+<h3>7.2 · What to put in the report</h3>
+<pre><code class="language-bash">Design       post{always} hook -&gt; notify.groovy -&gt; Email Extension -&gt; Gmail SMTP -&gt; team inboxes
+Why Gmail    zero cost, no AWS SES sandbox verification, app password kept out of git
+Why JCasC    SMTP + credential + recipients are a file in the repo, reproducible on any Jenkins
+Policy       red email on every branch; green FIXED email on main only; silence otherwise
+Evidence     screenshot: stage view red + email; screenshot: FIXED email; the console "Sending email to:" line
+Limits       Gmail app-password accounts are not for production scale; swap to SES = change 4 YAML lines</code></pre>
+<p class="command-purpose"><strong>One honest limitation</strong> in the report reads better than none. The SES swap line is your "future work".</p>
+</div>
+</div>
+<p class="callout"><strong>The whole point:</strong> alerting is graded on whether a human gets told, fast, with enough context to act. One email, with the stage, the commit, the author and the log — arriving before anyone goes looking — is the entire deliverable.</p>
+</div>
+</section>
+
+</main>
+</body>
+</html>

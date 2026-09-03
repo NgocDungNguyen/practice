@@ -57,6 +57,7 @@ PAGES = [
     ("sshagent-debug", "debug-jenkins-ssh-agent.html", "resources", "DL", "Debug Log: Jenkins SSH Agent"),
     ("sshkeys", "ssh-keys-github.html", "resources", "SK", "SSH Keys & GitHub Access"),
     ("rmit-manual-deploy", "rmit-store-manual-deploy.html", "resources", "A2", "RMIT Store: Manual Deploy (A–E)"),
+    ("rmit-alerting", "rmit-store-alerting.html", "resources", "AL", "RMIT Store: Automated Alerting"),
 ]
 
 PAGE_BY_KEY = {p[0]: p for p in PAGES}
@@ -94,6 +95,13 @@ LOCAL_PAGES = {
                 "it to one EC2 box, split it across servers with S3 and RDS, "
                 "containerise with Docker, then Docker Compose. Stops before "
                 "Plan F, the automation pipeline.",
+    },
+    "rmit-alerting": {
+        "card": "Assignment 2 core requirement 8, built as a drop-in module: a "
+                "Groovy notify script plus Jenkins Configuration as Code that "
+                "emails the team on build, test and deploy failures — proven on "
+                "a throwaway Jenkins in Docker, then handed to the pipeline owner "
+                "as three lines to paste.",
     },
 }
 
