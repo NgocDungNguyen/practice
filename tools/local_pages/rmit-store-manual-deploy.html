@@ -144,7 +144,7 @@ cp .env.example .env             # open it and read the comments</code></pre>
 <span class="step__marker">A5</span>
 <div class="step__main">
 <div class="step__head"><h3>Migrate and seed</h3><span class="where where--laptop">💻 laptop</span><span class="kind">run</span></div>
-<p><code>migrate</code> builds the tables; <code>seed_demo</code> fills them with a real catalogue and demo accounts. Seeding is idempotent.</p>
+<p><code>migrate</code> builds the tables; <code>seed_demo</code> fills them with a real catalogue and demo accounts. Seeding is skip-if-exists: re-running adds nothing, and <code>--flush</code> wipes the demo data and starts over.</p>
 <pre><code class="language-bash">python manage.py migrate
 
 python manage.py seed_demo \
@@ -815,13 +815,16 @@ ALLOWED_HOSTS=&lt;api-elastic-ip&gt;,&lt;api-private-ip&gt;,127.0.0.1</code></pr
 </div>
 </div>
 
-<p><strong>3. Turn S3 on in the API</strong> and restart, then re-seed so the demo images upload to S3:</p>
+<p><strong>3. Turn S3 on in the API</strong>, restart, then re-seed <strong>with <code>--flush</code></strong> so the demo images upload to S3:</p>
 <pre><code class="language-env"># api-server  server/.env   (us-east-1 shown)
 USE_S3=True
 AWS_STORAGE_BUCKET_NAME=rmit-store-media-&lt;yourteam&gt;
 AWS_S3_REGION_NAME=us-east-1</code></pre>
 <pre><code class="language-bash">sudo systemctl restart rmit-api
-cd ~/COSC2767-RMIT-Store-Django-Vue/server &amp;&amp; source .venv/bin/activate &amp;&amp; python3 manage.py seed_demo</code></pre>
+cd ~/COSC2767-RMIT-Store-Django-Vue/server &amp;&amp; source .venv/bin/activate
+python3 manage.py seed_demo --flush --demo-users     # wipes the demo catalogue and rebuilds it
+aws s3 ls s3://rmit-store-media-&lt;yourteam&gt;/media/products/ | head   # expect a list of .jpg files</code></pre>
+<p class="callout callout--warning"><strong>Why <code>--flush</code>:</strong> seeding is skip-if-exists. A plain <code>seed_demo</code> sees "42 products already exist, skipping" and uploads <em>nothing</em>, so the bucket stays empty and every product picture is blank. <code>--flush</code> deletes the catalogue, orders, reviews and sellers (all demo data at this point) and recreates them — this time with S3 on, so the photos land in the bucket. The log line <code>Found credentials from IAM Role: LabRole</code> confirms the instance role is working.</p>
 
 <p><strong>4. Let the browser read the images.</strong> Product image URLs point straight at the bucket (<code>https://rmit-store-media-&lt;yourteam&gt;.s3.amazonaws.com/...</code>). New buckets block public access, so the browser gets <strong>403</strong> and images look broken. Open the bucket in the S3 console and do both:</p>
 <ol>
@@ -898,8 +901,12 @@ SSH (22) on both EC2 boxes     → My IP only
 
 <div class="plan-brief">
 <div><span class="plan-brief__label">Goal</span>Two images — <code>rmit-api</code> and <code>rmit-frontend</code> — that replace the hand-installed services from Plan C on the same two boxes. Same RDS, same S3, same Elastic IPs.</div>
-<div><span class="plan-brief__label">Where</span><span class="where where--api">🐍 api-server</span> for the API files and image, <span class="where where--web">🌐 frontend-server</span> for the frontend files and image. Both need Docker: <code>sudo dnf install -y docker &amp;&amp; sudo systemctl enable --now docker</code>.</div>
+<div><span class="plan-brief__label">Where</span><span class="where where--api">🐍 api-server</span> for the API files and image, <span class="where where--web">🌐 frontend-server</span> for the frontend files and image. Both need Docker, set up once per box:</div>
 <div><span class="plan-brief__label">Steps</span>7 in two parts: <strong>write the recipes</strong> (D1–D5, nothing runs yet), then <strong>build, run, verify</strong> (D6–D7).</div>
+<div class="plan-brief__wide"><pre><code class="language-bash">sudo dnf install -y docker &amp;&amp; sudo systemctl enable --now docker
+sudo usermod -aG docker ec2-user      # let ec2-user run docker without sudo
+exit                                  # log out, then SSH back in so the new group applies
+docker ps                             # works with no sudo = permission is in place</code></pre></div>
 </div>
 
 <p class="callout callout--note"><strong>Why now.</strong> Plan C worked but every box was set up by hand. A container captures that setup as a file, so the next box is <code>docker run</code> instead of an afternoon. The repo ships no Dockerfiles — writing them is the assignment. Below is a correct starting shape based on the README's rules.</p>

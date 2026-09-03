@@ -2053,6 +2053,8 @@ a.card:hover .go-to-link::after { transform: translateX(4px); }
     color: var(--stage-accent, var(--accent));
 }
 .plan-brief .where { margin: 1px 1px; }
+.plan-brief__wide { grid-column: 1 / -1; }
+.plan-brief__wide pre { margin: 0; }
 
 /* phase divider */
 .phase {
