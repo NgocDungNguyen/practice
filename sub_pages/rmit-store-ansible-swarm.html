@@ -39,7 +39,7 @@
 </div>
 <h1><span class="hero-emoji" aria-hidden="true">🐝</span>RMIT Store: Ansible + Docker Swarm</h1>
 <p class="page-hero__intro">This is page 1 of 2 for the teammate who owns <code>app/ansible/</code>. It covers the AWS setup, server setup, two Docker Swarms, and a manual deployment proof. Jenkins comes on page 2. You will keep <strong>staging</strong> and <strong>production</strong> apart. Each environment has one frontend manager and one backend worker. nginx is the only public app door. It listens on port 80 and sends API requests to the private <code>api:8000</code> service over a Swarm overlay network.</p>
-<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>10</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>53</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>49</strong>&nbsp;min</span></div>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>10</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>53</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>50</strong>&nbsp;min</span></div>
 </div>
 
 <section class="cheatsheet-section" id="swarm-overview">
@@ -47,8 +47,10 @@
 <div class="collapsible-content"><div class="collapse-glue">
 <div class="grid-container grid-container--wide">
 <div class="card">
-<h3>0.1 · The five EC2 instances</h3>
-<pre><code class="language-bash">jenkins-server         t3.medium   Jenkins later, page 2
+<h3>0.1 · The six EC2 instances</h3>
+<pre><code class="language-bash">CONTROL BOXES, page 2
+jenkins-server         t3.small    builds and pushes images
+ansible-server         t3.small    runs every deployment
 
 STAGING SWARM
 staging-frontend       t3.small    manager   label app_role=frontend   public :80
@@ -58,9 +60,10 @@ PRODUCTION SWARM
 production-frontend    t3.small    manager   label app_role=frontend   public :80
 production-backend     t3.small    worker    label app_role=backend    no public :8000
 
-All five: Amazon Linux 2023, x86_64, same VPC.
+All six: Amazon Linux 2023, x86_64, same VPC.
 Existing production frontend and backend boxes may be reused.</code></pre>
 <p class="command-purpose"><strong>Two Swarms means two trust boundaries.</strong> A staging command cannot update a production service. Each manager knows only its one worker.</p>
+<p><strong>Build and deploy sit on separate boxes.</strong> <code>jenkins-server</code> runs Docker and pushes images. <code>ansible-server</code> holds the SSH deploy key and the vault password and is the only box allowed to SSH into the four app hosts. The box with a root-equivalent Docker socket therefore has no path into production.</p>
 </div>
 <div class="card">
 <h3>0.2 · Request path</h3>
@@ -89,11 +92,12 @@ nginx service on manager
 </div>
 <div class="card">
 <h3>0.3 · Who does what</h3>
-<pre><code class="language-bash">Jenkins, next page:
+<pre><code class="language-bash">jenkins-server, next page:
   test -&gt; build -&gt; push exact immutable tags to private Docker Hub
 
-Ansible, this page:
+ansible-server, this page plus next page:
   install Docker -&gt; form Swarm -&gt; log in -&gt; pull -&gt; migrate -&gt; deploy exact tag
+  Jenkins runs this box as a build agent labelled "ansible"
 
 Docker Swarm:
   place frontend on app_role=frontend
@@ -123,7 +127,7 @@ Jenkins flow: merged main gets a new immutable production tag
 <p class="command-purpose"><strong>Never use <code>latest</code>.</strong> An exact tag tells you what is running and gives Jenkins a stable input for a later rollback feature.</p>
 </div>
 </div>
-<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> draw two boxes around the two Swarms. Each box has one frontend manager and one backend worker. Only frontend port 80 is public. Jenkins is outside both clusters and comes next.</p>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> draw two boxes around the two Swarms. Each box has one frontend manager and one backend worker. Only frontend port 80 is public. <code>jenkins-server</code> and <code>ansible-server</code> both sit outside the clusters and come next.</p>
 </div></div>
 </section>
 <section class="cheatsheet-section" id="swarm-aws">
@@ -135,7 +139,8 @@ Jenkins flow: merged main gets a new immutable production tag
 <p><strong>Where:</strong> AWS console → EC2 → Instances → Launch instances. This page keeps AWS provisioning manual. It does not add CloudFormation.</p>
 <pre><code class="language-bash">Name                    Type         AMI
 ----------------------  -----------  --------------------------
-jenkins-server          t3.medium    Amazon Linux 2023, x86_64
+jenkins-server          t3.small     Amazon Linux 2023, x86_64
+ansible-server          t3.small     Amazon Linux 2023, x86_64
 staging-frontend        t3.small     Amazon Linux 2023, x86_64
 staging-backend         t3.small     Amazon Linux 2023, x86_64
 production-frontend     t3.small     Amazon Linux 2023, x86_64
@@ -143,10 +148,11 @@ production-backend      t3.small     Amazon Linux 2023, x86_64
 
 Network:       same VPC as the existing RDS instance
 Key pair:      the team deployment key pair
-Storage:       16 GiB gp3 for each app box
+Storage:       16 GiB gp3 for each app box and ansible-server
+               30 GiB gp3 for jenkins-server, it stores images
 Public IPv4:   enabled for this Learner Lab design
 Backend IAM:    LabInstanceProfile or LabRole on both backend boxes
-Jenkins IAM:    none needed; Jenkins uses static inventory</code></pre>
+Control IAM:    none needed; deployment uses static inventory</code></pre>
 <p>Reuse the two current production boxes if they match. Do not rebuild a working production server just to change its name. Add clear <code>Name</code> and <code>Environment</code> tags.</p>
 <p class="command-purpose"><strong>Record two addresses per app box.</strong> Inventory uses the public IP for SSH from a laptop. Swarm uses the private IP for cluster traffic. An Elastic IP is useful, but Learner Lab quotas vary. If you cannot allocate one, update inventory after a lab restart.</p>
 </div>
@@ -155,7 +161,7 @@ Jenkins IAM:    none needed; Jenkins uses static inventory</code></pre>
 <p>Create <code>staging-frontend-sg</code> and <code>staging-backend-sg</code>. Add each line as an inbound rule. Keep default outbound all traffic.</p>
 <pre><code class="language-bash">staging-frontend-sg
   TCP 22     source TEAM_PUBLIC_IP/32       teammate SSH
-  TCP 22     source jenkins-server-sg       Jenkins Ansible later
+  TCP 22     source ansible-server-sg       automated deploys later
   TCP 80     source 0.0.0.0/0               public store
   TCP 2377   source staging-backend-sg      worker joins manager
   TCP 7946   source staging-backend-sg      Swarm node traffic
@@ -164,7 +170,7 @@ Jenkins IAM:    none needed; Jenkins uses static inventory</code></pre>
 
 staging-backend-sg
   TCP 22     source TEAM_PUBLIC_IP/32       teammate SSH
-  TCP 22     source jenkins-server-sg       Jenkins Ansible later
+  TCP 22     source ansible-server-sg       automated deploys later
   TCP 7946   source staging-frontend-sg     Swarm node traffic
   UDP 7946   source staging-frontend-sg     Swarm node traffic
   UDP 4789   source staging-frontend-sg     overlay network
@@ -177,7 +183,7 @@ No inbound TCP 8000 rule.</code></pre>
 <p>Create or update <code>production-frontend-sg</code> and <code>production-backend-sg</code>.</p>
 <pre><code class="language-bash">production-frontend-sg
   TCP 22     source TEAM_PUBLIC_IP/32
-  TCP 22     source jenkins-server-sg
+  TCP 22     source ansible-server-sg
   TCP 80     source 0.0.0.0/0
   TCP 2377   source production-backend-sg
   TCP 7946   source production-backend-sg
@@ -186,7 +192,7 @@ No inbound TCP 8000 rule.</code></pre>
 
 production-backend-sg
   TCP 22     source TEAM_PUBLIC_IP/32
-  TCP 22     source jenkins-server-sg
+  TCP 22     source ansible-server-sg
   TCP 7946   source production-frontend-sg
   UDP 7946   source production-frontend-sg
   UDP 4789   source production-frontend-sg
@@ -196,7 +202,7 @@ No inbound TCP 8000 rule.</code></pre>
 <p class="command-purpose"><strong>Port 2377 belongs on the manager only.</strong> The worker starts that connection. Ports 7946 and 4789 are needed in both directions.</p>
 </div>
 <div class="card">
-<h3>1.4 · RDS and Jenkins rules</h3>
+<h3>1.4 · RDS and control-box rules</h3>
 <pre><code class="language-bash">rds-sg
   TCP 5432   source staging-backend-sg
   TCP 5432   source production-backend-sg
@@ -208,11 +214,16 @@ jenkins-server-sg
   TCP 8080   source TEAM_PUBLIC_IP/32
   TCP 8080   source each current GitHub webhook CIDR
 
+ansible-server-sg
+  TCP 22     source TEAM_PUBLIC_IP/32       teammate SSH
+  TCP 22     source jenkins-server-sg       Jenkins launches the agent
+  no other inbound rule
+
 app box SSH rules
   use one TEAM_PUBLIC_IP/32 rule per teammate if needed
-  add jenkins-server-sg as a separate source rule</code></pre>
-<p>Port 8080 is listed now so the five-box map is complete. The next page shows how to get GitHub's current webhook CIDRs and set up Jenkins authentication, the webhook secret, and credentials. If the Learner Lab cannot hold every GitHub range, opening 8080 to <code>0.0.0.0/0</code> is a recorded temporary fallback, not the preferred final rule.</p>
-<p class="command-purpose"><strong>RDS accepts the backend groups only.</strong> The frontend managers cannot query the database. The Jenkins box cannot query it either. Migrations will run on the target backend worker.</p>
+  add ansible-server-sg as a separate source rule</code></pre>
+<p>Port 8080 and the Ansible group are listed now so the six-box map is complete. The next page shows how to get GitHub's current webhook CIDRs and set up Jenkins authentication, the webhook secret, credentials, and the Ansible agent. If the Learner Lab cannot hold every GitHub range, opening 8080 to <code>0.0.0.0/0</code> is a recorded temporary fallback, not the preferred final rule.</p>
+<p class="command-purpose"><strong>SSH flows one way only.</strong> Jenkins opens port 22 on <code>ansible-server</code>, and <code>ansible-server</code> opens port 22 on the four app boxes. Nothing lets <code>jenkins-server</code> reach an app box directly. RDS still accepts the two backend groups only, so neither control box can query the database and migrations run on the target backend worker.</p>
 </div>
 <div class="card">
 <h3>1.5 · Let backend containers use the IAM role</h3>
@@ -223,7 +234,7 @@ Metadata response hop limit:  2</code></pre>
 <p class="command-purpose"><strong>Why hop limit 2:</strong> boto3 runs inside the API container. It needs one extra network hop to read temporary role credentials. Do not put AWS access keys in a vault or environment file.</p>
 </div>
 </div>
-<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the four app boxes are running in one VPC. Frontends expose 80. No box exposes 8000. Each Swarm pair has only 2377, 7946, and 4789 between that pair. RDS 5432 accepts only the two backend groups.</p>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the four app boxes are running in one VPC. Frontends expose 80. No box exposes 8000. Each Swarm pair has only 2377, 7946, and 4789 between that pair. RDS 5432 accepts only the two backend groups. App-box SSH now names <code>ansible-server-sg</code>, not <code>jenkins-server-sg</code>.</p>
 </div></div>
 </section>
 <section class="cheatsheet-section" id="swarm-data">
@@ -367,7 +378,7 @@ swarm_workers
 [all:vars]
 ansible_user=ec2-user
 ansible_python_interpreter=/usr/bin/python3</code></pre>
-<p class="command-purpose"><strong>Use public IPs for <code>ansible_host</code>.</strong> Use private IPs for <code>swarm_advertise_addr</code>. Jenkins may later use private SSH addresses because it runs in the same VPC.</p>
+<p class="command-purpose"><strong>Use public IPs for <code>ansible_host</code>.</strong> Use private IPs for <code>swarm_advertise_addr</code>. <code>ansible-server</code> sits in the same VPC, so it can reach either address and the one committed inventory works from a laptop and from the agent.</p>
 </div>
 <div class="card">
 <h3>3.4 · Complete <code>ansible/inventories/production.ini</code></h3>
@@ -520,7 +531,7 @@ collections:
 <pre><code class="language-bash">cd app/ansible
 ansible-galaxy collection install -r requirements.yml
 ansible-galaxy collection list | grep community.docker</code></pre>
-<p class="command-purpose"><strong>Run this on the Ansible control machine.</strong> The roles install the Python Docker SDK on EC2. The collection itself runs on your laptop now and in the Jenkins runner later.</p>
+<p class="command-purpose"><strong>Run this on the Ansible control machine.</strong> The roles install the Python Docker SDK on EC2. The collection itself runs on your laptop now and inside the <code>ansible-server</code> virtual environment later, so page 2 installs the same <code>requirements.yml</code> there.</p>
 </div>
 <div class="card">
 <h3>4.4 · Why these roles can be run twice</h3>
@@ -929,7 +940,7 @@ future hardening:
   ansible.builtin.debug:
     var: stack_services.stdout_lines</code></pre>
 <p>The migration runs on the backend worker because only its security group can reach RDS. The manager logs in separately so <code>--with-registry-auth</code> can pass private registry auth to Swarm tasks.</p>
-<p>The two <code>uri</code> tasks run from the Ansible control runner, not an EC2 target. They wait up to five minutes for readiness and the requested commit through nginx. The role returns only after the public rollout is ready and <code>/api/version/</code> contains the full <code>git_commit</code> or its first eight characters.</p>
+<p>The two <code>uri</code> tasks run from the Ansible control node, your laptop now and <code>ansible-server</code> once page 2 is wired, not from an EC2 target. They wait up to five minutes for readiness and the requested commit through nginx. The role returns only after the public rollout is ready and <code>/api/version/</code> contains the full <code>git_commit</code> or its first eight characters.</p>
 <p class="command-purpose"><strong>Failure stops the play.</strong> A nonzero migration result prevents the stack command from running. A rollout or version timeout also fails the role. Output text can differ by Docker version, so proof comes from service state and public HTTP checks.</p>
 </div>
 <div class="card">
@@ -1192,7 +1203,8 @@ curl --connect-timeout 3 http://PRODUCTION_BACKEND_IP:8000/</code></pre>
 <div class="card">
 <h3>9.1 · Screenshot and command evidence</h3>
 <pre><code class="language-bash">AWS console:
-  five EC2 names and sizes
+  six EC2 names and sizes
+  app SSH rules naming ansible-server-sg
   staging pair security-group rules
   production pair security-group rules
   RDS 5432 sources are the two backend groups
@@ -1277,7 +1289,8 @@ retire old path only after:
 </div>
 <div class="card">
 <h3>9.5 · Contract for the Jenkins page</h3>
-<pre><code class="language-bash">Jenkins supplies:
+<pre><code class="language-bash">Jenkins runs the playbook on ansible-server,
+its build agent labelled "ansible", and supplies:
   ansible/inventories/staging.ini or production.ini
   target_environment
   image_tag
@@ -1309,9 +1322,13 @@ Both call:
 Inventory:
   static staging.ini and production.ini
   no AWS inventory discovery
-  no Jenkins EC2 IAM role needed for inventory</code></pre>
+  no control-box EC2 IAM role needed for inventory
+
+Boundary:
+  jenkins-server never SSHes into an app box
+  ansible-server never builds or pushes an image</code></pre>
 <p>The PR and merged <code>main</code> builds may have different tags and commits. Both images remain environment-neutral. Staging and production database, bucket, host, and secret values come from Ansible, never from an image build.</p>
-<p class="command-purpose"><strong>Ansible remains the deployment owner.</strong> Jenkins passes release facts and credentials. It does not duplicate Swarm commands in a Jenkinsfile.</p>
+<p class="command-purpose"><strong>Ansible remains the deployment owner.</strong> Jenkins passes release facts and credentials, then hands the deploy stage to <code>ansible-server</code>. It does not duplicate Swarm commands in a Jenkinsfile.</p>
 </div>
 </div>
 <p class="callout callout--checkpoint"><strong>Checkpoint:</strong> one evidence folder contains AWS, Ansible, Swarm, HTTP, and encrypted-vault proof. The report names every limit. The old deployment roles remain available. The exact <code>site-swarm.yml</code> contract is ready for page 2.</p>

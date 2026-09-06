@@ -3,20 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Beginner-friendly COSC2767 Assignment 2 Jenkins tutorial: run Jenkins in a persistent production container, build immutable RMIT Store images, deploy pull requests to shared staging and protected main to production with a short-lived Ansible runner, report GitHub status, and reuse the existing email alert module.">
+<meta name="description" content="Beginner-friendly COSC2767 Assignment 2 Jenkins tutorial: run Jenkins in a persistent production container on one t3.small box, build immutable RMIT Store images, hand deployment to a second t3.small Ansible agent box, deploy pull requests to shared staging and protected main to production, report GitHub status, and reuse the existing email alert module.">
 <title>RMIT Store: Jenkins PR and Production Pipelines - COSC2767</title>
 </head>
 <body>
 <header>
 <div class="container">
 <h1>🔧 RMIT Store: Jenkins PR and Production Pipelines</h1>
-<p class="intro">This is page 2 of the deployment guide. It is for the teammate who owns Jenkins. You will run Jenkins on its own <code>t3.medium</code> EC2 box. You will make one pipeline for pull requests and one for protected <code>main</code>. Both use the existing <code>jenkins/notify.groovy</code> alert module. The AWS hosts, Ansible inventory, vault files, Docker Swarm services, and migration role come from <a href="rmit-store-ansible-swarm.html">page 1: Ansible and Swarm</a>.</p>
+<p class="intro">This is page 2 of the deployment guide. It is for the teammate who owns Jenkins. You will use two <code>t3.small</code> EC2 boxes: <code>jenkins-server</code> builds and pushes images, and <code>ansible-server</code> runs every deployment as a Jenkins build agent. You will make one pipeline for pull requests and one for protected <code>main</code>. Both use the existing <code>jenkins/notify.groovy</code> alert module. The AWS hosts, Ansible inventory, vault files, Docker Swarm services, and migration role come from <a href="rmit-store-ansible-swarm.html">page 1: Ansible and Swarm</a>.</p>
 </div>
 </header>
 <main class="container">
 
 <section class="cheatsheet-section" id="jenkins-overview">
-<h2 class="collapsible-header start-open">🎯 Overview — two paths, one Jenkins server<span class="collapse-icon"></span></h2>
+<h2 class="collapsible-header start-open">🎯 Overview — two paths, two control boxes<span class="collapse-icon"></span></h2>
 <div class="collapsible-content">
 <div class="grid-container grid-container--wide">
 <div class="card">
@@ -25,13 +25,20 @@
                                  ┌──── rmit-store-api
                                  │     rmit-store-frontend
                                  │     immutable tags only
-                                 │
+                                 │ push
 GitHub private repo             │
 ┌────────────────────┐ webhook  ▼
 │ PR to main         ├────────► ┌────────────────────────────────────┐
-│ protected main     │          │ Jenkins EC2, t3.medium             │
-│ commit status      │◄─────────┤ persistent Jenkins controller      │
-└────────────────────┘          │ short-lived Ansible runner/deploy  │
+│ protected main     │          │ jenkins-server, t3.small           │
+│ commit status      │◄─────────┤ Jenkins controller + Docker builds │
+└────────────────────┘          │ label: builder                     │
+                                └──────────────┬─────────────────────┘
+                                               │ agent launch over SSH :22
+                                               ▼
+                                ┌────────────────────────────────────┐
+                                │ ansible-server, t3.small           │
+                                │ Jenkins agent, label: ansible      │
+                                │ ansible-core venv, deploy key      │
                                 └──────────────┬─────────────────────┘
                                                │ SSH + exact image tag
                     ┌──────────────────────────┴──────────────────────────┐
@@ -47,7 +54,8 @@ GitHub private repo             │
              ▼             ▼                                       ▼             ▼
         RDS staging   S3 staging                              RDS production  S3 production
         database      media bucket                            database        media bucket</code></pre>
-<p class="command-purpose"><strong>Jenkins and Ansible share one physical EC2 host.</strong> Their software stays separate. Jenkins is a long-running container. Ansible starts in a sibling runner container for one deploy, then exits.</p>
+<p class="command-purpose"><strong>Jenkins and Ansible sit on separate EC2 hosts.</strong> Jenkins keeps the Docker socket and the registry token. <code>ansible-server</code> keeps the SSH deploy key, the vault password, and the only route into the four app boxes. Neither box can do the other one's job.</p>
+<p>Jenkins still owns sequence. It runs <code>ansible-server</code> as a permanent build agent labelled <code>ansible</code>, so the deploy stage is an ordinary pipeline stage with normal console output, normal credential binding, and a red stage on failure. Nothing is triggered by a fire-and-forget remote command.</p>
 </div>
 <div class="card">
 <h3>0.2 · Pull request path</h3>
@@ -85,22 +93,29 @@ GitHub private repo             │
 </section>
 
 <section class="cheatsheet-section" id="jenkins-aws">
-<h2 class="collapsible-header">☁️ Step 1 — Create the Jenkins EC2 box<span class="collapse-icon"></span></h2>
+<h2 class="collapsible-header">☁️ Step 1 — Create the two control EC2 boxes<span class="collapse-icon"></span></h2>
 <div class="collapsible-content">
 <div class="grid-container grid-container--wide">
 <div class="card">
 <h3>1.1 · Launch settings</h3>
-<p><strong>Where:</strong> AWS console → EC2 → Launch instance.</p>
+<p><strong>Where:</strong> AWS console → EC2 → Launch instance. Launch both boxes into the same VPC as the app boxes.</p>
 <pre><code class="language-bash">Name              jenkins-server
 AMI               Amazon Linux 2023, x86_64
-Instance type     t3.medium
-Storage           30 GiB gp3
+Instance type     t3.small
+Storage           30 GiB gp3        images and build cache
 IAM role          none needed
 Security group    jenkins-server-sg
 
-Use an Elastic IP if the Learner Lab allows it.
-Write the public value down as JENKINS_IP.</code></pre>
-<p class="command-purpose"><strong>The public URL is</strong> <code>http://JENKINS_IP:8080</code>. HTTPS is future work. Do not claim that this HTTP setup protects login traffic.</p>
+Name              ansible-server
+AMI               Amazon Linux 2023, x86_64
+Instance type     t3.small
+Storage           16 GiB gp3        no images stored here
+IAM role          none needed
+Security group    ansible-server-sg
+
+Use Elastic IPs if the Learner Lab allows them.
+Write the public values down as JENKINS_IP and ANSIBLE_IP.</code></pre>
+<p class="command-purpose"><strong>The public URL is</strong> <code>http://JENKINS_IP:8080</code>. HTTPS is future work. Do not claim that this HTTP setup protects login traffic. <code>ansible-server</code> publishes nothing at all; you reach it only over SSH.</p>
 </div>
 <div class="card">
 <h3>1.2 · Security group rules</h3>
@@ -110,16 +125,21 @@ Write the public value down as JENKINS_IP.</code></pre>
   Jenkins     TCP 8080   source TEAM_PUBLIC_IP/32
   Jenkins     TCP 8080   source each current GitHub hooks CIDR
 
-app Swarm security groups:
+ansible-server-sg inbound:
+  SSH         TCP 22     source TEAM_PUBLIC_IP/32
   SSH         TCP 22     source jenkins-server-sg
+  no other inbound rule
+
+app Swarm security groups:
+  SSH         TCP 22     source ansible-server-sg
 
 # Get GitHub's current webhook CIDRs. Run on your laptop.
 curl -s https://api.github.com/meta | jq -r '.hooks[]'</code></pre>
 <p>GitHub changes these CIDRs sometimes. Check them again before the demo. If your lab cannot add all GitHub ranges, use <code>0.0.0.0/0</code> on 8080 only as a recorded short-term limit. Keep the Jenkins login locked and use a webhook secret.</p>
-<p class="command-purpose"><strong>A security group cannot allow one URL path.</strong> A CIDR rule opens all of port 8080 to that source. The Jenkins login still needs strong authentication.</p>
+<p class="command-purpose"><strong>SSH flows in one direction only.</strong> Jenkins opens 22 on <code>ansible-server</code> to launch the agent, and <code>ansible-server</code> opens 22 on the app boxes to deploy. If you left <code>jenkins-server-sg</code> on the app groups from an earlier draft, remove it now. The split is only real once that rule is gone.</p>
 </div>
 <div class="card">
-<h3>1.3 · Install Docker and Compose</h3>
+<h3>1.3 · Install Docker and Compose on <code>jenkins-server</code></h3>
 <pre><code class="language-bash"># laptop
 ssh -i ~/Downloads/YOUR_KEY.pem ec2-user@JENKINS_IP
 
@@ -139,10 +159,22 @@ exit
 ssh -i ~/Downloads/YOUR_KEY.pem ec2-user@JENKINS_IP
 docker version
 docker compose version</code></pre>
-<p class="command-purpose"><strong>Log out once.</strong> The Docker group change does not affect the old shell.</p>
+<p class="command-purpose"><strong>Log out once.</strong> The Docker group change does not affect the old shell. Install Docker on this box only. <code>ansible-server</code> never builds an image, and the page 1 <code>community.docker</code> tasks run on the app hosts, not on the control node.</p>
 </div>
 <div class="card">
-<h3>1.4 · Prepare the host</h3>
+<h3>1.4 · Add swap on <code>jenkins-server</code></h3>
+<p>A <code>t3.small</code> has 2 GiB of RAM. The Java controller and a Node production build can want that much at the same moment. Swap turns a hard out-of-memory kill into a slow build.</p>
+<pre><code class="language-bash"># jenkins-server
+sudo dd if=/dev/zero of=/swapfile bs=1M count=2048 status=progress
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+free -h</code></pre>
+<p class="command-purpose"><strong>Swap is a safety net, not headroom.</strong> If builds still get killed, the honest fixes are a larger instance type or moving image builds off this box. Record whichever one you chose.</p>
+</div>
+<div class="card">
+<h3>1.5 · Prepare the <code>jenkins-server</code> host</h3>
 <pre><code class="language-bash"># jenkins-server
 sudo mkdir -p /opt/rmit-store /var/jenkins_home /etc/rmit-jenkins
 sudo chown -R ec2-user:ec2-user /opt/rmit-store
@@ -155,10 +187,27 @@ git clone ASSIGNED_PRIVATE_REPO_URL .
 # Docker socket group number. Do not guess it.
 stat -c '%g' /var/run/docker.sock</code></pre>
 <p>Page 1 explains the two static inventories, host keys, app security groups, RDS, S3, and Swarm labels. Finish those parts before the first deploy.</p>
-<p class="command-purpose"><strong>Use the same absolute Jenkins home path on both sides.</strong> The host and container both use <code>/var/jenkins_home</code>. This makes workspace and credential-file mounts work in sibling containers.</p>
+<p class="command-purpose"><strong>Use the same absolute Jenkins home path on both sides.</strong> The host and container both use <code>/var/jenkins_home</code>. This makes the workspace path valid on the host daemon when Jenkins builds images in sibling containers.</p>
+</div>
+<div class="card">
+<h3>1.6 · Prepare the <code>ansible-server</code> host</h3>
+<p>The agent needs a Java runtime for the Jenkins agent process, Git for <code>checkout scm</code>, and Python for Ansible. Step 4 adds the virtual environment and the Jenkins node itself.</p>
+<pre><code class="language-bash"># laptop
+ssh -i ~/Downloads/YOUR_KEY.pem ec2-user@ANSIBLE_IP
+
+# ansible-server
+sudo dnf update -y
+sudo dnf install -y git python3 python3-pip \
+  java-21-amazon-corretto-headless
+sudo mkdir -p /opt/jenkins-agent
+sudo chown ec2-user:ec2-user /opt/jenkins-agent
+
+java -version
+python3 --version</code></pre>
+<p class="command-purpose"><strong>No Docker and no swap here.</strong> <code>ansible-playbook</code> is light work: it opens SSH connections and waits. The heavy container work happens on the app boxes and on <code>jenkins-server</code>.</p>
 </div>
 </div>
-<p class="callout"><strong>Checkpoint:</strong> <code>docker version</code> and <code>docker compose version</code> work after a fresh SSH login. <code>JENKINS_IP</code> is stable. Port 22 is limited. Port 8080 allows team IPs and current GitHub webhook CIDRs where the lab permits.</p>
+<p class="callout"><strong>Checkpoint:</strong> <code>docker version</code> and <code>docker compose version</code> work on <code>jenkins-server</code> after a fresh SSH login, and <code>free -h</code> shows 2 GiB of swap. <code>java -version</code> works on <code>ansible-server</code>. <code>JENKINS_IP</code> and <code>ANSIBLE_IP</code> are stable. The app security groups name <code>ansible-server-sg</code> for SSH.</p>
 </div>
 </section>
 
@@ -173,9 +222,8 @@ Jenkinsfile.production            # repo root
 jenkins/
 ├── notify.groovy                 # keep the existing module
 ├── Jenkinsfile.alert-test        # existing laptop test only
-├── ansible-runner/
-│   ├── Dockerfile
-│   └── requirements.txt
+├── ansible-agent/
+│   └── bootstrap.sh              # ansible-server venv setup, Step 4
 ├── casc/
 │   ├── alerting.yaml             # reuse safely
 │   ├── local.yaml                # laptop only; never load in production
@@ -208,11 +256,13 @@ RUN jenkins-plugin-cli --plugins \
     lockable-resources \
     pipeline-stage-view \
     prometheus \
+    ssh-slaves \
     workflow-aggregator
 
 USER jenkins</code></pre>
 <p><code>github-branch-source</code> discovers pull requests and reports the normal Jenkins commit status. No GitHub Checks plugin is installed, so this guide does not promise a GitHub Check Run.</p>
-<p class="command-purpose"><strong>The Docker CLI talks to the host daemon.</strong> The Compose file mounts the host socket in the next card.</p>
+<p><code>ssh-slaves</code> is the SSH Build Agents plugin. It is the one plugin the split adds. Jenkins uses it to open an SSH connection to <code>ansible-server</code>, copy the agent JAR, and start the agent process under Java.</p>
+<p class="command-purpose"><strong>The Docker CLI talks to the host daemon.</strong> The Compose file mounts the host socket in the next card. It stays on this box, so no image build can reach an app host.</p>
 </div>
 <div class="card">
 <h3>2.3 · Production JCasC</h3>
@@ -220,6 +270,7 @@ USER jenkins</code></pre>
 jenkins:
   systemMessage: "RMIT Store CI/CD"
   numExecutors: 1
+  labelString: "builder"
   mode: NORMAL
   securityRealm:
     local:
@@ -243,7 +294,8 @@ unclassified:
     collectingMetricsPeriodInSeconds: 60
     useAuthenticatedEndpoint: false</code></pre>
 <p>The monitoring page can scrape <code>http://JENKINS_IP:8080/prometheus</code>. With the current HTTP design, anyone allowed to reach port 8080 can reach that endpoint. Record this limit.</p>
-<p class="command-purpose"><strong>Only two YAML files load.</strong> They are <code>production.yaml</code> and <code>alerting.yaml</code>.</p>
+<p><code>labelString: "builder"</code> names the controller's own executor. Both Jenkinsfiles ask for <code>agent { label 'builder' }</code>, so checks, image builds, and pushes can only land here. One executor means a second job waits instead of competing for 2 GiB of RAM. Leave it at 1 unless you move to a bigger instance.</p>
+<p class="command-purpose"><strong>Only two YAML files load.</strong> They are <code>production.yaml</code> and <code>alerting.yaml</code>. The <code>ansible</code> node is not declared here, because its SSH credential is easier to attach in the UI in Step 4.</p>
 </div>
 <div class="card">
 <h3>2.4 · Reuse <code>alerting.yaml</code> without a personal address</h3>
@@ -278,17 +330,18 @@ services:
     env_file:
       - /etc/rmit-jenkins/jenkins.env
     environment:
-      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false -Xms512m -Xmx1536m"
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false -Xms256m -Xmx1024m"
       CASC_JENKINS_CONFIG: "/var/jenkins_home/casc/production.yaml,/var/jenkins_home/casc/alerting.yaml"
     volumes:
       - /var/jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - ../casc/production.yaml:/var/jenkins_home/casc/production.yaml:ro
       - ../casc/alerting.yaml:/var/jenkins_home/casc/alerting.yaml:ro
-    mem_limit: 3g
+    mem_limit: 1500m
     cpus: 1.5</code></pre>
-<p>The volume keeps jobs, plugins, build records, and credentials across restarts. The CPU and memory caps apply to Jenkins itself. Sibling image builds use the host daemon outside these caps. Each Ansible runner gets its own limits in Step 4.</p>
-<p class="command-purpose"><strong>The Docker socket is root-equivalent host access.</strong> A trusted PR can change <code>Jenkinsfile.pr</code>, control the host daemon, and ask Jenkins for credentials. This is acceptable only for this small course team, where every repo writer is trusted. Do not accept forked or outside PRs. Isolated agents and a pipeline definition loaded from trusted <code>main</code> are future hardening.</p>
+<p>The volume keeps jobs, plugins, build records, and credentials across restarts. The CPU and memory caps apply to Jenkins itself. Sibling image builds use the host daemon outside these caps.</p>
+<p><strong>These numbers are the <code>t3.small</code> budget.</strong> A 1 GiB Java heap plus a roughly 1.5 GiB container cap leaves about 500 MiB of RAM plus the swap file for the sibling <code>docker build</code> containers, which are not capped by Compose. If you later move to a <code>t3.medium</code>, raise <code>-Xmx</code> to <code>1536m</code> and <code>mem_limit</code> to <code>3g</code>.</p>
+<p class="command-purpose"><strong>The Docker socket is root-equivalent host access.</strong> A trusted PR can change <code>Jenkinsfile.pr</code>, control this host's daemon, and ask Jenkins for credentials, including the deploy key. Splitting the boxes removes the direct path from a build container to production, but it does not remove that credential path. It is acceptable only for this small course team, where every repo writer is trusted. Do not accept forked or outside PRs. A pipeline definition loaded from trusted <code>main</code> is future hardening.</p>
 </div>
 <div class="card">
 <h3>2.6 · Secret host env and startup</h3>
@@ -318,7 +371,7 @@ sudo docker logs -f rmit-store-jenkins</code></pre>
 <p class="command-purpose"><strong>Stop if <code>local.yaml</code> appears.</strong> Fix <code>CASC_JENKINS_CONFIG</code> before creating jobs.</p>
 </div>
 </div>
-<p class="callout"><strong>Checkpoint:</strong> Jenkins restarts with the same home volume, uses at most 3 GiB and 1.5 CPUs, has the required plugins, sends a test email through existing <code>gmail-smtp</code>, exposes Prometheus metrics, and loads no laptop JCasC.</p>
+<p class="callout"><strong>Checkpoint:</strong> Jenkins restarts with the same home volume, uses at most 1500 MiB and 1.5 CPUs, has the required plugins including <code>ssh-slaves</code>, reports its built-in node with the <code>builder</code> label, sends a test email through existing <code>gmail-smtp</code>, exposes Prometheus metrics, and loads no laptop JCasC.</p>
 </div>
 </section>
 
@@ -354,6 +407,12 @@ dockerhub-creds
   Username: DOCKERHUB_USER
   Password: Docker Hub access token
 
+ansible-agent-ssh
+  Kind: SSH Username with private key
+  Username: ec2-user
+  Private key: key accepted by ansible-server
+  Used only by Jenkins to launch the agent, never by a build
+
 ec2-deploy-key
   Kind: SSH Username with private key
   Username: ec2-user
@@ -371,7 +430,8 @@ gmail-smtp
   Kind: Username with password
   Created by existing jenkins/casc/alerting.yaml
   Username/password come from GMAIL_USER and GMAIL_APP_PASSWORD</code></pre>
-<p class="command-purpose"><strong>Keep each ID exact.</strong> The two root Jenkinsfiles below refer to these strings.</p>
+<p>The split needs two different SSH keys. <code>ansible-agent-ssh</code> lets Jenkins into <code>ansible-server</code>. <code>ec2-deploy-key</code> lets Ansible into the four app boxes. Generate them separately, so losing one does not hand over both hops.</p>
+<p class="command-purpose"><strong>Keep each ID exact.</strong> The two root Jenkinsfiles below refer to these strings. <code>ansible-agent-ssh</code> is the exception: only the node configuration in Step 4 uses it.</p>
 </div>
 <div class="card">
 <h3>3.3 · Private Docker Hub repositories</h3>
@@ -385,8 +445,8 @@ Store it only in dockerhub-creds.</code></pre>
 <p class="command-purpose"><strong>Never deploy only <code>latest</code>.</strong> An exact tag links GitHub, Docker Hub, Ansible, the running API, and rollback evidence.</p>
 </div>
 <div class="card">
-<h3>3.4 · How secrets reach the runner</h3>
-<p>Jenkins binds the SSH key and vault password only around the deploy shell. The shell turns off trace output. It writes the vault password to a mode-600 temporary file. A trap deletes it. The child container receives file paths, not secret text in command arguments. <code>dockerhub-creds</code> is used only in image build and push stages. Page 1 already stores the read-only deploy token in each encrypted Ansible vault.</p>
+<h3>3.4 · How secrets reach the deploy agent</h3>
+<p>Jenkins binds the SSH key and vault password only around the deploy shell, and that shell runs on <code>ansible-server</code>. The controller sends the secret to the agent for the duration of the block and writes it into the agent's own workspace. The shell turns off trace output. It writes the vault password to a mode-600 temporary file. A trap deletes it. <code>ansible-playbook</code> receives file paths, not secret text in command arguments. <code>dockerhub-creds</code> is bound only in the build and push stages, which never run on the Ansible box. Page 1 already stores the read-only deploy token in each encrypted Ansible vault.</p>
 <pre><code class="language-bash">set +x
 umask 077
 SECRET_DIR="$(mktemp -d "$WORKSPACE/.ci-secrets.XXXXXX")"
@@ -396,70 +456,125 @@ printf '%s' "$ANSIBLE_VAULT_PASSWORD" &gt; "$SECRET_DIR/vault-password"</code></
 <p class="command-purpose"><strong>Masking is a backup, not permission control.</strong> This course design does run trusted team PR code with deployment credentials. Branch protection does not make that code safe before the build. Only trusted teammates may write branches. A later hardened design loads the pipeline from trusted <code>main</code> and runs builds on isolated agents.</p>
 </div>
 </div>
-<p class="callout"><strong>Checkpoint:</strong> the GitHub token is limited to one private repo and has Contents read, Pull requests read, and Commit statuses write. The two Docker Hub repos are private. All six Jenkins credential IDs exist. No secret value appears in git.</p>
+<p class="callout"><strong>Checkpoint:</strong> the GitHub token is limited to one private repo and has Contents read, Pull requests read, and Commit statuses write. The two Docker Hub repos are private. All seven Jenkins credential IDs exist, including the separate <code>ansible-agent-ssh</code> key. No secret value appears in git.</p>
 </div>
 </section>
 
 <section class="cheatsheet-section" id="jenkins-runner">
-<h2 class="collapsible-header">🤖 Step 4 — Build the short-lived Ansible runner<span class="collapse-icon"></span></h2>
+<h2 class="collapsible-header">🤖 Step 4 — Turn <code>ansible-server</code> into the deploy agent<span class="collapse-icon"></span></h2>
 <div class="collapsible-content">
 <div class="grid-container grid-container--wide">
 <div class="card">
-<h3>4.1 · Python requirements</h3>
-<pre><code class="language-text"># jenkins/ansible-runner/requirements.txt
-ansible-core&gt;=2.17,&lt;2.19</code></pre>
-<p><code>ansible-core</code> runs the playbook. Static INI inventories need no AWS SDK.</p>
-<p class="command-purpose"><strong>The runner also installs</strong> the sensibly bounded <code>community.docker</code> collection used by page 1.</p>
+<h3>4.1 · Install Ansible in a virtual environment</h3>
+<p><strong>Where:</strong> on <code>ansible-server</code>. Save this as <code>jenkins/ansible-agent/bootstrap.sh</code> in the repo and run it once, so the next person can rebuild the box from the file instead of from memory.</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# jenkins/ansible-agent/bootstrap.sh
+set -euo pipefail
+
+VENV=/opt/ansible-venv
+COLLECTIONS=/opt/ansible-collections
+
+sudo python3 -m venv "$VENV"
+sudo "$VENV/bin/pip" install --no-cache-dir --upgrade pip
+sudo "$VENV/bin/pip" install --no-cache-dir 'ansible-core&gt;=2.17,&lt;2.19'
+
+sudo mkdir -p "$COLLECTIONS"
+sudo "$VENV/bin/ansible-galaxy" collection install \
+  'community.docker:&gt;=3.10.0,&lt;5.0.0' -p "$COLLECTIONS"
+
+# the agent runs as ec2-user and only needs to read these
+sudo chmod -R a+rX "$VENV" "$COLLECTIONS"
+
+"$VENV/bin/ansible-playbook" --version
+ANSIBLE_COLLECTIONS_PATH="$COLLECTIONS" \
+  "$VENV/bin/ansible-galaxy" collection list community.docker</code></pre>
+<p>A virtual environment at a fixed path is this design's dependency isolation. The old runner container did the same job, but a whole box that only ever runs Ansible does not need a second layer of packaging. Nothing else on the box uses Python.</p>
+<p class="command-purpose"><strong>Keep the bounds equal to page 1.</strong> These are the same version ranges as <code>ansible/requirements.yml</code>. If page 1 changes a bound, change it here too, or the same playbook behaves differently on a laptop and in the pipeline.</p>
 </div>
 <div class="card">
-<h3>4.2 · Complete runner Dockerfile</h3>
-<pre><code class="language-dockerfile"># jenkins/ansible-runner/Dockerfile
-FROM python:3.12-slim
+<h3>4.2 · Register the permanent Jenkins node</h3>
+<p>First teach the Jenkins container the host key of <code>ansible-server</code>, or the SSH launch will refuse to connect.</p>
+<pre><code class="language-bash"># jenkins-server
+sudo mkdir -p /var/jenkins_home/.ssh
+ssh-keyscan -H ANSIBLE_PRIVATE_IP | sudo tee -a /var/jenkins_home/.ssh/known_hosts
+sudo chown -R 1000:1000 /var/jenkins_home/.ssh
+sudo chmod 700 /var/jenkins_home/.ssh
+sudo chmod 600 /var/jenkins_home/.ssh/known_hosts</code></pre>
+<p><strong>Where:</strong> Manage Jenkins → Nodes → New Node.</p>
+<pre><code class="language-bash">Name                    ansible-server
+Type                    Permanent Agent
 
-RUN apt-get update \
-    &amp;&amp; apt-get install -y --no-install-recommends \
-       ca-certificates openssh-client \
-    &amp;&amp; rm -rf /var/lib/apt/lists/*
-
-COPY jenkins/ansible-runner/requirements.txt /tmp/python-requirements.txt
-
-RUN python3 -m pip install --no-cache-dir -r /tmp/python-requirements.txt \
-    &amp;&amp; ansible-galaxy collection install \
-       'community.docker:&gt;=3.10.0,&lt;5.0.0'
-
-WORKDIR /work</code></pre>
-<pre><code class="language-bash"># repo root on jenkins-server
-docker build \
-  -t rmit-store-ansible-runner:1.0.0 \
-  -f jenkins/ansible-runner/Dockerfile \
-  .</code></pre>
-<p class="command-purpose"><strong>No Ansible service stays running.</strong> Each deployment starts this image with <code>docker run --rm</code>.</p>
+Description             runs ansible-playbook only
+Number of executors     1
+Remote root directory   /opt/jenkins-agent
+Labels                  ansible
+Usage                   Only build jobs with label expressions
+                        matching this node
+Launch method           Launch agents via SSH
+  Host                  ANSIBLE_PRIVATE_IP
+  Credentials           ansible-agent-ssh
+  Host Key Verification Known hosts file
+  JavaPath              /usr/bin/java</code></pre>
+<p>Use the private IP. Both boxes are in one VPC, so agent traffic never leaves it. The <strong>Usage</strong> setting matters: it stops an unlabelled job from accidentally trying to build images on the box that holds the deploy key.</p>
+<p class="command-purpose"><strong>Do not choose "Non verifying" host key verification.</strong> It is offered and it would work. It also removes the only check that you are talking to your own box.</p>
 </div>
 <div class="card">
-<h3>4.3 · Coherent workspace mount</h3>
-<pre><code class="language-bash">docker run --rm --network host --memory 768m --cpus 0.75 \
-  -v "${WORKSPACE}:${WORKSPACE}:ro" \
-  -v "${SSH_KEY}:/run/secrets/ssh-key:ro" \
-  -v "${SECRET_DIR}/vault-password:/run/secrets/vault-password:ro" \
-  -v /var/jenkins_home/.ssh/known_hosts:/run/known_hosts:ro \
-  -w "${WORKSPACE}" \
-  -e ANSIBLE_HOST_KEY_CHECKING=True \
-  -e ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=/run/known_hosts" \
-  rmit-store-ansible-runner:1.0.0 \
-  ansible-playbook \
-    -i ansible/inventories/staging.ini \
-    ansible/site-swarm.yml \
-    --private-key /run/secrets/ssh-key \
-    --vault-password-file /run/secrets/vault-password \
-    -e target_environment=staging \
-    -e image_tag="$IMAGE_TAG" \
-    -e git_commit="$GIT_COMMIT" \
-    -e app_version="$IMAGE_TAG"</code></pre>
-<p>The Docker daemon runs on the host. It resolves bind-mount paths on the host. This works because the Jenkins container bind mounts host <code>/var/jenkins_home</code> at the same path, so <code>WORKSPACE</code> and Jenkins credential-file paths exist on both sides.</p>
-<p class="command-purpose"><strong>The runner has isolated dependencies and limits.</strong> Jenkins does not install Ansible or Python packages. Each runner gets 768 MiB and 0.75 CPU, then exits after the playbook ends.</p>
+<h3>4.3 · Pin the app host keys on <code>ansible-server</code></h3>
+<pre><code class="language-bash"># ansible-server, as ec2-user, once per app host
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+
+for IP in STAGING_BACKEND_IP STAGING_FRONTEND_IP \
+          PRODUCTION_BACKEND_IP PRODUCTION_FRONTEND_IP; do
+  ssh-keyscan -H "$IP" &gt;&gt; ~/.ssh/known_hosts
+done
+
+chmod 600 ~/.ssh/known_hosts
+ssh-keygen -F STAGING_BACKEND_IP -f ~/.ssh/known_hosts</code></pre>
+<p>These keys used to live in <code>/var/jenkins_home/.ssh/known_hosts</code>. They belong here now, because this is the box that opens the connections. The Jenkins box keeps a <code>known_hosts</code> file too, but it holds exactly one entry: <code>ansible-server</code>.</p>
+<p>Use the same address form here that <code>ansible_host</code> uses in the page 1 inventories. A key scanned for a public IP does not match a connection made to the private IP.</p>
+<p class="command-purpose"><strong>Strict checking stays on.</strong> The deploy command below overrides the <code>host_key_checking = False</code> line in the page 1 <code>ansible.cfg</code>. Compare fingerprints with a teammate through a trusted channel; never accept an unknown key inside a pipeline.</p>
 </div>
 <div class="card">
-<h3>4.4 · Deployment contract from page 1</h3>
+<h3>4.4 · The deploy command Jenkins will run</h3>
+<pre><code class="language-bash">export ANSIBLE_COLLECTIONS_PATH=/opt/ansible-collections
+export ANSIBLE_HOST_KEY_CHECKING=True
+export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes \
+  -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+
+/opt/ansible-venv/bin/ansible-playbook \
+  -i ansible/inventories/staging.ini \
+  ansible/site-swarm.yml \
+  --private-key "$SSH_KEY" \
+  --vault-password-file "$SECRET_DIR/vault-password" \
+  -e target_environment=staging \
+  -e "image_tag=${IMAGE_TAG}" \
+  -e "git_commit=${GIT_COMMIT}" \
+  -e "app_version=${IMAGE_TAG}"</code></pre>
+<p>This is a plain command, not a container invocation. The workspace, the credential files Jenkins binds, and <code>known_hosts</code> are all ordinary local files on this box, so nothing has to be mounted or path-matched. That simplicity is the main practical reward for giving Ansible its own instance.</p>
+<p><code>ANSIBLE_COLLECTIONS_PATH</code> is required. The bootstrap installed <code>community.docker</code> to a shared path, not into the agent user's home, so the playbook cannot find it without this line.</p>
+<p class="command-purpose"><strong>Use the absolute venv path.</strong> The Jenkins agent shell does not activate a virtual environment, and <code>ansible-playbook</code> is not on <code>PATH</code>.</p>
+</div>
+<div class="card">
+<h3>4.5 · Prove the agent before touching the pipelines</h3>
+<p>Do this now. A broken agent looks exactly like a broken Jenkinsfile once a pipeline is running.</p>
+<pre><code class="language-bash">Manage Jenkins → Nodes → ansible-server
+  Status must read "in sync" or "idle", not "offline"
+  Log must show the agent JAR copied and the agent started
+
+# ansible-server, prove the deploy path by hand first
+cd ~ &amp;&amp; git clone ASSIGNED_PRIVATE_REPO_URL check &amp;&amp; cd check
+
+ANSIBLE_COLLECTIONS_PATH=/opt/ansible-collections \
+ANSIBLE_HOST_KEY_CHECKING=True \
+/opt/ansible-venv/bin/ansible \
+  -i ansible/inventories/staging.ini all -m ping \
+  --private-key ~/.ssh/YOUR_DEPLOY_KEY.pem</code></pre>
+<p>Every host must answer <code>pong</code>. A timeout means the app security groups still name <code>jenkins-server-sg</code> instead of <code>ansible-server-sg</code>. A host key error means Step 4.3 scanned a different address form.</p>
+<p class="command-purpose"><strong>Delete the manual clone and any copied key afterwards.</strong> The pipeline supplies its own checkout and its own bound key. A spare private key sitting in a home directory is a real finding in the report.</p>
+</div>
+<div class="card">
+<h3>4.6 · Deployment contract from page 1</h3>
 <pre><code class="language-bash">ansible/site-swarm.yml must:
   1. accept target_environment=staging or production
   2. select ansible/group_vars/vault-staging.yml or
@@ -472,26 +587,10 @@ docker build \
   8. set GIT_COMMIT from git_commit and APP_VERSION from app_version
   9. wait for the service update to finish</code></pre>
 <p>Do not put migrations in a vague "the container starts them" step. The playbook runs them once, before the API service update. A failed migration leaves the old service image running.</p>
-<p class="command-purpose"><strong>Jenkins owns sequence; Ansible owns deployment.</strong> Jenkins selects one static inventory and passes <code>target_environment</code>, <code>image_tag</code>, <code>git_commit</code>, and <code>app_version</code>. Page 1 owns the playbook and vault selection.</p>
-</div>
-<div class="card">
-<h3>4.5 · Pin SSH host keys</h3>
-<pre><code class="language-bash"># jenkins-server, once per app host
-sudo mkdir -p /var/jenkins_home/.ssh
-sudo touch /var/jenkins_home/.ssh/known_hosts
-
-for IP in STAGING_BACKEND_IP STAGING_FRONTEND_IP PRODUCTION_BACKEND_IP PRODUCTION_FRONTEND_IP; do
-  ssh-keyscan -H "$IP" | sudo tee -a /var/jenkins_home/.ssh/known_hosts
-done
-
-sudo chown 1000:1000 /var/jenkins_home/.ssh/known_hosts
-sudo chmod 600 /var/jenkins_home/.ssh/known_hosts
-ssh-keygen -F STAGING_BACKEND_IP -f /var/jenkins_home/.ssh/known_hosts</code></pre>
-<p>Compare fingerprints with a teammate through a trusted channel. Do not accept an unknown key in the pipeline.</p>
-<p class="command-purpose"><strong>Strict checking stays on.</strong> The runner command overrides any old <code>host_key_checking=False</code> setting.</p>
+<p class="command-purpose"><strong>Jenkins owns sequence; Ansible owns deployment.</strong> Jenkins selects one static inventory and passes <code>target_environment</code>, <code>image_tag</code>, <code>git_commit</code>, and <code>app_version</code>. Page 1 owns the playbook and vault selection. Splitting the boxes did not move this line; it only moved where the playbook process starts.</p>
 </div>
 </div>
-<p class="callout"><strong>Checkpoint:</strong> <code>rmit-store-ansible-runner:1.0.0</code> contains bounded ansible-core, openssh-client, and community.docker. It reads a committed static inventory, mounts only workspace, SSH key, vault password, and known_hosts, runs migrations first, and exits after each deployment.</p>
+<p class="callout"><strong>Checkpoint:</strong> <code>ansible-server</code> shows as an online Jenkins node with the <code>ansible</code> label and one executor. The venv reports a bounded <code>ansible-core</code> and can list <code>community.docker</code>. A manual <code>ansible ... -m ping</code> reaches all four app hosts with strict host key checking on. The manual clone and any copied key are deleted.</p>
 </div>
 </section>
 
@@ -503,7 +602,7 @@ ssh-keygen -F STAGING_BACKEND_IP -f /var/jenkins_home/.ssh/known_hosts</code></p
 <h3>5.1 · Complete pull request pipeline</h3>
 <pre><code class="language-groovy">// Jenkinsfile.pr
 pipeline {
-  agent any
+  agent { label 'builder' }
 
   options {
     skipDefaultCheckout(true)
@@ -514,7 +613,8 @@ pipeline {
 
   environment {
     BREAK_PIPELINE_TESTS = 'no'
-    RUNNER_IMAGE = 'rmit-store-ansible-runner:1.0.0'
+    ANSIBLE_BIN = '/opt/ansible-venv/bin/ansible-playbook'
+    ANSIBLE_COLLECTIONS_PATH = '/opt/ansible-collections'
     STAGING_FRONTEND = 'http://STAGING_FRONTEND_IP'
   }
 
@@ -635,7 +735,9 @@ pipeline {
     }
 
     stage('Deploy and test shared staging') {
+      agent { label 'ansible' }
       steps {
+        checkout scm
         script {
           lock(resource: 'rmit-store-staging', inversePrecedence: true) {
             withCredentials([
@@ -657,24 +759,19 @@ pipeline {
 
                 printf '%s' "$ANSIBLE_VAULT_PASSWORD" &gt; "$SECRET_DIR/vault-password"
 
-                docker run --rm --network host --memory 768m --cpus 0.75 \
-                  -v "${WORKSPACE}:${WORKSPACE}:ro" \
-                  -v "${SSH_KEY}:/run/secrets/ssh-key:ro" \
-                  -v "${SECRET_DIR}/vault-password:/run/secrets/vault-password:ro" \
-                  -v /var/jenkins_home/.ssh/known_hosts:/run/known_hosts:ro \
-                  -w "${WORKSPACE}" \
-                  -e ANSIBLE_HOST_KEY_CHECKING=True \
-                  -e ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=/run/known_hosts" \
-                  "$RUNNER_IMAGE" \
-                  ansible-playbook \
-                    -i ansible/inventories/staging.ini \
-                    ansible/site-swarm.yml \
-                    --private-key /run/secrets/ssh-key \
-                    --vault-password-file /run/secrets/vault-password \
-                    -e target_environment=staging \
-                    -e "image_tag=${IMAGE_TAG}" \
-                    -e "git_commit=${GIT_COMMIT}" \
-                    -e "app_version=${IMAGE_TAG}"
+                export ANSIBLE_HOST_KEY_CHECKING=True
+                export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes \
+                  -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+
+                "$ANSIBLE_BIN" \
+                  -i ansible/inventories/staging.ini \
+                  ansible/site-swarm.yml \
+                  --private-key "$SSH_KEY" \
+                  --vault-password-file "$SECRET_DIR/vault-password" \
+                  -e target_environment=staging \
+                  -e "image_tag=${IMAGE_TAG}" \
+                  -e "git_commit=${GIT_COMMIT}" \
+                  -e "app_version=${IMAGE_TAG}"
 
                 retry_url() {
                   url="$1"
@@ -737,7 +834,11 @@ pipeline {
     }
   }
 }</code></pre>
+<p><strong>Read the two <code>agent</code> lines together.</strong> The pipeline-level <code>agent { label 'builder' }</code> gives every stage the Jenkins box by default, and the deploy stage overrides it with <code>agent { label 'ansible' }</code>. That is the whole split: checks, builds, and pushes cannot run where the deploy key lives, and the playbook cannot run where the Docker socket lives.</p>
+<p>The deploy stage calls <code>checkout scm</code> again, because a second agent means a second workspace and <code>skipDefaultCheckout(true)</code> turns off the implicit checkout. It is the same PR commit, cloned on the other box. The variables it needs, <code>IMAGE_TAG</code>, <code>GIT_COMMIT</code>, and <code>SHORT_SHA</code>, were set with <code>env.</code> in the first stage and belong to the whole build, so they cross the node boundary without being passed anywhere.</p>
+<p>Keeping the top-level agent instead of <code>agent none</code> is deliberate. The <code>post</code> block runs <code>load('jenkins/notify.groovy')</code> and <code>docker image prune</code>, and both need a workspace with the repo and a Docker daemon. With <code>agent none</code> there is no workspace at the end of the build and those steps fail.</p>
 <p>The frontend smoke paths assume page 1 configures nginx or the Swarm ingress so <code>/api/</code>, <code>/healthz/</code>, and <code>/readyz/</code> reach the API. The current supplied <code>nginx.conf</code> only serves static files. Do not mark this pipeline green until page 1 adds that routing.</p>
+<p>The staging curl checks now run from <code>ansible-server</code>, inside the same stage as the deploy. They call the frontend's public port 80, which is open to <code>0.0.0.0/0</code>, so no new security group rule is needed.</p>
 <p>Swarm updates are asynchronous. Page 1 waits for the role, but each live curl still retries up to 30 times with a five-second pause. The pipeline fails after the last attempt. The version loop also requires the deployed response to contain <code>SHORT_SHA</code>.</p>
 <p class="command-purpose"><strong>These tests are temporary.</strong> <code>python manage.py check</code>, a Vue production build, the deliberate pass/fail switch, and curl calls prove pipeline wiring. They do not satisfy the final unit, integration, and Web UI testing rubric.</p>
 </div>
@@ -746,6 +847,7 @@ pipeline {
 <p><code>disableConcurrentBuilds(abortPrevious: true)</code> stops an old commit of the same PR. Without <code>abortPrevious</code>, the old run finishes first and the new run waits. Remove the option only if aborting builds causes trouble on your Jenkins version.</p>
 <p>The existing <code>notify.groovy</code> treats <code>ABORTED</code> as a failure. An old run stopped by <code>abortPrevious</code> can send a failure email. That noise is the cost of making the latest commit win quickly. If the team removes <code>abortPrevious</code>, keep plain <code>disableConcurrentBuilds()</code> and wait for the old run.</p>
 <p><code>lock(resource: 'rmit-store-staging', inversePrecedence: true)</code> works across the PR child jobs. Only one deploy plus live-test block runs at once. The newest waiting run gets the lock next.</p>
+<p>The single executor on <code>ansible-server</code> is a second, coarser limit on the same thing. Even without the lock, two deployments could not run at once. Keep the lock anyway: it is what makes the newest PR win, and it also covers the production job, which uses the other inventory but the same Swarm cluster pair.</p>
 <p>An older run from a different PR can still remain in the lock queue. Cancel stale queue entries during the assignment demo. Jenkins has no per-PR staging copy in this design.</p>
 <pre><code class="language-bash"># Before a teammate starts manual staging tests:
 curl -fsS http://STAGING_FRONTEND_IP/api/version/
@@ -767,7 +869,7 @@ curl -fsS http://STAGING_FRONTEND_IP/api/version/
 <h3>6.1 · Complete production pipeline</h3>
 <pre><code class="language-groovy">// Jenkinsfile.production
 pipeline {
-  agent any
+  agent { label 'builder' }
 
   options {
     skipDefaultCheckout(true)
@@ -778,7 +880,8 @@ pipeline {
 
   environment {
     BREAK_PIPELINE_TESTS = 'no'
-    RUNNER_IMAGE = 'rmit-store-ansible-runner:1.0.0'
+    ANSIBLE_BIN = '/opt/ansible-venv/bin/ansible-playbook'
+    ANSIBLE_COLLECTIONS_PATH = '/opt/ansible-collections'
     PRODUCTION_FRONTEND = 'http://PRODUCTION_FRONTEND_IP'
   }
 
@@ -923,7 +1026,9 @@ pipeline {
     }
 
     stage('Deploy exact tag to production') {
+      agent { label 'ansible' }
       steps {
+        checkout scm
         withCredentials([
           sshUserPrivateKey(
             credentialsId: 'ec2-deploy-key',
@@ -943,24 +1048,19 @@ pipeline {
 
             printf '%s' "$ANSIBLE_VAULT_PASSWORD" &gt; "$SECRET_DIR/vault-password"
 
-            docker run --rm --network host --memory 768m --cpus 0.75 \
-              -v "${WORKSPACE}:${WORKSPACE}:ro" \
-              -v "${SSH_KEY}:/run/secrets/ssh-key:ro" \
-              -v "${SECRET_DIR}/vault-password:/run/secrets/vault-password:ro" \
-              -v /var/jenkins_home/.ssh/known_hosts:/run/known_hosts:ro \
-              -w "${WORKSPACE}" \
-              -e ANSIBLE_HOST_KEY_CHECKING=True \
-              -e ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=/run/known_hosts" \
-              "$RUNNER_IMAGE" \
-              ansible-playbook \
-                -i ansible/inventories/production.ini \
-                ansible/site-swarm.yml \
-                --private-key /run/secrets/ssh-key \
-                --vault-password-file /run/secrets/vault-password \
-                -e target_environment=production \
-                -e "image_tag=${IMAGE_TAG}" \
-                -e "git_commit=${GIT_COMMIT}" \
-                -e "app_version=${IMAGE_TAG}"
+            export ANSIBLE_HOST_KEY_CHECKING=True
+            export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+
+            "$ANSIBLE_BIN" \
+              -i ansible/inventories/production.ini \
+              ansible/site-swarm.yml \
+              --private-key "$SSH_KEY" \
+              --vault-password-file "$SECRET_DIR/vault-password" \
+              -e target_environment=production \
+              -e "image_tag=${IMAGE_TAG}" \
+              -e "git_commit=${GIT_COMMIT}" \
+              -e "app_version=${IMAGE_TAG}"
           '''
         }
       }
@@ -1030,10 +1130,13 @@ pipeline {
 PREVIOUS PRODUCTION TAG: ${oldTag}
 NO AUTOMATIC ROLLBACK WAS RUN.
 
-Manual rollback command, run through the same credential-bound runner:
-ansible-playbook -i ansible/inventories/production.ini ansible/site-swarm.yml \\
-  --private-key /run/secrets/ssh-key \\
-  --vault-password-file /run/secrets/vault-password \\
+Manual rollback, run on ansible-server as ec2-user in a repo checkout:
+ANSIBLE_COLLECTIONS_PATH=/opt/ansible-collections \\
+ANSIBLE_HOST_KEY_CHECKING=True \\
+/opt/ansible-venv/bin/ansible-playbook \\
+  -i ansible/inventories/production.ini ansible/site-swarm.yml \\
+  --private-key PATH_TO_DEPLOY_KEY \\
+  --ask-vault-pass \\
   -e target_environment=production \\
   -e image_tag=${oldTag} \\
   -e git_commit=${oldCommit} \\
@@ -1059,7 +1162,8 @@ Then run the same manual Ansible command with that verified tag.
 }</code></pre>
 <p>The version response uses the app's real JSON field, <code>"commit"</code>. The pipeline saves its first eight characters because production images use the eight-character tag.</p>
 <p>The production curls also retry 30 times with five-second pauses. This covers the short gap while Swarm replaces tasks, even though the page 1 role already waits. Exhausting the retries makes the stage red.</p>
-<p class="command-purpose"><strong>The printed rollback command does not run.</strong> The operator must use the same runner wrapper from Step 4 so the listed <code>/run/secrets/...</code> files exist. Review migration compatibility before rolling code back.</p>
+<p>Only the deploy stage moves to <code>ansible-server</code>. The smoke stage stays on <code>jenkins-server</code>, so the box that verifies the release is not the box that performed it. Both boxes reach the production frontend over public port 80, so this costs nothing and reads better as evidence.</p>
+<p class="command-purpose"><strong>The printed rollback command does not run.</strong> An operator runs it by hand on <code>ansible-server</code>, and <code>--ask-vault-pass</code> means they type the vault password rather than leaving a copy of it on disk. Review migration compatibility before rolling code back: an old image against a new schema can fail in a worse way than the bad release did.</p>
 </div>
 <div class="card">
 <h3>6.2 · Why production has only smoke checks</h3>
@@ -1253,7 +1357,11 @@ Rules:
   /healthz/, /readyz/, /api/version/ through production frontend
 
 09-production-pipeline.png
-  green production stage view after the protected main push</code></pre>
+  green production stage view after the protected main push
+
+10-agent-node.png
+  Manage Jenkins → Nodes, ansible-server online with the ansible label
+  and the deploy stage shown running on it in the stage view</code></pre>
 <p class="command-purpose"><strong>One decisive image belongs beside each report claim.</strong> Put extra console captures in the appendix and refer to them.</p>
 </div>
 <div class="card">
@@ -1267,6 +1375,15 @@ docker inspect rmit-store-jenkins --format '{{.HostConfig.Memory}} {{.HostConfig
 
 docker volume ls
 curl -fsS http://localhost:8080/prometheus | grep -m1 jenkins
+
+# prove the split: jenkins-server cannot reach an app box over SSH
+timeout 5 bash -c '&lt;/dev/tcp/STAGING_BACKEND_PRIVATE_IP/22' \
+  &amp;&amp; echo "UNEXPECTED: remove jenkins-server-sg from the app groups" \
+  || echo "expected: no SSH route from jenkins-server"
+
+# ansible-server
+which docker || echo "expected: no Docker on the deploy box"
+/opt/ansible-venv/bin/ansible-playbook --version
 
 # running Swarm evidence comes from page 1
 docker service ls
@@ -1285,7 +1402,11 @@ Artifacts:
   private API and frontend images use immutable commit-based tags.
 
 Configuration:
-  short-lived Ansible runner deploys exact tags and runs migrations first.
+  a separate Ansible host deploys exact tags and runs migrations first.
+
+Separation of duties:
+  jenkins-server builds and pushes; ansible-server is the only box
+  with SSH access to the four application hosts.
 
 Failure:
   later stages stop, GitHub is red, and notify.groovy emails the team.
@@ -1303,14 +1424,13 @@ jenkins/casc/alerting.yaml             # safe ALERT_EMAILS host substitution
 jenkins/casc/production.yaml
 jenkins/production/Dockerfile
 jenkins/production/compose.yaml
-jenkins/ansible-runner/Dockerfile
-jenkins/ansible-runner/requirements.txt</code></pre>
+jenkins/ansible-agent/bootstrap.sh</code></pre>
 <p>Coordinate with page 1 before merging. The root pipelines expect <code>ansible/site-swarm.yml</code>, <code>ansible/inventories/staging.ini</code>, <code>ansible/inventories/production.ini</code>, encrypted environment vaults, exact-tag Swarm updates, frontend proxy routes, and explicit migrations.</p>
 <p class="command-purpose"><strong>Do not merge half a contract.</strong> A green syntax check cannot make a missing Ansible deploy file work.</p>
 </div>
 <div class="card">
 <h3>9.5 · Add the required assignment header</h3>
-<p>The assignment asks for this header in every file the team writes or changes. Put it at the top of both Jenkinsfiles, Dockerfiles, YAML files, and the runner requirements file. Change the comment mark to match the file.</p>
+<p>The assignment asks for this header in every file the team writes or changes. Put it at the top of both Jenkinsfiles, the Dockerfile, the YAML files, and the agent bootstrap script. Change the comment mark to match the file.</p>
 <pre><code class="language-text">RMIT University Vietnam
 Course: COSC2767/COSC2805 Systems Deployment and Operations
 Semester: 2026B
@@ -1341,9 +1461,16 @@ Rollback
 
 Controller
   one Jenkins controller is also the only build executor.
+  a second job queues instead of running.
 
 Docker socket
-  Jenkins has root-equivalent control of its EC2 host.
+  Jenkins has root-equivalent control of jenkins-server.
+  it cannot reach an app box, but it can still ask Jenkins
+  for the deploy key inside a pipeline it defines.
+
+Agent
+  if ansible-server is offline, every deploy stage fails
+  and no release can reach either environment.
 
 Staging
   one shared environment. New PR deploys overwrite old ones.
@@ -1353,9 +1480,11 @@ Tests
   Real unit, integration, and Web UI suites are still required.
 
 Capacity
-  sibling Docker builds are not capped by the Jenkins limit
-  each Ansible runner has its own 768 MiB and 0.75 CPU limit</code></pre>
-<p class="command-purpose"><strong>Put these in the report.</strong> Specific limits are better than claims the demo cannot prove.</p>
+  jenkins-server is a t3.small with 2 GiB of RAM and a 2 GiB swap file.
+  sibling Docker builds are not capped by the Jenkins container limit,
+  so a heavy npm build can still pressure the whole box.
+  ansible-server is nearly idle between deployments.</code></pre>
+<p class="command-purpose"><strong>Put these in the report.</strong> Specific limits are better than claims the demo cannot prove. In particular, do not describe the two-box split as full build isolation. It removes a network path, not the credential path.</p>
 </div>
 <div class="card">
 <h3>10.2 · Fast fault map</h3>
@@ -1368,8 +1497,25 @@ PR job does not appear:
 Docker permission denied:
   re-read socket GID, rebuild runtime.env, recreate Jenkins container
 
+Deploy stage waits forever in the queue:
+  the ansible-server node is offline. Read Nodes → ansible-server → Log.
+  usual causes: Java missing, ansible-agent-ssh key wrong,
+  ansible-server-sg missing the jenkins-server-sg rule
+
+ansible-playbook: not found:
+  the stage ran on the wrong node, or the venv path is wrong.
+  the stage must declare agent { label 'ansible' }
+
+couldn't resolve module community.docker:
+  ANSIBLE_COLLECTIONS_PATH is not set or the bootstrap installed
+  the collection into root's home instead of /opt/ansible-collections
+
 Ansible host is missing or unreachable:
-  check the selected static INI file, BACKEND/FRONTEND IPs, SSH user, and SG
+  check the selected static INI file, BACKEND/FRONTEND IPs, SSH user,
+  and that the app groups allow ansible-server-sg, not jenkins-server-sg
+
+Build is killed with no error:
+  out of memory on the 2 GiB Jenkins box. Check swap and dmesg.
 
 SSH host key failed:
   compare fingerprint, then update known_hosts; never disable checking
@@ -1405,15 +1551,16 @@ Email missing:
 <div class="card">
 <h3>10.4 · Future work</h3>
 <pre><code class="language-bash">1. Put HTTPS in front of Jenkins and use a DNS name.
-2. Move builds to isolated agents without the controller socket.
+2. Add a third box as a build agent so the controller keeps no Docker socket.
 3. Replace temporary checks with real unit, integration, and Web UI suites.
 4. Give each PR its own staging environment or add a global stale-run policy.
 5. Add a tested automatic rollback policy with migration safety.
-6. Pin plugin and dependency versions after the working demo is frozen.</code></pre>
-<p class="command-purpose"><strong>Do not add these before the two basic paths work.</strong> First prove red PR, green PR, protected Merge, and production smoke.</p>
+6. Pin plugin and dependency versions after the working demo is frozen.
+7. Load both Jenkinsfiles from trusted main so a PR cannot redefine them.</code></pre>
+<p class="command-purpose"><strong>Do not add these before the two basic paths work.</strong> First prove red PR, green PR, protected Merge, and production smoke. Items 2 and 7 are the two that would close the credential path the Docker socket still leaves open.</p>
 </div>
 </div>
-<p class="callout"><strong>Final checkpoint:</strong> Jenkins is persistent, the Ansible runner is temporary, both image repositories are private, tags are immutable, secrets stay out of arguments and logs, shared staging is version-checked, protected <code>main</code> starts production, and every failure reaches the existing email module.</p>
+<p class="callout"><strong>Final checkpoint:</strong> Jenkins is persistent on <code>jenkins-server</code>, every deploy stage runs on the <code>ansible</code> agent, only <code>ansible-server</code> can SSH into the app boxes, both image repositories are private, tags are immutable, secrets stay out of arguments and logs, shared staging is version-checked, protected <code>main</code> starts production, and every failure reaches the existing email module.</p>
 </div>
 </section>
 
