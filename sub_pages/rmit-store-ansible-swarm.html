@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Beginner-friendly COSC2767 Assignment 2 runbook for the Ansible owner: create staging and production Docker Swarms on four Amazon Linux 2023 EC2 instances, keep RDS and S3 separate by environment, deploy private immutable images, run migrations first, and prove both clusters by hand.">
+<title>RMIT Store: Ansible + Docker Swarm - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=ba72502410">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=93ddf335e0"></script>
+</head>
+<body data-page="rmit-ansible-swarm" data-stage="resources" data-root="../" style="--stage-accent: var(--stage-resources)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Reference</span><span class="crumb-sep">/</span><span>RMIT Store: Ansible & Docker Swarm</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="7"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/rmit-store-ansible-swarm.html" data-page-key="rmit-ansible-swarm" data-sections="10"><span class="sidenav__num">AN</span><span>RMIT Store: Ansible & Docker Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-jenkins-pipeline.html" data-page-key="rmit-jenkins-pipeline" data-sections="11"><span class="sidenav__num">JE</span><span>RMIT Store: Jenkins Pipelines</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-alerting.html" data-page-key="rmit-alerting" data-sections="8"><span class="sidenav__num">AL</span><span>RMIT Store: Automated Alerting</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-monitoring.html" data-page-key="rmit-monitoring" data-sections="9"><span class="sidenav__num">MO</span><span>RMIT Store: Monitoring & Grafana</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><details class="sidenav__group sidenav__group--collapsible" style="--group-accent: var(--stage-archive, var(--rmit-red))"><summary class="sidenav__stage-label">Assignment 1 archive<span class="sidenav__chevron" aria-hidden="true"></span></summary><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></details></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Reference</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">🐝</span>RMIT Store: Ansible + Docker Swarm</h1>
+<p class="page-hero__intro">This is page 1 of 2 for the teammate who owns <code>app/ansible/</code>. It covers the AWS setup, server setup, two Docker Swarms, and a manual deployment proof. Jenkins comes on page 2. You will keep <strong>staging</strong> and <strong>production</strong> apart. Each environment has one frontend manager and one backend worker. nginx is the only public app door. It listens on port 80 and sends API requests to the private <code>api:8000</code> service over a Swarm overlay network.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>10</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>53</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>49</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="swarm-overview">
+<h2 class="collapsible-header start-open">🎯 Overview — two small Swarms, one safe route<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>0.1 · The five EC2 instances</h3>
+<pre><code class="language-bash">jenkins-server         t3.medium   Jenkins later, page 2
+
+STAGING SWARM
+staging-frontend       t3.small    manager   label app_role=frontend   public :80
+staging-backend        t3.small    worker    label app_role=backend    no public :8000
+
+PRODUCTION SWARM
+production-frontend    t3.small    manager   label app_role=frontend   public :80
+production-backend     t3.small    worker    label app_role=backend    no public :8000
+
+All five: Amazon Linux 2023, x86_64, same VPC.
+Existing production frontend and backend boxes may be reused.</code></pre>
+<p class="command-purpose"><strong>Two Swarms means two trust boundaries.</strong> A staging command cannot update a production service. Each manager knows only its one worker.</p>
+</div>
+<div class="card">
+<h3>0.2 · Request path</h3>
+<pre><code class="language-bash">browser
+  |
+  | HTTP :80
+  v
+frontend EC2 security group
+  |
+  v
+nginx service on manager
+  |-- /, /shop, assets  -&gt; Vue files
+  |
+  |-- /api
+  |-- /admin
+  |-- /healthz
+  |-- /readyz
+          |
+          | overlay network: rmit_store_app
+          v
+       api:8000 service on backend worker
+          |
+          |-- PostgreSQL :5432 -&gt; RDS
+          `-- product media     -&gt; environment S3 bucket</code></pre>
+<p class="command-purpose"><strong>The browser never calls port 8000.</strong> <code>client/public/config.js</code> stays <code>API_BASE_URL: '/api'</code>. This keeps one browser origin and removes the need for a public backend port.</p>
+</div>
+<div class="card">
+<h3>0.3 · Who does what</h3>
+<pre><code class="language-bash">Jenkins, next page:
+  test -&gt; build -&gt; push exact immutable tags to private Docker Hub
+
+Ansible, this page:
+  install Docker -&gt; form Swarm -&gt; log in -&gt; pull -&gt; migrate -&gt; deploy exact tag
+
+Docker Swarm:
+  place frontend on app_role=frontend
+  place API on app_role=backend
+  restart failed tasks and roll service updates
+
+AWS console, once:
+  EC2, security groups, IAM profile, RDS database/user, S3 bucket</code></pre>
+<p>Ansible does not build images. <code>docker stack deploy</code> does not build images either. It also ignores Compose <code>depends_on</code>. The migration gate must therefore be an explicit Ansible task before the API service update.</p>
+</div>
+<div class="card">
+<h3>0.4 · Build once per commit, configure at run time</h3>
+<pre><code class="language-bash">private Docker Hub, one exact pair per commit:
+  DOCKERHUB_USER/rmit-store-api:IMAGE_TAG
+  DOCKERHUB_USER/rmit-store-frontend:IMAGE_TAG
+
+every image pair is environment-neutral
+  |-- staging config comes from staging Ansible vars and vault
+  `-- production config comes from production Ansible vars and vault
+
+manual proof: one tag may run in both environments
+Jenkins flow: merged main gets a new immutable production tag
+
+/api/version/ must report:
+  APP_VERSION = IMAGE_TAG
+  GIT_COMMIT  = the commit used to build IMAGE_TAG</code></pre>
+<p class="command-purpose"><strong>Never use <code>latest</code>.</strong> An exact tag tells you what is running and gives Jenkins a stable input for a later rollback feature.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> draw two boxes around the two Swarms. Each box has one frontend manager and one backend worker. Only frontend port 80 is public. Jenkins is outside both clusters and comes next.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="swarm-aws">
+<h2 class="collapsible-header">☁️ Step 1 — Create the EC2 boxes and exact network rules<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>1.1 · Launch settings</h3>
+<p><strong>Where:</strong> AWS console → EC2 → Instances → Launch instances. This page keeps AWS provisioning manual. It does not add CloudFormation.</p>
+<pre><code class="language-bash">Name                    Type         AMI
+----------------------  -----------  --------------------------
+jenkins-server          t3.medium    Amazon Linux 2023, x86_64
+staging-frontend        t3.small     Amazon Linux 2023, x86_64
+staging-backend         t3.small     Amazon Linux 2023, x86_64
+production-frontend     t3.small     Amazon Linux 2023, x86_64
+production-backend      t3.small     Amazon Linux 2023, x86_64
+
+Network:       same VPC as the existing RDS instance
+Key pair:      the team deployment key pair
+Storage:       16 GiB gp3 for each app box
+Public IPv4:   enabled for this Learner Lab design
+Backend IAM:    LabInstanceProfile or LabRole on both backend boxes
+Jenkins IAM:    none needed; Jenkins uses static inventory</code></pre>
+<p>Reuse the two current production boxes if they match. Do not rebuild a working production server just to change its name. Add clear <code>Name</code> and <code>Environment</code> tags.</p>
+<p class="command-purpose"><strong>Record two addresses per app box.</strong> Inventory uses the public IP for SSH from a laptop. Swarm uses the private IP for cluster traffic. An Elastic IP is useful, but Learner Lab quotas vary. If you cannot allocate one, update inventory after a lab restart.</p>
+</div>
+<div class="card">
+<h3>1.2 · Staging security groups</h3>
+<p>Create <code>staging-frontend-sg</code> and <code>staging-backend-sg</code>. Add each line as an inbound rule. Keep default outbound all traffic.</p>
+<pre><code class="language-bash">staging-frontend-sg
+  TCP 22     source TEAM_PUBLIC_IP/32       teammate SSH
+  TCP 22     source jenkins-server-sg       Jenkins Ansible later
+  TCP 80     source 0.0.0.0/0               public store
+  TCP 2377   source staging-backend-sg      worker joins manager
+  TCP 7946   source staging-backend-sg      Swarm node traffic
+  UDP 7946   source staging-backend-sg      Swarm node traffic
+  UDP 4789   source staging-backend-sg      overlay network
+
+staging-backend-sg
+  TCP 22     source TEAM_PUBLIC_IP/32       teammate SSH
+  TCP 22     source jenkins-server-sg       Jenkins Ansible later
+  TCP 7946   source staging-frontend-sg     Swarm node traffic
+  UDP 7946   source staging-frontend-sg     Swarm node traffic
+  UDP 4789   source staging-frontend-sg     overlay network
+
+No inbound TCP 8000 rule.</code></pre>
+<p class="command-purpose"><strong>Pair only.</strong> Do not use one broad Swarm group for all four app boxes. The staging nodes may talk on Swarm ports only to each other.</p>
+</div>
+<div class="card">
+<h3>1.3 · Production security groups</h3>
+<p>Create or update <code>production-frontend-sg</code> and <code>production-backend-sg</code>.</p>
+<pre><code class="language-bash">production-frontend-sg
+  TCP 22     source TEAM_PUBLIC_IP/32
+  TCP 22     source jenkins-server-sg
+  TCP 80     source 0.0.0.0/0
+  TCP 2377   source production-backend-sg
+  TCP 7946   source production-backend-sg
+  UDP 7946   source production-backend-sg
+  UDP 4789   source production-backend-sg
+
+production-backend-sg
+  TCP 22     source TEAM_PUBLIC_IP/32
+  TCP 22     source jenkins-server-sg
+  TCP 7946   source production-frontend-sg
+  UDP 7946   source production-frontend-sg
+  UDP 4789   source production-frontend-sg
+
+No inbound TCP 8000 rule.</code></pre>
+<p>If a reused production box still serves the old split-host design on public port 8000, keep that old rule only while you build the new path. Remove it after Step 8 proves the nginx proxy. The final state has no public 8000.</p>
+<p class="command-purpose"><strong>Port 2377 belongs on the manager only.</strong> The worker starts that connection. Ports 7946 and 4789 are needed in both directions.</p>
+</div>
+<div class="card">
+<h3>1.4 · RDS and Jenkins rules</h3>
+<pre><code class="language-bash">rds-sg
+  TCP 5432   source staging-backend-sg
+  TCP 5432   source production-backend-sg
+  Public access: No
+  No 0.0.0.0/0 rule
+
+jenkins-server-sg
+  TCP 22     source TEAM_PUBLIC_IP/32
+  TCP 8080   source TEAM_PUBLIC_IP/32
+  TCP 8080   source each current GitHub webhook CIDR
+
+app box SSH rules
+  use one TEAM_PUBLIC_IP/32 rule per teammate if needed
+  add jenkins-server-sg as a separate source rule</code></pre>
+<p>Port 8080 is listed now so the five-box map is complete. The next page shows how to get GitHub's current webhook CIDRs and set up Jenkins authentication, the webhook secret, and credentials. If the Learner Lab cannot hold every GitHub range, opening 8080 to <code>0.0.0.0/0</code> is a recorded temporary fallback, not the preferred final rule.</p>
+<p class="command-purpose"><strong>RDS accepts the backend groups only.</strong> The frontend managers cannot query the database. The Jenkins box cannot query it either. Migrations will run on the target backend worker.</p>
+</div>
+<div class="card">
+<h3>1.5 · Let backend containers use the IAM role</h3>
+<p>On each backend instance, open Actions → Security → Modify IAM role. Select the Learner Lab instance profile for <code>LabRole</code>. Then open Actions → Instance settings → Modify instance metadata options.</p>
+<pre><code class="language-bash">Instance metadata service:    Enabled
+IMDSv2:                       Required
+Metadata response hop limit:  2</code></pre>
+<p class="command-purpose"><strong>Why hop limit 2:</strong> boto3 runs inside the API container. It needs one extra network hop to read temporary role credentials. Do not put AWS access keys in a vault or environment file.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the four app boxes are running in one VPC. Frontends expose 80. No box exposes 8000. Each Swarm pair has only 2377, 7946, and 4789 between that pair. RDS 5432 accepts only the two backend groups.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="swarm-data">
+<h2 class="collapsible-header">🗄️ Step 2 — Split RDS and S3 by environment<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>2.1 · Keep the production database</h3>
+<pre><code class="language-bash">Existing RDS PostgreSQL instance
+  production database: rmit_store
+  production login:    RMIT_PRODUCTION_APP_USER
+
+Add on the same RDS instance
+  staging database:    rmit_store_staging
+  staging login:       rmit_staging_app</code></pre>
+<p>The production and staging login names and passwords must differ. Do not let staging use the RDS master user. Do not give either app user <code>CREATEDB</code>, <code>CREATEROLE</code>, or superuser rights.</p>
+</div>
+<div class="card">
+<h3>2.2 · Create the staging database and login once</h3>
+<p><strong>Where:</strong> SSH to <code>staging-backend</code>. Install only the PostgreSQL client. Connect with the RDS master login for this one setup step.</p>
+<pre><code class="language-bash">sudo dnf install -y postgresql16
+
+psql \
+  -h RDS_ENDPOINT \
+  -U RDS_MASTER_USER \
+  -d postgres \
+  -W</code></pre>
+<p>At the <code>postgres=&gt;</code> prompt, replace the placeholder password. Keep the quotes.</p>
+<pre><code class="language-sql">CREATE ROLE rmit_staging_app
+  LOGIN
+  PASSWORD 'STAGING_DB_PASSWORD'
+  NOSUPERUSER
+  NOCREATEDB
+  NOCREATEROLE;
+
+CREATE DATABASE rmit_store_staging
+  OWNER rmit_staging_app;
+
+REVOKE ALL ON DATABASE rmit_store_staging FROM PUBLIC;
+GRANT CONNECT, TEMPORARY ON DATABASE rmit_store_staging TO rmit_staging_app;
+\q</code></pre>
+<p class="command-purpose"><strong>The app user owns only its database.</strong> Django migrations can create and change tables there. It cannot create another database or manage RDS roles.</p>
+</div>
+<div class="card">
+<h3>2.3 · Check the production login is not the RDS master</h3>
+<p>Keep the existing <code>rmit_store</code> data. Check the login the app uses now.</p>
+<pre><code class="language-bash"># on production-backend
+psql -h RDS_ENDPOINT -U RMIT_PRODUCTION_APP_USER -d rmit_store -W \
+  -c "select current_user, current_database();"
+
+# the result must be the dedicated production app user,
+# not RDS_MASTER_USER</code></pre>
+<p>If production still uses the RDS master login, stop before changing ownership. Take an RDS snapshot. Create a login with no <code>CREATEDB</code>, <code>CREATEROLE</code>, or superuser rights. Then transfer ownership of the Django database objects during a maintenance window. Existing table owners differ between installations, so a blind <code>GRANT</code> block is not safe here. Test that change in staging first.</p>
+<p class="command-purpose"><strong>Django migrations need object ownership.</strong> Read-only or table-data grants are not enough for schema changes. The final production vault must contain a dedicated app URL, never the RDS master URL.</p>
+</div>
+<div class="card">
+<h3>2.4 · Test both app logins from the right boxes</h3>
+<pre><code class="language-bash"># on staging-backend
+psql -h RDS_ENDPOINT -U rmit_staging_app -d rmit_store_staging -W \
+  -c "select current_user, current_database();"
+
+# on production-backend
+psql -h RDS_ENDPOINT -U RMIT_PRODUCTION_APP_USER -d rmit_store -W \
+  -c "select current_user, current_database();"</code></pre>
+<p>Each command should print the matching user and database. A timeout points to the RDS security group. <code>password authentication failed</code> points to the login or password.</p>
+<p class="command-purpose"><strong>Do not test with the master user.</strong> A successful master login does not prove the least-privilege app login works.</p>
+</div>
+<div class="card">
+<h3>2.5 · Create a separate staging S3 bucket</h3>
+<p><strong>Where:</strong> AWS console → S3 → Create bucket.</p>
+<pre><code class="language-bash">staging bucket:     RMIT_STORE_STAGING_BUCKET
+production bucket: RMIT_STORE_PRODUCTION_BUCKET   # keep the existing bucket
+region:             AWS_REGION                     # same region as the app
+versioning:         enable if Learner Lab allows it
+
+Public read:
+  copy the production media policy only if the current app needs public object URLs
+Write and delete:
+  backend instances use LabRole, never access keys</code></pre>
+<p>Bucket names are global. Pick a team-specific staging name. Do not reuse the production bucket. A staging seed or upload must never change production media.</p>
+<p class="command-purpose"><strong>Check the role on each backend:</strong> <code>aws sts get-caller-identity</code> should show the lab role. Then <code>aws s3 ls s3://RMIT_STORE_STAGING_BUCKET</code> should work on staging.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> staging has its own database, app login, password, and S3 bucket. Production keeps separate values. Both backend boxes can reach only their intended data with an app login and temporary IAM role credentials.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="swarm-files">
+<h2 class="collapsible-header">📁 Step 3 — Add the new Ansible files without deleting the old path<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>3.1 · Keep old roles during the change</h3>
+<p>The known baseline has <code>docker_engine</code>, <code>app_server</code>, and <code>frontend_server</code>. Keep all three while you add and test the Swarm path. Do not rename or delete an old role during the first Swarm deployment.</p>
+<pre><code class="language-bash"># add these new paths under app/
+ansible/roles/swarm_manager/
+ansible/roles/swarm_worker/
+ansible/roles/swarm_deploy/
+ansible/site-swarm.yml</code></pre>
+<p class="command-purpose"><strong>Reuse the existing <code>docker_engine</code> role.</strong> Keep the old <code>site.yml</code> working until staging and production both pass this runbook.</p>
+</div>
+<div class="card">
+<h3>3.2 · Proposed file tree</h3>
+<pre><code class="language-bash">app/ansible/
+├── ansible.cfg
+├── site.yml                              # old path, keep for now
+├── site-swarm.yml                        # new path
+├── requirements.yml
+├── inventories/
+│   ├── staging.ini
+│   └── production.ini
+├── group_vars/
+│   ├── staging.yml
+│   ├── production.yml
+│   ├── vault-staging.yml                 # encrypted
+│   └── vault-production.yml              # encrypted
+└── roles/
+    ├── docker_engine/                    # existing role
+    ├── app_server/                       # old path, keep
+    ├── frontend_server/                  # old path, keep
+    ├── swarm_manager/tasks/main.yml
+    ├── swarm_worker/tasks/main.yml
+    └── swarm_deploy/
+        ├── tasks/main.yml
+        └── templates/
+            ├── api.env.j2
+            └── stack.yml.j2</code></pre>
+<p class="command-purpose"><strong>No app source is copied to EC2.</strong> The new deploy path pulls two exact registry images. Only generated runtime config lives on the servers.</p>
+</div>
+<div class="card">
+<h3>3.3 · Complete <code>ansible/inventories/staging.ini</code></h3>
+<pre><code class="language-ini">[swarm_managers]
+staging-frontend ansible_host=STAGING_FRONTEND_IP swarm_advertise_addr=STAGING_FRONTEND_PRIVATE_IP
+
+[swarm_workers]
+staging-backend ansible_host=STAGING_BACKEND_IP swarm_advertise_addr=STAGING_BACKEND_PRIVATE_IP
+
+[swarm_nodes:children]
+swarm_managers
+swarm_workers
+
+[all:vars]
+ansible_user=ec2-user
+ansible_python_interpreter=/usr/bin/python3</code></pre>
+<p class="command-purpose"><strong>Use public IPs for <code>ansible_host</code>.</strong> Use private IPs for <code>swarm_advertise_addr</code>. Jenkins may later use private SSH addresses because it runs in the same VPC.</p>
+</div>
+<div class="card">
+<h3>3.4 · Complete <code>ansible/inventories/production.ini</code></h3>
+<pre><code class="language-ini">[swarm_managers]
+production-frontend ansible_host=PRODUCTION_FRONTEND_IP swarm_advertise_addr=PRODUCTION_FRONTEND_PRIVATE_IP
+
+[swarm_workers]
+production-backend ansible_host=PRODUCTION_BACKEND_IP swarm_advertise_addr=PRODUCTION_BACKEND_PRIVATE_IP
+
+[swarm_nodes:children]
+swarm_managers
+swarm_workers
+
+[all:vars]
+ansible_user=ec2-user
+ansible_python_interpreter=/usr/bin/python3</code></pre>
+<p>Both inventory files use the same group names. The <code>-i</code> argument chooses one cluster at a time.</p>
+<p class="command-purpose"><strong><code>-i</code> overrides <code>ansible.cfg</code>.</strong> This matters because the existing config still points at <code>inventory.ini</code>.</p>
+</div>
+<div class="card">
+<h3>3.5 · Non-secret environment files</h3>
+<pre><code class="language-yaml"># ansible/group_vars/staging.yml
+---
+environment_name: staging
+stack_name: rmit-store
+dockerhub_user: DOCKERHUB_USER
+aws_region: AWS_REGION
+s3_bucket_name: RMIT_STORE_STAGING_BUCKET
+frontend_origin: http://STAGING_FRONTEND_IP
+allowed_hosts: STAGING_FRONTEND_IP,localhost,127.0.0.1
+api_replicas: 2
+
+# ansible/group_vars/production.yml
+---
+environment_name: production
+stack_name: rmit-store
+dockerhub_user: DOCKERHUB_USER
+aws_region: AWS_REGION
+s3_bucket_name: RMIT_STORE_PRODUCTION_BUCKET
+frontend_origin: http://PRODUCTION_FRONTEND_IP
+allowed_hosts: PRODUCTION_FRONTEND_IP,localhost,127.0.0.1
+api_replicas: 2</code></pre>
+<p>Two API replicas show Swarm scaling, but both run on the one backend worker. They do not give host high availability.</p>
+<p class="command-purpose"><strong>These values are not passwords.</strong> Keep exact image tags out of these files. Pass <code>image_tag</code>, <code>git_commit</code>, and <code>app_version</code> for each release.</p>
+</div>
+<div class="card">
+<h3>3.6 · Separate encrypted vault files</h3>
+<p>Create the files with <code>ansible-vault create</code>. Paste only the matching shape into each editor. Replace every placeholder there, not in this guide.</p>
+<pre><code class="language-yaml"># ansible/group_vars/vault-staging.yml, encrypted after save
+---
+vault_django_secret_key: STAGING_DJANGO_SECRET
+vault_database_url: postgres://rmit_staging_app:URL_ENCODED_STAGING_DB_PASSWORD@RDS_ENDPOINT:5432/rmit_store_staging
+vault_dockerhub_token: STAGING_OR_SHARED_READ_ONLY_DOCKERHUB_TOKEN
+
+# ansible/group_vars/vault-production.yml, encrypted after save
+---
+vault_django_secret_key: DIFFERENT_PRODUCTION_DJANGO_SECRET
+vault_database_url: postgres://RMIT_PRODUCTION_APP_USER:URL_ENCODED_PRODUCTION_DB_PASSWORD@RDS_ENDPOINT:5432/rmit_store
+vault_dockerhub_token: PRODUCTION_OR_SHARED_READ_ONLY_DOCKERHUB_TOKEN</code></pre>
+<pre><code class="language-bash">cd app
+ansible-vault create ansible/group_vars/vault-staging.yml
+ansible-vault create ansible/group_vars/vault-production.yml
+
+head -1 ansible/group_vars/vault-staging.yml
+head -1 ansible/group_vars/vault-production.yml
+# both must start: $ANSIBLE_VAULT;1.1;AES256</code></pre>
+<p class="command-purpose"><strong>URL-encode reserved password characters.</strong> For example, <code>@</code> in a URL password must not stay raw. A password manager can generate a URL-safe password. Jenkins later supplies only the vault passphrase.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> two inventory files select one Swarm each. Two non-secret files name the correct S3 bucket and frontend. Two real vault files start with <code>$ANSIBLE_VAULT</code>. Old roles and <code>site.yml</code> still exist.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="swarm-roles">
+<h2 class="collapsible-header">🐳 Step 4 — Build the manager and worker roles<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>4.1 · Complete <code>ansible/roles/swarm_manager/tasks/main.yml</code></h3>
+<pre><code class="language-yaml">---
+- name: Install Python tools for Docker modules
+  ansible.builtin.dnf:
+    name: python3-pip
+    state: present
+
+- name: Install Docker SDK for Python
+  ansible.builtin.pip:
+    name: docker
+    state: present
+
+- name: Create or keep the single-manager Swarm
+  community.docker.docker_swarm:
+    state: present
+    advertise_addr: "{{ swarm_advertise_addr }}"
+  register: swarm_manager_result
+  no_log: true
+
+- name: Label the manager for frontend placement
+  community.docker.docker_node:
+    hostname: "{{ ansible_hostname }}"
+    labels:
+      app_role: frontend
+    labels_state: merge
+
+- name: Keep the worker join token in memory
+  ansible.builtin.set_fact:
+    swarm_worker_join_token: "{{ swarm_manager_result.swarm_facts.JoinTokens.Worker }}"
+  no_log: true</code></pre>
+<p><code>community.docker.docker_swarm</code> is idempotent. It creates a Swarm only when the host is not already a manager. The token stays in Ansible memory and is hidden from output.</p>
+<p class="command-purpose"><strong>One manager is deliberate but not highly available.</strong> If the frontend manager dies, Swarm control and the public site stop. Record this in the report.</p>
+</div>
+<div class="card">
+<h3>4.2 · Complete <code>ansible/roles/swarm_worker/tasks/main.yml</code></h3>
+<pre><code class="language-yaml">---
+- name: Install Python tools for Docker modules
+  ansible.builtin.dnf:
+    name: python3-pip
+    state: present
+
+- name: Install Docker SDK for Python
+  ansible.builtin.pip:
+    name: docker
+    state: present
+
+- name: Join or keep the worker in this Swarm
+  community.docker.docker_swarm:
+    state: join
+    advertise_addr: "{{ swarm_advertise_addr }}"
+    join_token: "{{ hostvars[groups['swarm_managers'][0]].swarm_worker_join_token }}"
+    remote_addrs:
+      - "{{ hostvars[groups['swarm_managers'][0]].swarm_advertise_addr }}:2377"
+  no_log: true
+
+- name: Label the worker for backend placement
+  community.docker.docker_node:
+    hostname: "{{ ansible_hostname }}"
+    labels:
+      app_role: backend
+    labels_state: merge
+  delegate_to: "{{ groups['swarm_managers'][0] }}"</code></pre>
+<p>If a host already belongs to the wrong Swarm, this role should fail. Do not make it run <code>docker swarm leave --force</code> by itself. Confirm the host and environment first, then leave the wrong cluster by hand.</p>
+<p class="command-purpose"><strong>The worker connects to the manager's private IP.</strong> That is why port 2377 accepts only the matching backend security group.</p>
+</div>
+<div class="card">
+<h3>4.3 · Required collection file</h3>
+<p>Create a new <code>ansible/requirements.yml</code>. The known baseline does not have this file. Its complete content is:</p>
+<pre><code class="language-yaml">---
+collections:
+  - name: community.docker
+    version: "&gt;=3.10.0,&lt;5.0.0"</code></pre>
+<pre><code class="language-bash">cd app/ansible
+ansible-galaxy collection install -r requirements.yml
+ansible-galaxy collection list | grep community.docker</code></pre>
+<p class="command-purpose"><strong>Run this on the Ansible control machine.</strong> The roles install the Python Docker SDK on EC2. The collection itself runs on your laptop now and in the Jenkins runner later.</p>
+</div>
+<div class="card">
+<h3>4.4 · Why these roles can be run twice</h3>
+<pre><code class="language-bash">first run:
+  Docker SDK installed
+  manager creates Swarm
+  worker joins
+  labels added
+
+second run:
+  packages present
+  same Swarm kept
+  same membership kept
+  same labels kept
+
+join token:
+  no_log hides it
+  never save it in git, inventory, vault, or a screenshot</code></pre>
+<p class="command-purpose"><strong>Module state drives the result.</strong> There is no hand-written parsing of <code>docker swarm init</code> output, so a change in its human text does not break the play.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the manager role creates one manager, labels it frontend, and keeps the join token hidden. The worker role joins one private manager address and labels itself backend. A second run should not recreate the Swarm.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="swarm-stack">
+<h2 class="collapsible-header">🧱 Step 5 — Define the stack, nginx proxy, and migration rule<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>5.1 · Change the API entrypoint behavior safely</h3>
+<p>The current <code>app/entrypoint.sh</code> runs <code>python manage.py migrate</code> before gunicorn. With two API replicas, both replicas would run migrations again during each update.</p>
+<pre><code class="language-bash">current image entrypoint:
+  migrate -&gt; gunicorn
+
+safe Swarm path in this guide:
+  Ansible one-off container on backend -&gt; migrate once
+  Swarm API service entrypoint override -&gt; gunicorn only
+
+later clean-up:
+  edit app/entrypoint.sh so it starts gunicorn only
+  keep migration only in ansible/roles/swarm_deploy/tasks/main.yml</code></pre>
+<p>The stack below overrides the image entrypoint with <code>gunicorn</code>. The one-off migration task uses <code>--entrypoint python</code>. If migration exits nonzero, Ansible stops before <code>docker stack deploy</code>.</p>
+<p class="command-purpose"><strong>This is the safe practical bridge.</strong> It works with the current image and prevents every replica from migrating. The later entrypoint clean-up makes that policy easier to see.</p>
+</div>
+<div class="card">
+<h3>5.2 · Complete proposed root <code>app/nginx.conf</code></h3>
+<p>Jenkins will bake this file into the frontend image. Docker DNS resolves the service name <code>api</code> on the overlay network.</p>
+<pre><code class="language-nginx">server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+    client_max_body_size 10M;
+
+    resolver 127.0.0.11 valid=10s ipv6=off;
+    set $api_upstream http://api:8000;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location = /config.js {
+        add_header Cache-Control "no-store";
+    }
+
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    location ~ ^/(api|admin|static|healthz|readyz)(/|$) {
+        proxy_pass $api_upstream;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+    }
+}</code></pre>
+<p class="command-purpose"><strong><code>/api/version/</code> matches the <code>/api</code> route.</strong> nginx forwards the original path. The resolver lets nginx recover if the API task address changes.</p>
+</div>
+<div class="card">
+<h3>5.3 · Keep <code>client/public/config.js</code> on one origin</h3>
+<pre><code class="language-javascript">window.__APP_CONFIG__ = {
+  API_BASE_URL: '/api'
+}</code></pre>
+<p>No staging IP and no production IP belongs in the frontend image. The browser always asks the same host for <code>/api</code>. nginx chooses the private service.</p>
+<p class="command-purpose"><strong>Same image in both environments.</strong> Do not mount a different <code>config.js</code> for each Swarm. The relative path is already the correct runtime setting.</p>
+</div>
+<div class="card">
+<h3>5.4 · Complete <code>ansible/roles/swarm_deploy/templates/api.env.j2</code></h3>
+<pre><code class="language-bash">DJANGO_SETTINGS_MODULE=config.settings.prod
+SECRET_KEY={{ vault_django_secret_key }}
+DEBUG=False
+ALLOWED_HOSTS={{ allowed_hosts }}
+CLIENT_URL={{ frontend_origin }}
+DATABASE_URL={{ vault_database_url }}
+CONN_MAX_AGE=60
+CORS_ALLOWED_ORIGINS={{ frontend_origin }}
+CSRF_TRUSTED_ORIGINS={{ frontend_origin }}
+SESSION_COOKIE_SECURE=False
+CSRF_COOKIE_SECURE=False
+USE_S3=True
+AWS_STORAGE_BUCKET_NAME={{ s3_bucket_name }}
+AWS_S3_REGION_NAME={{ aws_region }}
+APP_VERSION={{ app_version }}
+GIT_COMMIT={{ git_commit }}
+LOG_LEVEL=INFO
+TIME_ZONE=Australia/Melbourne</code></pre>
+<p>This file is rendered on the backend worker as mode <code>0600</code>. It is used by the one-off migration container. The service gets the same values through the stack deployment environment.</p>
+<p class="command-purpose"><strong>Plain HTTP needs insecure cookie flags.</strong> Change both flags to <code>True</code> only after the public frontend has HTTPS.</p>
+</div>
+<div class="card">
+<h3>5.5 · Complete <code>ansible/roles/swarm_deploy/templates/stack.yml.j2</code></h3>
+<pre><code class="language-yaml">version: "3.8"
+
+services:
+  api:
+    image: "${DOCKERHUB_USER}/rmit-store-api:${IMAGE_TAG}"
+    entrypoint:
+      - gunicorn
+    command:
+      - config.wsgi:application
+      - --bind
+      - 0.0.0.0:8000
+      - --workers
+      - "3"
+      - --env
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      SECRET_KEY: "${DJANGO_SECRET_KEY}"
+      DEBUG: "False"
+      ALLOWED_HOSTS: "${ALLOWED_HOSTS}"
+      CLIENT_URL: "${FRONTEND_ORIGIN}"
+      DATABASE_URL: "${DATABASE_URL}"
+      CONN_MAX_AGE: "60"
+      CORS_ALLOWED_ORIGINS: "${FRONTEND_ORIGIN}"
+      CSRF_TRUSTED_ORIGINS: "${FRONTEND_ORIGIN}"
+      SESSION_COOKIE_SECURE: "False"
+      CSRF_COOKIE_SECURE: "False"
+      USE_S3: "True"
+      AWS_STORAGE_BUCKET_NAME: "${S3_BUCKET_NAME}"
+      AWS_S3_REGION_NAME: "${AWS_REGION}"
+      APP_VERSION: "${APP_VERSION}"
+      GIT_COMMIT: "${GIT_COMMIT}"
+      LOG_LEVEL: INFO
+      TIME_ZONE: Australia/Melbourne
+    networks:
+      - app
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz/', timeout=5)"
+      interval: 15s
+      timeout: 6s
+      retries: 5
+      start_period: 30s
+    deploy:
+      replicas: ${API_REPLICAS}
+      placement:
+        constraints:
+          - node.labels.app_role == backend
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: pause
+        monitor: 30s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+
+  frontend:
+    image: "${DOCKERHUB_USER}/rmit-store-frontend:${IMAGE_TAG}"
+    networks:
+      - app
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "wget -q -O /dev/null http://127.0.0.1/ || exit 1"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.app_role == frontend
+      update_config:
+        parallelism: 1
+        order: stop-first
+        failure_action: pause
+        monitor: 30s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+
+networks:
+  app:
+    driver: overlay</code></pre>
+<p><code>mode: host</code> publishes port 80 only where the frontend task runs. There is no API <code>ports</code> block. Service name <code>api</code> is reachable only on the overlay network. Frontend uses <code>stop-first</code> because one manager cannot bind old and new tasks to host port 80 at the same time.</p>
+<p class="command-purpose"><strong>No <code>build</code> and no <code>depends_on</code>.</strong> Swarm pulls exact tags. Health checks and restart rules handle runtime failures. Ansible handles migration order before the update begins.</p>
+</div>
+<div class="card">
+<h3>5.6 · Secret limit to state in the report</h3>
+<p>Ansible Vault encrypts secrets in git. The rendered migration env file is mode <code>0600</code>. Swarm service environment values are still visible to a Swarm manager through service inspection.</p>
+<pre><code class="language-bash">protected:
+  vault files in git
+  token output in Ansible logs
+  migration env file permissions
+
+not fully protected:
+  service environment from a Swarm manager
+
+future hardening:
+  add Docker secret files
+  teach the app to read SECRET_KEY_FILE and DATABASE_URL_FILE</code></pre>
+<p class="command-purpose"><strong>Do not claim Docker Secrets are implemented.</strong> The current app reads normal environment variables. Vault is still a clear improvement, but manager access remains privileged.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> nginx forwards API, admin, static, health, and readiness paths to <code>api:8000</code>. The stack publishes only frontend port 80. It pulls two exact tags, constrains both services by node label, and overrides the API entrypoint so replicas do not migrate.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="swarm-deploy-role">
+<h2 class="collapsible-header">🤖 Step 6 — Run migration first, then deploy the exact tag<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>6.1 · Complete <code>ansible/roles/swarm_deploy/tasks/main.yml</code></h3>
+<pre><code class="language-yaml">---
+- name: Create deployment directory on manager
+  ansible.builtin.file:
+    path: /opt/rmit-store
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: "0755"
+
+- name: Create migration directory on backend worker
+  ansible.builtin.file:
+    path: /opt/rmit-store
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: "0755"
+  delegate_to: "{{ groups['swarm_workers'][0] }}"
+
+- name: Render stack file on manager
+  ansible.builtin.template:
+    src: stack.yml.j2
+    dest: /opt/rmit-store/stack.yml
+    owner: ec2-user
+    group: ec2-user
+    mode: "0644"
+  register: stack_template
+
+- name: Render protected API environment on backend worker
+  ansible.builtin.template:
+    src: api.env.j2
+    dest: /opt/rmit-store/api.env
+    owner: root
+    group: root
+    mode: "0600"
+  delegate_to: "{{ groups['swarm_workers'][0] }}"
+  register: api_env_template
+  no_log: true
+
+- name: Log in to private Docker Hub on backend worker
+  community.docker.docker_login:
+    username: "{{ dockerhub_user }}"
+    password: "{{ vault_dockerhub_token }}"
+  delegate_to: "{{ groups['swarm_workers'][0] }}"
+  no_log: true
+
+- name: Pull exact API image on backend worker
+  community.docker.docker_image:
+    name: "{{ dockerhub_user }}/rmit-store-api:{{ image_tag }}"
+    source: pull
+  delegate_to: "{{ groups['swarm_workers'][0] }}"
+
+- name: Run database migration before service update
+  ansible.builtin.command:
+    argv:
+      - docker
+      - run
+      - --rm
+      - --env-file
+      - /opt/rmit-store/api.env
+      - --entrypoint
+      - python
+      - "{{ dockerhub_user }}/rmit-store-api:{{ image_tag }}"
+      - manage.py
+      - migrate
+      - --noinput
+  delegate_to: "{{ groups['swarm_workers'][0] }}"
+  register: migration_result
+  changed_when: "'Applying ' in migration_result.stdout"
+  failed_when: migration_result.rc != 0
+
+- name: Log in to private Docker Hub on manager
+  community.docker.docker_login:
+    username: "{{ dockerhub_user }}"
+    password: "{{ vault_dockerhub_token }}"
+  no_log: true
+
+- name: Read current stack images
+  ansible.builtin.command:
+    cmd: &gt;-
+      docker stack services {{ stack_name }}
+      --format {% raw %}'{{.Name}}={{.Image}}'{% endraw %}
+  register: stack_before
+  changed_when: false
+  failed_when: stack_before.rc not in [0, 1]
+
+- name: Deploy exact API and frontend tags
+  ansible.builtin.command:
+    argv:
+      - docker
+      - stack
+      - deploy
+      - --with-registry-auth
+      - --prune
+      - --compose-file
+      - /opt/rmit-store/stack.yml
+      - "{{ stack_name }}"
+  environment:
+    DOCKERHUB_USER: "{{ dockerhub_user }}"
+    IMAGE_TAG: "{{ image_tag }}"
+    API_REPLICAS: "{{ api_replicas | string }}"
+    DJANGO_SECRET_KEY: "{{ vault_django_secret_key }}"
+    DATABASE_URL: "{{ vault_database_url }}"
+    ALLOWED_HOSTS: "{{ allowed_hosts }}"
+    FRONTEND_ORIGIN: "{{ frontend_origin }}"
+    S3_BUCKET_NAME: "{{ s3_bucket_name }}"
+    AWS_REGION: "{{ aws_region }}"
+    APP_VERSION: "{{ app_version }}"
+    GIT_COMMIT: "{{ git_commit }}"
+  register: stack_deploy
+  changed_when: &gt;-
+    stack_template.changed or
+    api_env_template.changed or
+    (dockerhub_user + '/rmit-store-api:' + image_tag) not in stack_before.stdout or
+    (dockerhub_user + '/rmit-store-frontend:' + image_tag) not in stack_before.stdout
+  failed_when: stack_deploy.rc != 0
+  no_log: true
+
+- name: Wait for readiness through the public frontend
+  ansible.builtin.uri:
+    url: "{{ frontend_origin }}/readyz/"
+    method: GET
+    status_code: 200
+    return_content: true
+  register: rollout_ready
+  until: (rollout_ready.status | default(0)) == 200
+  retries: 30
+  delay: 10
+  delegate_to: localhost
+  become: false
+  changed_when: false
+
+- name: Wait for the deployed commit through the public frontend
+  ansible.builtin.uri:
+    url: "{{ frontend_origin }}/api/version/"
+    method: GET
+    status_code: 200
+    return_content: true
+  register: rollout_version
+  until:
+    - (rollout_version.status | default(0)) == 200
+    - git_commit in (rollout_version.content | default('')) or
+      git_commit[0:8] in (rollout_version.content | default(''))
+  retries: 30
+  delay: 10
+  delegate_to: localhost
+  become: false
+  changed_when: false
+
+- name: Assert the public version is the requested commit
+  ansible.builtin.assert:
+    that:
+      - git_commit in rollout_version.content or
+        git_commit[0:8] in rollout_version.content
+    fail_msg: "/api/version/ did not report the requested git_commit."
+  delegate_to: localhost
+  become: false
+
+- name: Show deployed services without secrets
+  ansible.builtin.command:
+    cmd: docker stack services {{ stack_name }}
+  register: stack_services
+  changed_when: false
+
+- name: Print deployed service table
+  ansible.builtin.debug:
+    var: stack_services.stdout_lines</code></pre>
+<p>The migration runs on the backend worker because only its security group can reach RDS. The manager logs in separately so <code>--with-registry-auth</code> can pass private registry auth to Swarm tasks.</p>
+<p>The two <code>uri</code> tasks run from the Ansible control runner, not an EC2 target. They wait up to five minutes for readiness and the requested commit through nginx. The role returns only after the public rollout is ready and <code>/api/version/</code> contains the full <code>git_commit</code> or its first eight characters.</p>
+<p class="command-purpose"><strong>Failure stops the play.</strong> A nonzero migration result prevents the stack command from running. A rollout or version timeout also fails the role. Output text can differ by Docker version, so proof comes from service state and public HTTP checks.</p>
+</div>
+<div class="card">
+<h3>6.2 · Complete <code>ansible/site-swarm.yml</code></h3>
+<pre><code class="language-yaml">---
+- name: Validate deployment inputs
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Accept only known environments and exact release data
+      ansible.builtin.assert:
+        that:
+          - target_environment is defined
+          - target_environment in ['staging', 'production']
+          - image_tag is defined
+          - image_tag | length &gt; 0
+          - git_commit is defined
+          - git_commit | length &gt;= 8
+          - app_version is defined
+          - app_version | length &gt; 0
+        fail_msg: Use staging or production and pass image_tag, git_commit, and app_version.
+
+- name: Install Docker on both Swarm nodes
+  hosts: swarm_nodes
+  become: true
+  roles:
+    - docker_engine
+
+- name: Create the Swarm manager
+  hosts: swarm_managers
+  become: true
+  roles:
+    - swarm_manager
+
+- name: Join the Swarm worker
+  hosts: swarm_workers
+  become: true
+  roles:
+    - swarm_worker
+
+- name: Migrate and deploy the RMIT Store stack
+  hosts: swarm_managers
+  become: true
+  vars_files:
+    - "group_vars/{{ target_environment }}.yml"
+    - "group_vars/vault-{{ target_environment }}.yml"
+  roles:
+    - swarm_deploy</code></pre>
+<p>The play order is the dependency order. Docker exists before Swarm. The manager exists before the worker asks for a token. Migration passes before stack deployment.</p>
+<p class="command-purpose"><strong>Inventory and target must match.</strong> Use the staging inventory with <code>target_environment=staging</code>. The assertion catches a misspelled target, but a human must still avoid mixing a valid production target with staging inventory.</p>
+</div>
+<div class="card">
+<h3>6.3 · Manual private image build for the first proof</h3>
+<p>Jenkins will own this later. For now, build once on your laptop and push the same tag to both private Docker Hub repositories.</p>
+<pre><code class="language-bash">cd app
+docker login -u DOCKERHUB_USER
+# paste the access token at the hidden Password prompt
+
+IMAGE_TAG="manual-$(git rev-parse --short=8 HEAD)"
+
+docker build -f Dockerfile.api \
+  -t "DOCKERHUB_USER/rmit-store-api:${IMAGE_TAG}" .
+
+docker build -f Dockerfile.frontend \
+  -t "DOCKERHUB_USER/rmit-store-frontend:${IMAGE_TAG}" .
+
+docker push "DOCKERHUB_USER/rmit-store-api:${IMAGE_TAG}"
+docker push "DOCKERHUB_USER/rmit-store-frontend:${IMAGE_TAG}"
+
+docker logout
+printf '%s\n' "$IMAGE_TAG"</code></pre>
+<p class="command-purpose"><strong>Do not type the token on the command line.</strong> The prompt hides it. Keep the two repositories private and keep the exact tag after the proof.</p>
+</div>
+<div class="card">
+<h3>6.4 · Schema safety limit</h3>
+<p>The migration-first order stops a bad migration from starting new API tasks. It does not make every schema change safe while the old API is still serving.</p>
+<pre><code class="language-bash">safe future pattern:
+  release A: add new nullable column or new table
+  release B: write both old and new shape
+  release C: stop reading old shape
+  later:     remove old column
+
+risky in one release:
+  rename or drop a column while old API tasks still use it</code></pre>
+<p class="command-purpose"><strong>Backward-compatible migrations are future work.</strong> State this limit. Do not claim zero-downtime schema migration until the team tests an expand-and-contract process.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> migration runs once on the backend worker with the new API image. A failure blocks service update. After deployment, the control runner waits for public readiness and the requested commit before the role returns. No task output reveals a token, database URL, or Django key.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="swarm-staging">
+<h2 class="collapsible-header">🧪 Step 7 — Syntax check, dry run, then prove staging<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>7.1 · Syntax check from <code>app/</code></h3>
+<pre><code class="language-bash">cd app
+
+ansible-playbook \
+  -i ansible/inventories/staging.ini \
+  ansible/site-swarm.yml \
+  -e target_environment=staging \
+  -e image_tag="$IMAGE_TAG" \
+  -e git_commit="$(git rev-parse HEAD)" \
+  -e app_version="$IMAGE_TAG" \
+  --ask-vault-pass \
+  --syntax-check</code></pre>
+<p class="command-purpose"><strong>Expected:</strong> Ansible prints the playbook name and no syntax error. This checks YAML and task shape. It does not contact AWS or Docker Hub.</p>
+</div>
+<div class="card">
+<h3>7.2 · Check mode and its caveat</h3>
+<pre><code class="language-bash">ansible-playbook \
+  -i ansible/inventories/staging.ini \
+  ansible/site-swarm.yml \
+  -e target_environment=staging \
+  -e image_tag="$IMAGE_TAG" \
+  -e git_commit="$(git rev-parse HEAD)" \
+  -e app_version="$IMAGE_TAG" \
+  --ask-vault-pass \
+  --check --diff</code></pre>
+<p><code>--check --diff</code> is useful for packages, files, and templates. Command tasks may be skipped. Docker modules can report only what they can predict. It does not prove a Swarm join, private pull, RDS migration, or stack update.</p>
+<p class="command-purpose"><strong>Dry run is a preview, not evidence.</strong> The first real staging run is required.</p>
+</div>
+<div class="card">
+<h3>7.3 · First real staging run</h3>
+<pre><code class="language-bash">ansible-playbook \
+  -i ansible/inventories/staging.ini \
+  ansible/site-swarm.yml \
+  -e target_environment=staging \
+  -e image_tag="$IMAGE_TAG" \
+  -e git_commit="$(git rev-parse HEAD)" \
+  -e app_version="$IMAGE_TAG" \
+  --ask-vault-pass</code></pre>
+<p>Watch the order. The migration task must finish before the stack deploy task starts. A red migration means stop and fix staging. Do not try production.</p>
+<p class="command-purpose"><strong>Save evidence:</strong> screenshot the play recap and the task order. Blur public IPs if your report will be public. No secret value should appear.</p>
+</div>
+<div class="card">
+<h3>7.4 · Prove the staging cluster on its manager</h3>
+<pre><code class="language-bash">ssh -i ~/Downloads/TEAM_KEY.pem ec2-user@STAGING_FRONTEND_IP
+
+sudo docker node ls
+sudo docker node inspect self --pretty
+sudo docker stack services rmit-store
+sudo docker stack ps rmit-store --no-trunc
+sudo docker network ls | grep rmit_store_app</code></pre>
+<p>Expect two nodes with status <code>Ready</code>. The frontend node is <code>Leader</code>. Frontend has one running task on the manager. API has two running tasks on the worker.</p>
+<p class="command-purpose"><strong>Output wording can vary.</strong> Check the facts: two ready nodes, correct placement, desired replica counts, exact image tag, and an overlay network.</p>
+</div>
+<div class="card">
+<h3>7.5 · Prove every public route from your laptop</h3>
+<pre><code class="language-bash">curl -fsSI http://STAGING_FRONTEND_IP/
+curl -fsS  http://STAGING_FRONTEND_IP/healthz/
+curl -fsS  http://STAGING_FRONTEND_IP/readyz/
+curl -fsS  http://STAGING_FRONTEND_IP/api/version/
+
+# port 8000 must not be a public app route
+curl --connect-timeout 3 http://STAGING_BACKEND_IP:8000/</code></pre>
+<p><code>/readyz/</code> must report database and storage ready. <code>/api/version/</code> must show the commit and app version you passed. The last command should fail to connect from the internet because there is no port 8000 security-group rule and no published API port.</p>
+<p class="command-purpose"><strong>Use the frontend address for all good checks.</strong> This proves nginx, overlay DNS, API, RDS, and S3 in one path.</p>
+</div>
+<div class="card">
+<h3>7.6 · Second run proves idempotency</h3>
+<pre><code class="language-bash">ansible-playbook \
+  -i ansible/inventories/staging.ini \
+  ansible/site-swarm.yml \
+  -e target_environment=staging \
+  -e image_tag="$IMAGE_TAG" \
+  -e git_commit="$(git rev-parse HEAD)" \
+  -e app_version="$IMAGE_TAG" \
+  --ask-vault-pass</code></pre>
+<p>The migration command still runs, but Django should have nothing to apply. Swarm stays formed. Labels stay the same. Exact images stay the same. Some package or registry modules may report state based on their installed collection version, so do not promise a literal <code>changed=0</code> on every machine.</p>
+<p class="command-purpose"><strong>Idempotent means no needless rebuild or cluster recreation.</strong> Save the second recap and compare it with the first.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> staging has two ready nodes, frontend on the manager, API only on the worker, exact immutable tags, green health and readiness through port 80, correct version data, and no public backend connection on 8000.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="swarm-production">
+<h2 class="collapsible-header">🚀 Step 8 — Manually prove production with the tested tag<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>8.1 · Stop if staging evidence is incomplete</h3>
+<pre><code class="language-bash">required before production:
+  staging play recap saved
+  two staging nodes Ready
+  service placement correct
+  /healthz/ returns success through frontend
+  /readyz/ reports database and storage ready
+  /api/version/ contains expected GIT_COMMIT and APP_VERSION
+  backend :8000 is not public
+  second Ansible run did not rebuild or recreate the cluster</code></pre>
+<p class="command-purpose"><strong>This rule is for the manual pre-Jenkins proof.</strong> Do not rebuild during this runbook. Production pulls the same manually built <code>IMAGE_TAG</code> that you just proved in staging.</p>
+</div>
+<div class="card">
+<h3>8.2 · Syntax check production inputs</h3>
+<pre><code class="language-bash">ansible-playbook \
+  -i ansible/inventories/production.ini \
+  ansible/site-swarm.yml \
+  -e target_environment=production \
+  -e image_tag="$IMAGE_TAG" \
+  -e git_commit="$(git rev-parse HEAD)" \
+  -e app_version="$IMAGE_TAG" \
+  --ask-vault-pass \
+  --syntax-check</code></pre>
+<p>Read the command before pressing Enter. It must say <code>production.ini</code> and <code>target_environment=production</code>.</p>
+<p class="command-purpose"><strong>Never mix valid inputs from two environments.</strong> Both words are valid on their own, so the play cannot infer that a human paired them incorrectly.</p>
+</div>
+<div class="card">
+<h3>8.3 · First production run</h3>
+<pre><code class="language-bash">ansible-playbook \
+  -i ansible/inventories/production.ini \
+  ansible/site-swarm.yml \
+  -e target_environment=production \
+  -e image_tag="$IMAGE_TAG" \
+  -e git_commit="$(git rev-parse HEAD)" \
+  -e app_version="$IMAGE_TAG" \
+  --ask-vault-pass</code></pre>
+<p>The production migration uses <code>vault-production.yml</code>. It must point to <code>rmit_store</code> with the production app login. The stack uses the production S3 bucket.</p>
+<p class="command-purpose"><strong>No automatic rollback yet.</strong> If deployment or smoke checks fail, stop. Inspect service state and the previous immutable tag. Page 2 will define the pipeline failure path.</p>
+</div>
+<div class="card">
+<h3>8.4 · Prove production</h3>
+<pre><code class="language-bash">ssh -i ~/Downloads/TEAM_KEY.pem ec2-user@PRODUCTION_FRONTEND_IP
+
+sudo docker node ls
+sudo docker stack services rmit-store
+sudo docker stack ps rmit-store --no-trunc
+
+exit
+
+curl -fsSI http://PRODUCTION_FRONTEND_IP/
+curl -fsS  http://PRODUCTION_FRONTEND_IP/healthz/
+curl -fsS  http://PRODUCTION_FRONTEND_IP/readyz/
+curl -fsS  http://PRODUCTION_FRONTEND_IP/api/version/
+curl --connect-timeout 3 http://PRODUCTION_BACKEND_IP:8000/</code></pre>
+<p>For this manual proof, the API version response should match the manually tested tag and commit. Data and bucket names must differ because environment config is not baked into either image.</p>
+<p class="command-purpose"><strong>Take screenshots now:</strong> production nodes, service table, green endpoint output, and the manually reused image tag shown in both environments.</p>
+</div>
+<div class="card">
+<h3>8.5 · Run production a second time</h3>
+<pre><code class="language-bash">ansible-playbook \
+  -i ansible/inventories/production.ini \
+  ansible/site-swarm.yml \
+  -e target_environment=production \
+  -e image_tag="$IMAGE_TAG" \
+  -e git_commit="$(git rev-parse HEAD)" \
+  -e app_version="$IMAGE_TAG" \
+  --ask-vault-pass</code></pre>
+<p class="command-purpose"><strong>Keep the second recap.</strong> It is configuration-management evidence. The same desired state should stay in place without replacing nodes or building images.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the manual production proof ran only after staging and reused its manually built tag. Production still has separate DB credentials and S3. The final Jenkins production job will build a new immutable tag from merged <code>main</code>.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="swarm-handoff">
+<h2 class="collapsible-header">📸 Step 9 — Evidence, cleanup boundary, and Jenkins handoff<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>9.1 · Screenshot and command evidence</h3>
+<pre><code class="language-bash">AWS console:
+  five EC2 names and sizes
+  staging pair security-group rules
+  production pair security-group rules
+  RDS 5432 sources are the two backend groups
+  backend IAM instance profile
+  separate staging and production S3 bucket names
+
+Ansible:
+  syntax check
+  first staging recap
+  second staging recap
+  first production recap
+  encrypted vault headers only
+
+Swarm:
+  docker node ls for each cluster
+  docker stack services rmit-store for each cluster
+  manual proof reused one IMAGE_TAG in staging and production
+
+HTTP:
+  frontend, healthz, readyz, version for both
+  failed public connection to backend :8000</code></pre>
+<p class="command-purpose"><strong>Never screenshot vault plaintext.</strong> The encrypted header is enough. Also keep tokens, passwords, private keys, and full database URLs out of terminal history and screenshots.</p>
+</div>
+<div class="card">
+<h3>9.2 · What this satisfies</h3>
+<pre><code class="language-bash">Core 1  Cloud integration:
+  EC2 + RDS + S3 + IAM instance role
+
+Core 2  Containerised services:
+  private API and frontend Docker images
+
+Core 4  Continuous deployment:
+  staging then production path is ready for Jenkins
+
+Core 7  Configuration management:
+  Ansible installs runtime, forms cluster, configures and deploys
+
+Core 9  Orchestration:
+  Swarm placement, overlay network, replicas, health and restart policy</code></pre>
+<p class="command-purpose"><strong>The pipeline is still incomplete.</strong> Manual commands prove the path. Page 2 adds Jenkins triggers, tests, immutable builds, staging and production automation, status checks, and email on failure.</p>
+</div>
+<div class="card">
+<h3>9.3 · Limits to write plainly</h3>
+<pre><code class="language-bash">not highly available:
+  one manager and one worker per environment
+
+not automatic:
+  AWS provisioning
+  rollback after a bad deployment
+  schema expand-and-contract checks
+
+not complete testing:
+  temporary Jenkins checks come on page 2
+  final unit, integration, and Web UI suites still belong to the test work
+
+secret limit:
+  Vault protects git, but Swarm managers can inspect service environment
+
+capacity limit:
+  two API replicas share one backend EC2 host</code></pre>
+<p class="command-purpose"><strong>Limits are not failures if they are honest.</strong> Tie each one to future work instead of claiming a feature that is not built.</p>
+</div>
+<div class="card">
+<h3>9.4 · Do not retire the old roles yet</h3>
+<pre><code class="language-bash">keep:
+  ansible/site.yml
+  ansible/roles/app_server
+  ansible/roles/frontend_server
+
+new tested path:
+  ansible/site-swarm.yml
+  ansible/roles/swarm_manager
+  ansible/roles/swarm_worker
+  ansible/roles/swarm_deploy
+
+retire old path only after:
+  staging proof + second run
+  production proof + second run
+  Jenkins page calls site-swarm.yml successfully
+  teammate reviews rollback instructions</code></pre>
+<p class="command-purpose"><strong>Removal is a later PR.</strong> Keeping the old path during rollout gives the team a known reference while the new Swarm path is being tested.</p>
+</div>
+<div class="card">
+<h3>9.5 · Contract for the Jenkins page</h3>
+<pre><code class="language-bash">Jenkins supplies:
+  ansible/inventories/staging.ini or production.ini
+  target_environment
+  image_tag
+  git_commit
+  app_version
+  SSH private key file
+  Ansible vault password file
+
+Ansible loads:
+  ansible/group_vars/vault-staging.yml
+  ansible/group_vars/vault-production.yml
+
+PR pipeline:
+  test the pull request
+  build and push an immutable PR commit tag
+  call staging.ini + target_environment=staging
+
+Production pipeline after approved merge:
+  check out the merged main commit
+  build and push a new immutable merged-main tag
+  call production.ini + target_environment=production
+
+Both call:
+  ansible/site-swarm.yml
+  -e image_tag=EXACT_TAG
+  -e git_commit=FULL_COMMIT
+  -e app_version=RELEASE_VERSION
+
+Inventory:
+  static staging.ini and production.ini
+  no AWS inventory discovery
+  no Jenkins EC2 IAM role needed for inventory</code></pre>
+<p>The PR and merged <code>main</code> builds may have different tags and commits. Both images remain environment-neutral. Staging and production database, bucket, host, and secret values come from Ansible, never from an image build.</p>
+<p class="command-purpose"><strong>Ansible remains the deployment owner.</strong> Jenkins passes release facts and credentials. It does not duplicate Swarm commands in a Jenkinsfile.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> one evidence folder contains AWS, Ansible, Swarm, HTTP, and encrypted-vault proof. The report names every limit. The old deployment roles remain available. The exact <code>site-swarm.yml</code> contract is ready for page 2.</p>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-resources)" href="../sub_pages/rmit-store-manual-deploy.html"><span class="pager__dir">← Previous</span><span class="pager__title">RMIT Store: Manual Deploy (A–E)</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-resources)" href="../sub_pages/rmit-store-jenkins-pipeline.html"><span class="pager__dir">Next →</span><span class="pager__title">RMIT Store: Jenkins Pipelines</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="swarm-overview"><a class="toc__link" href="#swarm-overview"><span>Overview — two small Swarms, one safe route</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="swarm-aws"><a class="toc__link" href="#swarm-aws"><span>Step 1 — Create the EC2 boxes and exact network rules</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="swarm-data"><a class="toc__link" href="#swarm-data"><span>Step 2 — Split RDS and S3 by environment</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="swarm-files"><a class="toc__link" href="#swarm-files"><span>Step 3 — Add the new Ansible files without deleting the old path</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="swarm-roles"><a class="toc__link" href="#swarm-roles"><span>Step 4 — Build the manager and worker roles</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="swarm-stack"><a class="toc__link" href="#swarm-stack"><span>Step 5 — Define the stack, nginx proxy, and migration rule</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="swarm-deploy-role"><a class="toc__link" href="#swarm-deploy-role"><span>Step 6 — Run migration first, then deploy the exact tag</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="swarm-staging"><a class="toc__link" href="#swarm-staging"><span>Step 7 — Syntax check, dry run, then prove staging</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="swarm-production"><a class="toc__link" href="#swarm-production"><span>Step 8 — Manually prove production with the tested tag</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="swarm-handoff"><a class="toc__link" href="#swarm-handoff"><span>Step 9 — Evidence, cleanup boundary, and Jenkins handoff</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 10 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

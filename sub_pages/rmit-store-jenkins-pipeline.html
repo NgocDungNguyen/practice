@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Beginner-friendly COSC2767 Assignment 2 Jenkins tutorial: run Jenkins in a persistent production container, build immutable RMIT Store images, deploy pull requests to shared staging and protected main to production with a short-lived Ansible runner, report GitHub status, and reuse the existing email alert module.">
+<title>RMIT Store: Jenkins PR and Production Pipelines - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=ba72502410">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=93ddf335e0"></script>
+</head>
+<body data-page="rmit-jenkins-pipeline" data-stage="resources" data-root="../" style="--stage-accent: var(--stage-resources)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Reference</span><span class="crumb-sep">/</span><span>RMIT Store: Jenkins Pipelines</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="7"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-ansible-swarm.html" data-page-key="rmit-ansible-swarm" data-sections="10"><span class="sidenav__num">AN</span><span>RMIT Store: Ansible & Docker Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/rmit-store-jenkins-pipeline.html" data-page-key="rmit-jenkins-pipeline" data-sections="11"><span class="sidenav__num">JE</span><span>RMIT Store: Jenkins Pipelines</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-alerting.html" data-page-key="rmit-alerting" data-sections="8"><span class="sidenav__num">AL</span><span>RMIT Store: Automated Alerting</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-monitoring.html" data-page-key="rmit-monitoring" data-sections="9"><span class="sidenav__num">MO</span><span>RMIT Store: Monitoring & Grafana</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><details class="sidenav__group sidenav__group--collapsible" style="--group-accent: var(--stage-archive, var(--rmit-red))"><summary class="sidenav__stage-label">Assignment 1 archive<span class="sidenav__chevron" aria-hidden="true"></span></summary><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></details></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Reference</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">🔧</span>RMIT Store: Jenkins PR and Production Pipelines</h1>
+<p class="page-hero__intro">This is page 2 of the deployment guide. It is for the teammate who owns Jenkins. You will run Jenkins on its own <code>t3.medium</code> EC2 box. You will make one pipeline for pull requests and one for protected <code>main</code>. Both use the existing <code>jenkins/notify.groovy</code> alert module. The AWS hosts, Ansible inventory, vault files, Docker Swarm services, and migration role come from <a href="rmit-store-ansible-swarm.html">page 1: Ansible and Swarm</a>.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>11</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>44</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>49</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="jenkins-overview">
+<h2 class="collapsible-header start-open">🎯 Overview — two paths, one Jenkins server<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>0.1 · The whole design</h3>
+<pre><code class="language-bash">                                      private Docker Hub
+                                 ┌──── rmit-store-api
+                                 │     rmit-store-frontend
+                                 │     immutable tags only
+                                 │
+GitHub private repo             │
+┌────────────────────┐ webhook  ▼
+│ PR to main         ├────────► ┌────────────────────────────────────┐
+│ protected main     │          │ Jenkins EC2, t3.medium             │
+│ commit status      │◄─────────┤ persistent Jenkins controller      │
+└────────────────────┘          │ short-lived Ansible runner/deploy  │
+                                └──────────────┬─────────────────────┘
+                                               │ SSH + exact image tag
+                    ┌──────────────────────────┴──────────────────────────┐
+                    │                                                     │
+                    ▼                                                     ▼
+        STAGING PATH, one shared slot                         PRODUCTION PATH
+        ┌─────────────────────────┐                           ┌─────────────────────────┐
+        │ staging Docker Swarm    │                           │ production Docker Swarm │
+        │ API + frontend services │                           │ API + frontend services │
+        └───────────┬─────────────┘                           └───────────┬─────────────┘
+                    │                                                     │
+             ┌──────┴──────┐                                       ┌──────┴──────┐
+             ▼             ▼                                       ▼             ▼
+        RDS staging   S3 staging                              RDS production  S3 production
+        database      media bucket                            database        media bucket</code></pre>
+<p class="command-purpose"><strong>Jenkins and Ansible share one physical EC2 host.</strong> Their software stays separate. Jenkins is a long-running container. Ansible starts in a sibling runner container for one deploy, then exits.</p>
+</div>
+<div class="card">
+<h3>0.2 · Pull request path</h3>
+<pre><code class="language-bash">PR opened, reopened, ready for review, or updated with a new commit
+  → checkout latest PR commit
+  → temporary Django and Vue checks
+  → build and push:
+      DOCKERHUB_USER/rmit-store-api:pr-PR_NUMBER-SHORTSHA
+      DOCKERHUB_USER/rmit-store-frontend:pr-PR_NUMBER-SHORTSHA
+  → Ansible runs migrations and deploys that exact tag to staging
+  → curl-based live staging placeholder runs
+  → Jenkins posts a green or red commit status to GitHub
+  → existing notify.groovy emails the team on failure</code></pre>
+<p>All pull requests share staging. Only one deploy and live-check block runs at a time. A new commit aborts an older run of the same PR. The newest waiting PR gets the staging lock next.</p>
+<p class="command-purpose"><strong>Check the version before manual testing.</strong> Another PR may replace staging. <code>/api/version/</code> tells you which commit is live.</p>
+</div>
+<div class="card">
+<h3>0.3 · Production path</h3>
+<pre><code class="language-bash">one human approval + green Jenkins PR status
+  → a human presses Merge
+  → GitHub creates a push to protected main
+  → production job checks out the merged commit
+  → temporary checks
+  → build and push SHORTSHA tags
+  → capture the previous production tag
+  → Ansible runs migrations and deploys the exact new tag
+  → smoke /healthz/, /readyz/, and /api/version/ through frontend
+  → email on failure</code></pre>
+<p>No full end-to-end journey runs in production. A purchase test creates data. Run it on staging before Merge.</p>
+<p class="command-purpose"><strong>There is no automatic rollback.</strong> A failed production smoke test leaves the pipeline red, sends email, and prints the previous tag plus a manual rollback command. Production can remain broken until a person acts.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> you can trace both paths. PRs deploy <code>pr-PR_NUMBER-SHORTSHA</code> to shared staging. A protected <code>main</code> push deploys <code>SHORTSHA</code> to production. Both paths use Ansible migrations, exact image tags, GitHub status, and the existing email module.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-aws">
+<h2 class="collapsible-header">☁️ Step 1 — Create the Jenkins EC2 box<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>1.1 · Launch settings</h3>
+<p><strong>Where:</strong> AWS console → EC2 → Launch instance.</p>
+<pre><code class="language-bash">Name              jenkins-server
+AMI               Amazon Linux 2023, x86_64
+Instance type     t3.medium
+Storage           30 GiB gp3
+IAM role          none needed
+Security group    jenkins-server-sg
+
+Use an Elastic IP if the Learner Lab allows it.
+Write the public value down as JENKINS_IP.</code></pre>
+<p class="command-purpose"><strong>The public URL is</strong> <code>http://JENKINS_IP:8080</code>. HTTPS is future work. Do not claim that this HTTP setup protects login traffic.</p>
+</div>
+<div class="card">
+<h3>1.2 · Security group rules</h3>
+<p>Port 8080 serves both the Jenkins UI and <code>/github-webhook/</code>. Limit it to team addresses and GitHub's current webhook networks.</p>
+<pre><code class="language-bash">jenkins-server-sg inbound:
+  SSH         TCP 22     source TEAM_PUBLIC_IP/32
+  Jenkins     TCP 8080   source TEAM_PUBLIC_IP/32
+  Jenkins     TCP 8080   source each current GitHub hooks CIDR
+
+app Swarm security groups:
+  SSH         TCP 22     source jenkins-server-sg
+
+# Get GitHub's current webhook CIDRs. Run on your laptop.
+curl -s https://api.github.com/meta | jq -r '.hooks[]'</code></pre>
+<p>GitHub changes these CIDRs sometimes. Check them again before the demo. If your lab cannot add all GitHub ranges, use <code>0.0.0.0/0</code> on 8080 only as a recorded short-term limit. Keep the Jenkins login locked and use a webhook secret.</p>
+<p class="command-purpose"><strong>A security group cannot allow one URL path.</strong> A CIDR rule opens all of port 8080 to that source. The Jenkins login still needs strong authentication.</p>
+</div>
+<div class="card">
+<h3>1.3 · Install Docker and Compose</h3>
+<pre><code class="language-bash"># laptop
+ssh -i ~/Downloads/YOUR_KEY.pem ec2-user@JENKINS_IP
+
+# jenkins-server
+sudo dnf update -y
+sudo dnf install -y docker git
+sudo systemctl enable --now docker
+sudo usermod -aG docker ec2-user
+
+sudo mkdir -p /usr/local/lib/docker/cli-plugins
+sudo curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+exit
+
+# log in again
+ssh -i ~/Downloads/YOUR_KEY.pem ec2-user@JENKINS_IP
+docker version
+docker compose version</code></pre>
+<p class="command-purpose"><strong>Log out once.</strong> The Docker group change does not affect the old shell.</p>
+</div>
+<div class="card">
+<h3>1.4 · Prepare the host</h3>
+<pre><code class="language-bash"># jenkins-server
+sudo mkdir -p /opt/rmit-store /var/jenkins_home /etc/rmit-jenkins
+sudo chown -R ec2-user:ec2-user /opt/rmit-store
+sudo chown -R 1000:1000 /var/jenkins_home
+
+# clone the assigned private repo by your approved team method
+cd /opt/rmit-store
+git clone ASSIGNED_PRIVATE_REPO_URL .
+
+# Docker socket group number. Do not guess it.
+stat -c '%g' /var/run/docker.sock</code></pre>
+<p>Page 1 explains the two static inventories, host keys, app security groups, RDS, S3, and Swarm labels. Finish those parts before the first deploy.</p>
+<p class="command-purpose"><strong>Use the same absolute Jenkins home path on both sides.</strong> The host and container both use <code>/var/jenkins_home</code>. This makes workspace and credential-file mounts work in sibling containers.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> <code>docker version</code> and <code>docker compose version</code> work after a fresh SSH login. <code>JENKINS_IP</code> is stable. Port 22 is limited. Port 8080 allows team IPs and current GitHub webhook CIDRs where the lab permits.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-server">
+<h2 class="collapsible-header">🐳 Step 2 — Build the production Jenkins container<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>2.1 · Keep laptop and server files apart</h3>
+<pre><code class="language-bash">Jenkinsfile.pr                    # repo root
+Jenkinsfile.production            # repo root
+jenkins/
+├── notify.groovy                 # keep the existing module
+├── Jenkinsfile.alert-test        # existing laptop test only
+├── ansible-runner/
+│   ├── Dockerfile
+│   └── requirements.txt
+├── casc/
+│   ├── alerting.yaml             # reuse safely
+│   ├── local.yaml                # laptop only; never load in production
+│   └── production.yaml           # new server config
+├── local/
+│   └── dockerfile                # existing laptop image only
+└── production/
+    ├── Dockerfile
+    └── compose.yaml</code></pre>
+<p class="command-purpose"><strong>The two pipeline files are at repo root.</strong> The alert module stays at <code>jenkins/notify.groovy</code>. Production never loads <code>jenkins/casc/local.yaml</code>.</p>
+</div>
+<div class="card">
+<h3>2.2 · Complete production Dockerfile</h3>
+<pre><code class="language-dockerfile"># jenkins/production/Dockerfile
+FROM jenkins/jenkins:lts-jdk21
+
+USER root
+RUN apt-get update \
+    &amp;&amp; apt-get install -y --no-install-recommends \
+       ca-certificates curl docker.io git \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+RUN jenkins-plugin-cli --plugins \
+    configuration-as-code \
+    credentials-binding \
+    email-ext \
+    git \
+    github \
+    github-branch-source \
+    lockable-resources \
+    pipeline-stage-view \
+    prometheus \
+    workflow-aggregator
+
+USER jenkins</code></pre>
+<p><code>github-branch-source</code> discovers pull requests and reports the normal Jenkins commit status. No GitHub Checks plugin is installed, so this guide does not promise a GitHub Check Run.</p>
+<p class="command-purpose"><strong>The Docker CLI talks to the host daemon.</strong> The Compose file mounts the host socket in the next card.</p>
+</div>
+<div class="card">
+<h3>2.3 · Production JCasC</h3>
+<pre><code class="language-yaml"># jenkins/casc/production.yaml
+jenkins:
+  systemMessage: "RMIT Store CI/CD"
+  numExecutors: 1
+  mode: NORMAL
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_ID}"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: false
+
+unclassified:
+  location:
+    url: "http://${JENKINS_IP}:8080/"
+    adminAddress: "RMIT Store CI &lt;${GMAIL_USER}&gt;"
+  prometheusConfiguration:
+    path: prometheus
+    collectingMetricsPeriodInSeconds: 60
+    useAuthenticatedEndpoint: false</code></pre>
+<p>The monitoring page can scrape <code>http://JENKINS_IP:8080/prometheus</code>. With the current HTTP design, anyone allowed to reach port 8080 can reach that endpoint. Record this limit.</p>
+<p class="command-purpose"><strong>Only two YAML files load.</strong> They are <code>production.yaml</code> and <code>alerting.yaml</code>.</p>
+</div>
+<div class="card">
+<h3>2.4 · Reuse <code>alerting.yaml</code> without a personal address</h3>
+<p>Keep the existing SMTP and <code>gmail-smtp</code> blocks. Change only the existing recipient value so the host supplies the team list:</p>
+<pre><code class="language-yaml"># inside jenkins/casc/alerting.yaml
+jenkins:
+  globalNodeProperties:
+    - envVars:
+        env:
+          - key: ALERT_EMAILS
+            value: "${ALERT_EMAILS}"
+
+# keep the existing credentials and unclassified email-ext sections unchanged</code></pre>
+<p class="command-purpose"><strong>Never copy values from <code>app/alert.sh</code>.</strong> Put <code>GMAIL_USER</code>, <code>GMAIL_APP_PASSWORD</code>, and <code>ALERT_EMAILS</code> in the root-owned host env file.</p>
+</div>
+<div class="card">
+<h3>2.5 · Complete Compose file</h3>
+<pre><code class="language-yaml"># jenkins/production/compose.yaml
+services:
+  jenkins:
+    build:
+      context: ../..
+      dockerfile: jenkins/production/Dockerfile
+    image: rmit-store-jenkins:1.0.0
+    container_name: rmit-store-jenkins
+    restart: unless-stopped
+    user: "1000:1000"
+    group_add:
+      - "${DOCKER_GID}"
+    ports:
+      - "8080:8080"
+    env_file:
+      - /etc/rmit-jenkins/jenkins.env
+    environment:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false -Xms512m -Xmx1536m"
+      CASC_JENKINS_CONFIG: "/var/jenkins_home/casc/production.yaml,/var/jenkins_home/casc/alerting.yaml"
+    volumes:
+      - /var/jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../casc/production.yaml:/var/jenkins_home/casc/production.yaml:ro
+      - ../casc/alerting.yaml:/var/jenkins_home/casc/alerting.yaml:ro
+    mem_limit: 3g
+    cpus: 1.5</code></pre>
+<p>The volume keeps jobs, plugins, build records, and credentials across restarts. The CPU and memory caps apply to Jenkins itself. Sibling image builds use the host daemon outside these caps. Each Ansible runner gets its own limits in Step 4.</p>
+<p class="command-purpose"><strong>The Docker socket is root-equivalent host access.</strong> A trusted PR can change <code>Jenkinsfile.pr</code>, control the host daemon, and ask Jenkins for credentials. This is acceptable only for this small course team, where every repo writer is trusted. Do not accept forked or outside PRs. Isolated agents and a pipeline definition loaded from trusted <code>main</code> are future hardening.</p>
+</div>
+<div class="card">
+<h3>2.6 · Secret host env and startup</h3>
+<pre><code class="language-bash"># jenkins-server
+sudo install -m 600 -o root -g root /dev/null /etc/rmit-jenkins/jenkins.env
+sudoedit /etc/rmit-jenkins/jenkins.env
+
+# Add these names and real values.
+# JENKINS_ADMIN_ID=ADMIN_NAME
+# JENKINS_ADMIN_PASSWORD=LONG_RANDOM_VALUE
+# JENKINS_IP=JENKINS_IP
+# GMAIL_USER=TEAM_GMAIL
+# GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD
+# ALERT_EMAILS=TEAM_EMAIL_1,TEAM_EMAIL_2
+
+sudo install -m 600 -o root -g root /dev/null /etc/rmit-jenkins/runtime.env
+sudo sh -c 'printf "DOCKER_GID=%s\n" "$(stat -c "%g" /var/run/docker.sock)" &gt; /etc/rmit-jenkins/runtime.env'
+
+cd /opt/rmit-store
+sudo docker compose --env-file /etc/rmit-jenkins/runtime.env \
+  -f jenkins/production/compose.yaml build --no-cache
+sudo docker compose --env-file /etc/rmit-jenkins/runtime.env \
+  -f jenkins/production/compose.yaml up -d
+sudo docker logs -f rmit-store-jenkins</code></pre>
+<p>Both env files stay owned by root with mode 0600. Plain <code>ec2-user</code> Compose cannot read them. <code>sudo docker compose</code> can read them and still starts the container as UID 1000 through the Compose <code>user</code> setting.</p>
+<p>Open <code>http://JENKINS_IP:8080</code>. Manage Jenkins → Configuration as Code must show only the two production paths. Manage Jenkins → System → Extended E-mail Notification must send a test email.</p>
+<p class="command-purpose"><strong>Stop if <code>local.yaml</code> appears.</strong> Fix <code>CASC_JENKINS_CONFIG</code> before creating jobs.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> Jenkins restarts with the same home volume, uses at most 3 GiB and 1.5 CPUs, has the required plugins, sends a test email through existing <code>gmail-smtp</code>, exposes Prometheus metrics, and loads no laptop JCasC.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-credentials">
+<h2 class="collapsible-header">🔐 Step 3 — Add credentials and GitHub access<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>3.1 · Fine-grained GitHub token</h3>
+<p><strong>Where:</strong> GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens.</p>
+<pre><code class="language-bash">Resource owner       the assigned course organisation
+Repository access    only the assigned private repository
+Expiration           after the assignment demo
+
+Repository permissions:
+  Contents           Read-only
+  Pull requests      Read-only
+  Commit statuses    Read and write
+  Metadata           Read-only, added by GitHub</code></pre>
+<p>This token reads source, discovers pull requests, and writes the normal Jenkins commit status. It does not need repository administration because you create the webhook by hand.</p>
+<p class="command-purpose"><strong>Do not grant Checks write access unless you add and configure a Checks plugin.</strong> This guide uses commit statuses for branch protection.</p>
+</div>
+<div class="card">
+<h3>3.2 · Exact Jenkins credential IDs</h3>
+<p><strong>Where:</strong> Manage Jenkins → Credentials → System → Global credentials.</p>
+<pre><code class="language-bash">github-token
+  Kind: Username with password
+  Username: GITHUB_USERNAME
+  Password: fine-grained GitHub token
+
+dockerhub-creds
+  Kind: Username with password
+  Username: DOCKERHUB_USER
+  Password: Docker Hub access token
+
+ec2-deploy-key
+  Kind: SSH Username with private key
+  Username: ec2-user
+  Private key: key accepted by the four app EC2 hosts
+
+ansible-vault-password
+  Kind: Secret text
+  Secret: one-line Ansible vault password
+
+github-webhook-secret
+  Kind: Secret text
+  Secret: long random webhook secret
+
+gmail-smtp
+  Kind: Username with password
+  Created by existing jenkins/casc/alerting.yaml
+  Username/password come from GMAIL_USER and GMAIL_APP_PASSWORD</code></pre>
+<p class="command-purpose"><strong>Keep each ID exact.</strong> The two root Jenkinsfiles below refer to these strings.</p>
+</div>
+<div class="card">
+<h3>3.3 · Private Docker Hub repositories</h3>
+<pre><code class="language-bash">Create two private repositories:
+  DOCKERHUB_USER/rmit-store-api
+  DOCKERHUB_USER/rmit-store-frontend
+
+Create one Docker Hub access token with read and write access.
+Store it only in dockerhub-creds.</code></pre>
+<p>PR tags look like <code>pr-42-a1b2c3d4</code>. Production tags look like <code>a1b2c3d4</code>. If both exact image tags exist on a rerun, the pipeline verifies and reuses them. If only one exists, it fails as a partial publish. It never overwrites either tag.</p>
+<p class="command-purpose"><strong>Never deploy only <code>latest</code>.</strong> An exact tag links GitHub, Docker Hub, Ansible, the running API, and rollback evidence.</p>
+</div>
+<div class="card">
+<h3>3.4 · How secrets reach the runner</h3>
+<p>Jenkins binds the SSH key and vault password only around the deploy shell. The shell turns off trace output. It writes the vault password to a mode-600 temporary file. A trap deletes it. The child container receives file paths, not secret text in command arguments. <code>dockerhub-creds</code> is used only in image build and push stages. Page 1 already stores the read-only deploy token in each encrypted Ansible vault.</p>
+<pre><code class="language-bash">set +x
+umask 077
+SECRET_DIR="$(mktemp -d "$WORKSPACE/.ci-secrets.XXXXXX")"
+trap 'rm -rf "$SECRET_DIR"' EXIT INT TERM
+
+printf '%s' "$ANSIBLE_VAULT_PASSWORD" &gt; "$SECRET_DIR/vault-password"</code></pre>
+<p class="command-purpose"><strong>Masking is a backup, not permission control.</strong> This course design does run trusted team PR code with deployment credentials. Branch protection does not make that code safe before the build. Only trusted teammates may write branches. A later hardened design loads the pipeline from trusted <code>main</code> and runs builds on isolated agents.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the GitHub token is limited to one private repo and has Contents read, Pull requests read, and Commit statuses write. The two Docker Hub repos are private. All six Jenkins credential IDs exist. No secret value appears in git.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-runner">
+<h2 class="collapsible-header">🤖 Step 4 — Build the short-lived Ansible runner<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>4.1 · Python requirements</h3>
+<pre><code class="language-text"># jenkins/ansible-runner/requirements.txt
+ansible-core&gt;=2.17,&lt;2.19</code></pre>
+<p><code>ansible-core</code> runs the playbook. Static INI inventories need no AWS SDK.</p>
+<p class="command-purpose"><strong>The runner also installs</strong> the sensibly bounded <code>community.docker</code> collection used by page 1.</p>
+</div>
+<div class="card">
+<h3>4.2 · Complete runner Dockerfile</h3>
+<pre><code class="language-dockerfile"># jenkins/ansible-runner/Dockerfile
+FROM python:3.12-slim
+
+RUN apt-get update \
+    &amp;&amp; apt-get install -y --no-install-recommends \
+       ca-certificates openssh-client \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+COPY jenkins/ansible-runner/requirements.txt /tmp/python-requirements.txt
+
+RUN python3 -m pip install --no-cache-dir -r /tmp/python-requirements.txt \
+    &amp;&amp; ansible-galaxy collection install \
+       'community.docker:&gt;=3.10.0,&lt;5.0.0'
+
+WORKDIR /work</code></pre>
+<pre><code class="language-bash"># repo root on jenkins-server
+docker build \
+  -t rmit-store-ansible-runner:1.0.0 \
+  -f jenkins/ansible-runner/Dockerfile \
+  .</code></pre>
+<p class="command-purpose"><strong>No Ansible service stays running.</strong> Each deployment starts this image with <code>docker run --rm</code>.</p>
+</div>
+<div class="card">
+<h3>4.3 · Coherent workspace mount</h3>
+<pre><code class="language-bash">docker run --rm --network host --memory 768m --cpus 0.75 \
+  -v "${WORKSPACE}:${WORKSPACE}:ro" \
+  -v "${SSH_KEY}:/run/secrets/ssh-key:ro" \
+  -v "${SECRET_DIR}/vault-password:/run/secrets/vault-password:ro" \
+  -v /var/jenkins_home/.ssh/known_hosts:/run/known_hosts:ro \
+  -w "${WORKSPACE}" \
+  -e ANSIBLE_HOST_KEY_CHECKING=True \
+  -e ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=/run/known_hosts" \
+  rmit-store-ansible-runner:1.0.0 \
+  ansible-playbook \
+    -i ansible/inventories/staging.ini \
+    ansible/site-swarm.yml \
+    --private-key /run/secrets/ssh-key \
+    --vault-password-file /run/secrets/vault-password \
+    -e target_environment=staging \
+    -e image_tag="$IMAGE_TAG" \
+    -e git_commit="$GIT_COMMIT" \
+    -e app_version="$IMAGE_TAG"</code></pre>
+<p>The Docker daemon runs on the host. It resolves bind-mount paths on the host. This works because the Jenkins container bind mounts host <code>/var/jenkins_home</code> at the same path, so <code>WORKSPACE</code> and Jenkins credential-file paths exist on both sides.</p>
+<p class="command-purpose"><strong>The runner has isolated dependencies and limits.</strong> Jenkins does not install Ansible or Python packages. Each runner gets 768 MiB and 0.75 CPU, then exits after the playbook ends.</p>
+</div>
+<div class="card">
+<h3>4.4 · Deployment contract from page 1</h3>
+<pre><code class="language-bash">ansible/site-swarm.yml must:
+  1. accept target_environment=staging or production
+  2. select ansible/group_vars/vault-staging.yml or
+     ansible/group_vars/vault-production.yml
+  3. read the Docker Hub deploy token from that encrypted vault
+  4. use image_tag for both application images
+  5. run python manage.py migrate --noinput with the new API image
+  6. stop immediately if migration fails
+  7. update API and frontend Swarm services to image_tag
+  8. set GIT_COMMIT from git_commit and APP_VERSION from app_version
+  9. wait for the service update to finish</code></pre>
+<p>Do not put migrations in a vague "the container starts them" step. The playbook runs them once, before the API service update. A failed migration leaves the old service image running.</p>
+<p class="command-purpose"><strong>Jenkins owns sequence; Ansible owns deployment.</strong> Jenkins selects one static inventory and passes <code>target_environment</code>, <code>image_tag</code>, <code>git_commit</code>, and <code>app_version</code>. Page 1 owns the playbook and vault selection.</p>
+</div>
+<div class="card">
+<h3>4.5 · Pin SSH host keys</h3>
+<pre><code class="language-bash"># jenkins-server, once per app host
+sudo mkdir -p /var/jenkins_home/.ssh
+sudo touch /var/jenkins_home/.ssh/known_hosts
+
+for IP in STAGING_BACKEND_IP STAGING_FRONTEND_IP PRODUCTION_BACKEND_IP PRODUCTION_FRONTEND_IP; do
+  ssh-keyscan -H "$IP" | sudo tee -a /var/jenkins_home/.ssh/known_hosts
+done
+
+sudo chown 1000:1000 /var/jenkins_home/.ssh/known_hosts
+sudo chmod 600 /var/jenkins_home/.ssh/known_hosts
+ssh-keygen -F STAGING_BACKEND_IP -f /var/jenkins_home/.ssh/known_hosts</code></pre>
+<p>Compare fingerprints with a teammate through a trusted channel. Do not accept an unknown key in the pipeline.</p>
+<p class="command-purpose"><strong>Strict checking stays on.</strong> The runner command overrides any old <code>host_key_checking=False</code> setting.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> <code>rmit-store-ansible-runner:1.0.0</code> contains bounded ansible-core, openssh-client, and community.docker. It reads a committed static inventory, mounts only workspace, SSH key, vault password, and known_hosts, runs migrations first, and exits after each deployment.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-pr-file">
+<h2 class="collapsible-header">📦 Step 5 — Create root <code>Jenkinsfile.pr</code><span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>5.1 · Complete pull request pipeline</h3>
+<pre><code class="language-groovy">// Jenkinsfile.pr
+pipeline {
+  agent any
+
+  options {
+    skipDefaultCheckout(true)
+    disableConcurrentBuilds(abortPrevious: true)
+    timestamps()
+    buildDiscarder(logRotator(numToKeepStr: '20'))
+  }
+
+  environment {
+    BREAK_PIPELINE_TESTS = 'no'
+    RUNNER_IMAGE = 'rmit-store-ansible-runner:1.0.0'
+    STAGING_FRONTEND = 'http://STAGING_FRONTEND_IP'
+  }
+
+  stages {
+    stage('Checkout latest PR commit') {
+      steps {
+        checkout scm
+        script {
+          env.GIT_COMMIT = sh(
+            script: 'git rev-parse HEAD',
+            returnStdout: true
+          ).trim()
+          env.SHORT_SHA = env.GIT_COMMIT.take(8)
+          env.IMAGE_TAG = "pr-${env.CHANGE_ID}-${env.SHORT_SHA}"
+        }
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+
+    stage('Guard PR target') {
+      steps {
+        script {
+          if (!env.CHANGE_ID) {
+            error('This job accepts pull request heads only')
+          }
+          if (env.CHANGE_TARGET != 'main') {
+            error("PR target must be main, got ${env.CHANGE_TARGET}")
+          }
+        }
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+
+    stage('Temporary checks') {
+      steps {
+        sh '''
+          set -eu
+
+          docker run --rm \
+            -v "$WORKSPACE/server:/src:ro" \
+            -w /tmp/check \
+            python:3.12-slim \
+            sh -c 'cp -a /src/. . &amp;&amp; \
+              pip install --no-cache-dir -r requirements.txt &gt;/tmp/pip.log &amp;&amp; \
+              python manage.py check'
+
+          docker run --rm \
+            -v "$WORKSPACE/client:/src:ro" \
+            -w /tmp/check \
+            node:22-slim \
+            sh -c 'cp -a /src/. . &amp;&amp; npm ci &amp;&amp; npm run build'
+
+          if [ "$BREAK_PIPELINE_TESTS" = "yes" ]; then
+            echo "Deliberate temporary failure for the pipeline demo"
+            exit 1
+          fi
+
+          # REPLACE HERE when the testing teammate finishes:
+          #   backend unit + integration command
+          #   frontend unit command
+          #   Web UI command
+        '''
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+
+    stage('Build and push immutable images') {
+      steps {
+        withCredentials([
+          usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'DOCKERHUB_USER',
+            passwordVariable: 'DOCKERHUB_TOKEN'
+          )
+        ]) {
+          sh '''
+            set +x
+            set -eu
+            printf '%s' "$DOCKERHUB_TOKEN" |
+              docker login -u "$DOCKERHUB_USER" --password-stdin
+            trap 'docker logout &gt;/dev/null 2&gt;&amp;1 || true' EXIT
+
+            API_IMAGE="$DOCKERHUB_USER/rmit-store-api:$IMAGE_TAG"
+            FRONTEND_IMAGE="$DOCKERHUB_USER/rmit-store-frontend:$IMAGE_TAG"
+
+            api_exists=no
+            frontend_exists=no
+            if docker manifest inspect "$API_IMAGE" &gt;/dev/null 2&gt;&amp;1; then
+              api_exists=yes
+            fi
+            if docker manifest inspect "$FRONTEND_IMAGE" &gt;/dev/null 2&gt;&amp;1; then
+              frontend_exists=yes
+            fi
+
+            if [ "$api_exists" = yes ] &amp;&amp; [ "$frontend_exists" = yes ]; then
+              echo "Both immutable tags exist. Verified and reusing $IMAGE_TAG."
+            elif [ "$api_exists" = yes ] || [ "$frontend_exists" = yes ]; then
+              echo "Partial publish: exactly one image has tag $IMAGE_TAG"
+              exit 1
+            else
+              docker build -f Dockerfile.api -t "$API_IMAGE" .
+              docker build -f Dockerfile.frontend -t "$FRONTEND_IMAGE" .
+              docker push "$API_IMAGE"
+              docker push "$FRONTEND_IMAGE"
+            fi
+          '''
+        }
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+
+    stage('Deploy and test shared staging') {
+      steps {
+        script {
+          lock(resource: 'rmit-store-staging', inversePrecedence: true) {
+            withCredentials([
+              sshUserPrivateKey(
+                credentialsId: 'ec2-deploy-key',
+                keyFileVariable: 'SSH_KEY'
+              ),
+              string(
+                credentialsId: 'ansible-vault-password',
+                variable: 'ANSIBLE_VAULT_PASSWORD'
+              )
+            ]) {
+              sh '''
+                set +x
+                set -eu
+                umask 077
+                SECRET_DIR="$(mktemp -d "$WORKSPACE/.ci-secrets.XXXXXX")"
+                trap 'rm -rf "$SECRET_DIR"' EXIT INT TERM
+
+                printf '%s' "$ANSIBLE_VAULT_PASSWORD" &gt; "$SECRET_DIR/vault-password"
+
+                docker run --rm --network host --memory 768m --cpus 0.75 \
+                  -v "${WORKSPACE}:${WORKSPACE}:ro" \
+                  -v "${SSH_KEY}:/run/secrets/ssh-key:ro" \
+                  -v "${SECRET_DIR}/vault-password:/run/secrets/vault-password:ro" \
+                  -v /var/jenkins_home/.ssh/known_hosts:/run/known_hosts:ro \
+                  -w "${WORKSPACE}" \
+                  -e ANSIBLE_HOST_KEY_CHECKING=True \
+                  -e ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=/run/known_hosts" \
+                  "$RUNNER_IMAGE" \
+                  ansible-playbook \
+                    -i ansible/inventories/staging.ini \
+                    ansible/site-swarm.yml \
+                    --private-key /run/secrets/ssh-key \
+                    --vault-password-file /run/secrets/vault-password \
+                    -e target_environment=staging \
+                    -e "image_tag=${IMAGE_TAG}" \
+                    -e "git_commit=${GIT_COMMIT}" \
+                    -e "app_version=${IMAGE_TAG}"
+
+                retry_url() {
+                  url="$1"
+                  output="$2"
+                  attempt=1
+                  while [ "$attempt" -le 30 ]; do
+                    if curl -fsS "$url" &gt; "$output"; then
+                      cat "$output"
+                      return 0
+                    fi
+                    echo "Waiting for $url, attempt $attempt/30"
+                    attempt=$((attempt + 1))
+                    sleep 5
+                  done
+                  echo "Timed out waiting for $url"
+                  return 1
+                }
+
+                retry_url "$STAGING_FRONTEND/healthz/" staging-health.json
+                retry_url "$STAGING_FRONTEND/readyz/" staging-ready.json
+
+                attempt=1
+                while [ "$attempt" -le 30 ]; do
+                  if curl -fsS "$STAGING_FRONTEND/api/version/" \
+                       &gt; staging-version.json &amp;&amp;
+                     grep -F "$SHORT_SHA" staging-version.json &gt;/dev/null; then
+                    cat staging-version.json
+                    break
+                  fi
+                  if [ "$attempt" -eq 30 ]; then
+                    echo "Version did not become $SHORT_SHA"
+                    exit 1
+                  fi
+                  echo "Waiting for version $SHORT_SHA, attempt $attempt/30"
+                  attempt=$((attempt + 1))
+                  sleep 5
+                done
+
+                retry_url "$STAGING_FRONTEND/api/products/" staging-products.json
+
+                # REPLACE the curl product check with the real full Web UI
+                # E2E command when the testing teammate delivers it.
+              '''
+            }
+          }
+        }
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+  }
+
+  post {
+    always {
+      script {
+        load('jenkins/notify.groovy').notifyTeam()
+      }
+      sh 'docker image prune -f || true'
+    }
+  }
+}</code></pre>
+<p>The frontend smoke paths assume page 1 configures nginx or the Swarm ingress so <code>/api/</code>, <code>/healthz/</code>, and <code>/readyz/</code> reach the API. The current supplied <code>nginx.conf</code> only serves static files. Do not mark this pipeline green until page 1 adds that routing.</p>
+<p>Swarm updates are asynchronous. Page 1 waits for the role, but each live curl still retries up to 30 times with a five-second pause. The pipeline fails after the last attempt. The version loop also requires the deployed response to contain <code>SHORT_SHA</code>.</p>
+<p class="command-purpose"><strong>These tests are temporary.</strong> <code>python manage.py check</code>, a Vue production build, the deliberate pass/fail switch, and curl calls prove pipeline wiring. They do not satisfy the final unit, integration, and Web UI testing rubric.</p>
+</div>
+<div class="card">
+<h3>5.2 · Shared staging concurrency</h3>
+<p><code>disableConcurrentBuilds(abortPrevious: true)</code> stops an old commit of the same PR. Without <code>abortPrevious</code>, the old run finishes first and the new run waits. Remove the option only if aborting builds causes trouble on your Jenkins version.</p>
+<p>The existing <code>notify.groovy</code> treats <code>ABORTED</code> as a failure. An old run stopped by <code>abortPrevious</code> can send a failure email. That noise is the cost of making the latest commit win quickly. If the team removes <code>abortPrevious</code>, keep plain <code>disableConcurrentBuilds()</code> and wait for the old run.</p>
+<p><code>lock(resource: 'rmit-store-staging', inversePrecedence: true)</code> works across the PR child jobs. Only one deploy plus live-test block runs at once. The newest waiting run gets the lock next.</p>
+<p>An older run from a different PR can still remain in the lock queue. Cancel stale queue entries during the assignment demo. Jenkins has no per-PR staging copy in this design.</p>
+<pre><code class="language-bash"># Before a teammate starts manual staging tests:
+curl -fsS http://STAGING_FRONTEND_IP/api/version/
+
+# The "commit" value must match that PR's SHORTSHA.
+# If it differs, staging belongs to another run.</code></pre>
+<p class="command-purpose"><strong>Ownership means the version that is live now.</strong> The version endpoint is the proof. Do not rely on the last green badge alone.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> root <code>Jenkinsfile.pr</code> checks the latest PR commit, runs honest temporary checks, publishes two immutable <code>pr-PR_NUMBER-SHORTSHA</code> images, locks shared staging through deploy and live tests, checks the live SHA, sets <code>FAILED_STAGE</code>, and always calls <code>notifyTeam()</code>.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-production-file">
+<h2 class="collapsible-header">🚀 Step 6 — Create root <code>Jenkinsfile.production</code><span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>6.1 · Complete production pipeline</h3>
+<pre><code class="language-groovy">// Jenkinsfile.production
+pipeline {
+  agent any
+
+  options {
+    skipDefaultCheckout(true)
+    disableConcurrentBuilds()
+    timestamps()
+    buildDiscarder(logRotator(numToKeepStr: '20'))
+  }
+
+  environment {
+    BREAK_PIPELINE_TESTS = 'no'
+    RUNNER_IMAGE = 'rmit-store-ansible-runner:1.0.0'
+    PRODUCTION_FRONTEND = 'http://PRODUCTION_FRONTEND_IP'
+  }
+
+  stages {
+    stage('Checkout merged main') {
+      steps {
+        checkout scm
+        script {
+          env.GIT_COMMIT = sh(
+            script: 'git rev-parse HEAD',
+            returnStdout: true
+          ).trim()
+          env.SHORT_SHA = env.GIT_COMMIT.take(8)
+          env.IMAGE_TAG = env.SHORT_SHA
+        }
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+
+    stage('Guard protected main push') {
+      steps {
+        script {
+          def branch = (env.GIT_BRANCH ?: '').replace('origin/', '')
+          if (branch != 'main') {
+            error("Production accepts main only, got ${branch}")
+          }
+          def pushCauses = currentBuild.getBuildCauses(
+            'com.cloudbees.jenkins.GitHubPushCause'
+          )
+          if (pushCauses.isEmpty()) {
+            error('Production accepts a GitHub push event, not Build Now')
+          }
+        }
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+
+    stage('Temporary checks') {
+      steps {
+        sh '''
+          set -eu
+
+          docker run --rm \
+            -v "$WORKSPACE/server:/src:ro" \
+            -w /tmp/check \
+            python:3.12-slim \
+            sh -c 'cp -a /src/. . &amp;&amp; \
+              pip install --no-cache-dir -r requirements.txt &gt;/tmp/pip.log &amp;&amp; \
+              python manage.py check'
+
+          docker run --rm \
+            -v "$WORKSPACE/client:/src:ro" \
+            -w /tmp/check \
+            node:22-slim \
+            sh -c 'cp -a /src/. . &amp;&amp; npm ci &amp;&amp; npm run build'
+
+          if [ "$BREAK_PIPELINE_TESTS" = "yes" ]; then
+            echo "Deliberate temporary failure for the pipeline demo"
+            exit 1
+          fi
+
+          # REPLACE HERE with the testing teammate's real commands.
+        '''
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+
+    stage('Capture previous production commit') {
+      steps {
+        sh '''
+          set -eu
+          : &gt; previous-production-commit.txt
+          curl -fsS "$PRODUCTION_FRONTEND/api/version/" \
+            &gt; previous-production-version.json || true
+
+          if [ -s previous-production-version.json ]; then
+            sed -n \
+              's/.*"commit"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+              previous-production-version.json \
+              &gt; previous-production-commit.txt
+          fi
+
+          echo "Previous production commit captured if the endpoint answered"
+        '''
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+
+    stage('Build and push immutable images') {
+      steps {
+        withCredentials([
+          usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'DOCKERHUB_USER',
+            passwordVariable: 'DOCKERHUB_TOKEN'
+          )
+        ]) {
+          sh '''
+            set +x
+            set -eu
+            printf '%s' "$DOCKERHUB_TOKEN" |
+              docker login -u "$DOCKERHUB_USER" --password-stdin
+            trap 'docker logout &gt;/dev/null 2&gt;&amp;1 || true' EXIT
+
+            API_IMAGE="$DOCKERHUB_USER/rmit-store-api:$IMAGE_TAG"
+            FRONTEND_IMAGE="$DOCKERHUB_USER/rmit-store-frontend:$IMAGE_TAG"
+
+            api_exists=no
+            frontend_exists=no
+            if docker manifest inspect "$API_IMAGE" &gt;/dev/null 2&gt;&amp;1; then
+              api_exists=yes
+            fi
+            if docker manifest inspect "$FRONTEND_IMAGE" &gt;/dev/null 2&gt;&amp;1; then
+              frontend_exists=yes
+            fi
+
+            if [ "$api_exists" = yes ] &amp;&amp; [ "$frontend_exists" = yes ]; then
+              echo "Both immutable tags exist. Verified and reusing $IMAGE_TAG."
+            elif [ "$api_exists" = yes ] || [ "$frontend_exists" = yes ]; then
+              echo "Partial publish: exactly one image has tag $IMAGE_TAG"
+              exit 1
+            else
+              docker build -f Dockerfile.api -t "$API_IMAGE" .
+              docker build -f Dockerfile.frontend -t "$FRONTEND_IMAGE" .
+              docker push "$API_IMAGE"
+              docker push "$FRONTEND_IMAGE"
+            fi
+          '''
+        }
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+
+    stage('Deploy exact tag to production') {
+      steps {
+        withCredentials([
+          sshUserPrivateKey(
+            credentialsId: 'ec2-deploy-key',
+            keyFileVariable: 'SSH_KEY'
+          ),
+          string(
+            credentialsId: 'ansible-vault-password',
+            variable: 'ANSIBLE_VAULT_PASSWORD'
+          )
+        ]) {
+          sh '''
+            set +x
+            set -eu
+            umask 077
+            SECRET_DIR="$(mktemp -d "$WORKSPACE/.ci-secrets.XXXXXX")"
+            trap 'rm -rf "$SECRET_DIR"' EXIT INT TERM
+
+            printf '%s' "$ANSIBLE_VAULT_PASSWORD" &gt; "$SECRET_DIR/vault-password"
+
+            docker run --rm --network host --memory 768m --cpus 0.75 \
+              -v "${WORKSPACE}:${WORKSPACE}:ro" \
+              -v "${SSH_KEY}:/run/secrets/ssh-key:ro" \
+              -v "${SECRET_DIR}/vault-password:/run/secrets/vault-password:ro" \
+              -v /var/jenkins_home/.ssh/known_hosts:/run/known_hosts:ro \
+              -w "${WORKSPACE}" \
+              -e ANSIBLE_HOST_KEY_CHECKING=True \
+              -e ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=/run/known_hosts" \
+              "$RUNNER_IMAGE" \
+              ansible-playbook \
+                -i ansible/inventories/production.ini \
+                ansible/site-swarm.yml \
+                --private-key /run/secrets/ssh-key \
+                --vault-password-file /run/secrets/vault-password \
+                -e target_environment=production \
+                -e "image_tag=${IMAGE_TAG}" \
+                -e "git_commit=${GIT_COMMIT}" \
+                -e "app_version=${IMAGE_TAG}"
+          '''
+        }
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+
+    stage('Production smoke through frontend') {
+      steps {
+        sh '''
+          set -eu
+
+          retry_url() {
+            url="$1"
+            output="$2"
+            attempt=1
+            while [ "$attempt" -le 30 ]; do
+              if curl -fsS "$url" &gt; "$output"; then
+                cat "$output"
+                return 0
+              fi
+              echo "Waiting for $url, attempt $attempt/30"
+              attempt=$((attempt + 1))
+              sleep 5
+            done
+            echo "Timed out waiting for $url"
+            return 1
+          }
+
+          retry_url "$PRODUCTION_FRONTEND/healthz/" production-health.json
+          retry_url "$PRODUCTION_FRONTEND/readyz/" production-ready.json
+
+          attempt=1
+          while [ "$attempt" -le 30 ]; do
+            if curl -fsS "$PRODUCTION_FRONTEND/api/version/" \
+                 &gt; production-version.json &amp;&amp;
+               grep -F "$SHORT_SHA" production-version.json &gt;/dev/null; then
+              cat production-version.json
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              echo "Version did not become $SHORT_SHA"
+              exit 1
+            fi
+            echo "Waiting for version $SHORT_SHA, attempt $attempt/30"
+            attempt=$((attempt + 1))
+            sleep 5
+          done
+        '''
+      }
+      post {
+        failure { script { env.FAILED_STAGE = env.STAGE_NAME } }
+      }
+    }
+  }
+
+  post {
+    failure {
+      script {
+        def oldCommit = fileExists('previous-production-commit.txt') ?
+          readFile('previous-production-commit.txt').trim() : ''
+        def oldTag = oldCommit.take(8)
+
+        if (oldCommit ==~ /(?i)[0-9a-f]{8,40}/) {
+          echo """
+PREVIOUS PRODUCTION TAG: ${oldTag}
+NO AUTOMATIC ROLLBACK WAS RUN.
+
+Manual rollback command, run through the same credential-bound runner:
+ansible-playbook -i ansible/inventories/production.ini ansible/site-swarm.yml \\
+  --private-key /run/secrets/ssh-key \\
+  --vault-password-file /run/secrets/vault-password \\
+  -e target_environment=production \\
+  -e image_tag=${oldTag} \\
+  -e git_commit=${oldCommit} \\
+  -e app_version=${oldTag}
+"""
+        } else {
+          echo """
+PREVIOUS PRODUCTION TAG: unavailable
+NO AUTOMATIC ROLLBACK WAS RUN.
+Find the last green production job and its immutable Docker Hub tag.
+Then run the same manual Ansible command with that verified tag.
+"""
+        }
+      }
+    }
+    always {
+      script {
+        load('jenkins/notify.groovy').notifyTeam()
+      }
+      sh 'docker image prune -f || true'
+    }
+  }
+}</code></pre>
+<p>The version response uses the app's real JSON field, <code>"commit"</code>. The pipeline saves its first eight characters because production images use the eight-character tag.</p>
+<p>The production curls also retry 30 times with five-second pauses. This covers the short gap while Swarm replaces tasks, even though the page 1 role already waits. Exhausting the retries makes the stage red.</p>
+<p class="command-purpose"><strong>The printed rollback command does not run.</strong> The operator must use the same runner wrapper from Step 4 so the listed <code>/run/secrets/...</code> files exist. Review migration compatibility before rolling code back.</p>
+</div>
+<div class="card">
+<h3>6.2 · Why production has only smoke checks</h3>
+<pre><code class="language-bash">GET http://PRODUCTION_FRONTEND_IP/healthz/
+  process is alive
+
+GET http://PRODUCTION_FRONTEND_IP/readyz/
+  database and S3 are usable
+
+GET http://PRODUCTION_FRONTEND_IP/api/version/
+  "commit" contains the new SHORTSHA</code></pre>
+<p>A full purchase or review journey writes data. Keep those tests in staging. The production smoke test is read-only.</p>
+<p>Production builds both images again from the merged <code>main</code> commit. It does not promote the PR tag. Database, S3, frontend routing, and other environment settings are supplied at runtime by page 1, not baked into either image.</p>
+<p class="command-purpose"><strong>A 200 response with the old SHA is a failure.</strong> Health alone does not prove the new release is serving.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> root <code>Jenkinsfile.production</code> accepts only a GitHub push build of <code>main</code>, runs temporary checks, saves the old commit, builds merged-main images with exact <code>SHORTSHA</code> tags, deploys with explicit migrations, retries all three frontend smoke URLs, emails on failure, and prints but never runs rollback.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-jobs">
+<h2 class="collapsible-header">🐙 Step 7 — Create the two jobs and webhook<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>7.1 · Pull request Multibranch Pipeline</h3>
+<pre><code class="language-bash">Jenkins → New Item
+  Name                 rmit-store-pr
+  Type                 Multibranch Pipeline
+
+Branch Sources → GitHub
+  Credentials          github-token
+  Repository HTTPS     ASSIGNED_PRIVATE_REPO_URL
+  Discover PRs         from origin
+  Revision             the current pull request head
+  Discover branches    exclude branches also filed as pull requests
+
+Build Configuration
+  Mode                 by Jenkinsfile
+  Script Path          Jenkinsfile.pr
+
+Scan trigger
+  webhook events are primary
+  periodic scan once per day is a recovery check</code></pre>
+<p>After the first scan, open a test PR to <code>main</code>. Confirm Jenkins builds the PR head, not a stale merge base.</p>
+<p class="command-purpose"><strong>The Jenkinsfile checks <code>CHANGE_TARGET=main</code>.</strong> If the UI discovers a PR to another branch, the job fails before it gets deployment credentials.</p>
+</div>
+<div class="card">
+<h3>7.2 · Production Pipeline from SCM</h3>
+<pre><code class="language-bash">Jenkins → New Item
+  Name                 rmit-store-production
+  Type                 Pipeline
+
+Build Triggers
+  GitHub hook trigger for GITScm polling
+
+Pipeline
+  Definition           Pipeline script from SCM
+  SCM                  Git
+  Repository URL       ASSIGNED_PRIVATE_REPO_URL
+  Credentials          github-token
+  Branch Specifier     */main
+  Script Path          Jenkinsfile.production</code></pre>
+<p>Limit <strong>Build Now</strong> to Jenkins administrators. The Jenkinsfile still rejects manual causes. A webhook for another branch may ask Jenkins to poll, but Git sees no <code>main</code> change and starts no production build.</p>
+<p class="command-purpose"><strong>One GitHub Merge creates the production trigger.</strong> Direct pushes to <code>main</code> are blocked in Step 8.</p>
+</div>
+<div class="card">
+<h3>7.3 · Add the webhook with a secret</h3>
+<pre><code class="language-bash">GitHub repo → Settings → Webhooks → Add webhook
+
+Payload URL    http://JENKINS_IP:8080/github-webhook/
+Content type   application/json
+Secret         same secret stored as github-webhook-secret
+Events         Let me select individual events
+                 Pushes
+                 Pull requests
+Active         checked</code></pre>
+<p>In Jenkins, Manage Jenkins → System → GitHub → Advanced → Shared secrets. Select <code>github-webhook-secret</code>. Keep hook management off because the fine-grained token has no webhook-admin permission.</p>
+<p>Test these pull request actions: <code>opened</code>, <code>reopened</code>, <code>ready_for_review</code>, and <code>synchronize</code>. Synchronize is GitHub's name for new commits on an open PR. Each action must create or refresh the latest PR run.</p>
+<p class="command-purpose"><strong>Check delivery evidence.</strong> GitHub → Webhooks → Recent Deliveries must show HTTP 200. A shared secret validates the signature. It does not encrypt HTTP.</p>
+</div>
+<div class="card">
+<h3>7.4 · What GitHub will show</h3>
+<p>GitHub Branch Source posts a standard commit status for the PR job. The exact context name depends on the job and plugin version. Run one real PR build first, then copy the context shown by GitHub into branch protection.</p>
+<pre><code class="language-bash">red Jenkins status    PR cannot merge
+green Jenkins status  PR still needs one human approval
+green + one approval  Merge button can be used</code></pre>
+<p class="command-purpose"><strong>Do not invent a required context name.</strong> Select the exact status GitHub received after a real build.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> <code>rmit-store-pr</code> reads root <code>Jenkinsfile.pr</code>. <code>rmit-store-production</code> tracks only <code>main</code> and reads root <code>Jenkinsfile.production</code>. Signed webhook deliveries return 200 for PR and push events.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-protection">
+<h2 class="collapsible-header">🛡️ Step 8 — Protect <code>main</code> and prove the gates<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>8.1 · Branch ruleset</h3>
+<p><strong>Where:</strong> GitHub repo → Settings → Rules → Rulesets.</p>
+<pre><code class="language-bash">Target branch:
+  main
+
+Rules:
+  Require a pull request before merging
+  Required approvals: 1
+  Dismiss stale approvals when new commits are pushed
+  Require status checks to pass
+    select the exact Jenkins PR context from a real run
+  Require branches to be up to date before merging
+  Block force pushes
+  Block deletions
+  Do not allow normal team members to bypass</code></pre>
+<p class="command-purpose"><strong>Jenkins reports. GitHub blocks.</strong> Jenkins does not approve or merge the pull request.</p>
+</div>
+<div class="card">
+<h3>8.2 · First red run</h3>
+<pre><code class="language-bash">1. On a feature branch, set in Jenkinsfile.pr:
+     BREAK_PIPELINE_TESTS = 'yes'
+2. Push and open a PR to main.
+3. Watch Checkout and Django/Vue commands pass.
+4. Watch Temporary checks turn red at the deliberate line.
+5. Confirm image push and staging deploy are skipped.
+6. Confirm the GitHub Jenkins status is red.
+7. Confirm Merge is blocked.
+8. Confirm the team failure email names Temporary checks.</code></pre>
+<p class="command-purpose"><strong>This is honest failure evidence.</strong> It proves stage gating and email. It is not evidence of a real unit-test suite.</p>
+</div>
+<div class="card">
+<h3>8.3 · Fix, stage, review, merge</h3>
+<pre><code class="language-bash">1. Set BREAK_PIPELINE_TESTS back to 'no'.
+2. Push the fix to the same PR.
+3. Confirm the synchronize event reruns the latest commit.
+4. Confirm both pr-PR_NUMBER-SHORTSHA tags in Docker Hub.
+5. Confirm Ansible migration and Swarm update logs.
+6. Confirm staging curl checks and the matching version SHA.
+7. Ask one teammate to approve.
+8. Press Merge.
+9. Confirm GitHub sends a push event for main.
+10. Confirm the production job starts.
+11. Confirm both SHORTSHA tags and all production smoke checks.</code></pre>
+<p class="command-purpose"><strong>Read staging version again before a manual UI test.</strong> Shared staging may now belong to a newer PR.</p>
+</div>
+<div class="card">
+<h3>8.4 · Test production failure and rollback output</h3>
+<p>Do this only during a planned demo window. Use a safe smoke-test failure, not a destructive database change.</p>
+<pre><code class="language-bash">1. Record the current production /api/version/ response.
+2. Make the smoke URL fail in a short-lived demo branch change.
+3. Merge only if the team has agreed to this controlled failure.
+4. Show the red Production smoke stage.
+5. Show the failure email.
+6. Show PREVIOUS PRODUCTION TAG in the console.
+7. Show the printed Ansible rollback command.
+8. Do not claim rollback happened unless a person ran and verified it.</code></pre>
+<p class="command-purpose"><strong>Be honest about impact.</strong> The new production image may still be live after a red smoke test. Automatic rollback is future work.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> one approval and the real Jenkins PR status are required. A red temporary check blocks image push, staging, and Merge. A green update deploys staging, Merge creates the protected <code>main</code> push, and only that push starts production.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-evidence">
+<h2 class="collapsible-header">📸 Step 9 — Capture evidence and hand off cleanly<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>9.1 · Screenshot list</h3>
+<pre><code class="language-bash">01-webhook.png
+  GitHub recent delivery, event + HTTP 200, secret hidden
+
+02-failed-test.png
+  Jenkins stage view, Temporary checks red, later stages skipped
+
+03-blocked-merge.png
+  GitHub red Jenkins status and blocked Merge button
+
+04-failure-email.png
+  subject, failed stage, commit, and console link; personal data cropped
+
+05-dockerhub-tags.png
+  private API + frontend repos with the same immutable PR or production tag
+
+06-staging-swarm.png
+  docker service ls plus exact image tags
+
+07-staging-e2e.png
+  live curl output and /api/version/ matching the PR SHA
+
+08-production-health.png
+  /healthz/, /readyz/, /api/version/ through production frontend
+
+09-production-pipeline.png
+  green production stage view after the protected main push</code></pre>
+<p class="command-purpose"><strong>One decisive image belongs beside each report claim.</strong> Put extra console captures in the appendix and refer to them.</p>
+</div>
+<div class="card">
+<h3>9.2 · Console and host checks</h3>
+<pre><code class="language-bash"># jenkins-server
+docker inspect rmit-store-jenkins --format '{{.HostConfig.RestartPolicy.Name}}'
+# unless-stopped
+
+docker inspect rmit-store-jenkins --format '{{.HostConfig.Memory}} {{.HostConfig.NanoCpus}}'
+# non-zero limits
+
+docker volume ls
+curl -fsS http://localhost:8080/prometheus | grep -m1 jenkins
+
+# running Swarm evidence comes from page 1
+docker service ls
+docker service inspect SERVICE_NAME --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}'</code></pre>
+<p class="command-purpose"><strong>Search logs before screenshots.</strong> They must not show a PAT, Docker token, private key, Gmail password, vault password, or decrypted vault text.</p>
+</div>
+<div class="card">
+<h3>9.3 · Report wording</h3>
+<pre><code class="language-bash">CI trigger:
+  GitHub pull request events start Jenkins and report commit status.
+
+CD trigger:
+  a human Merge creates a protected main push, which starts production.
+
+Artifacts:
+  private API and frontend images use immutable commit-based tags.
+
+Configuration:
+  short-lived Ansible runner deploys exact tags and runs migrations first.
+
+Failure:
+  later stages stop, GitHub is red, and notify.groovy emails the team.
+
+Recovery:
+  previous immutable tag and manual command are printed; no auto rollback.</code></pre>
+<p class="command-purpose"><strong>Match claims to evidence.</strong> Do not call curl a full Web UI suite. Do not call a printed command an automatic rollback.</p>
+</div>
+<div class="card">
+<h3>9.4 · Files the Jenkins PR should contain</h3>
+<pre><code class="language-bash">Jenkinsfile.pr
+Jenkinsfile.production
+jenkins/notify.groovy                  # existing, reused
+jenkins/casc/alerting.yaml             # safe ALERT_EMAILS host substitution
+jenkins/casc/production.yaml
+jenkins/production/Dockerfile
+jenkins/production/compose.yaml
+jenkins/ansible-runner/Dockerfile
+jenkins/ansible-runner/requirements.txt</code></pre>
+<p>Coordinate with page 1 before merging. The root pipelines expect <code>ansible/site-swarm.yml</code>, <code>ansible/inventories/staging.ini</code>, <code>ansible/inventories/production.ini</code>, encrypted environment vaults, exact-tag Swarm updates, frontend proxy routes, and explicit migrations.</p>
+<p class="command-purpose"><strong>Do not merge half a contract.</strong> A green syntax check cannot make a missing Ansible deploy file work.</p>
+</div>
+<div class="card">
+<h3>9.5 · Add the required assignment header</h3>
+<p>The assignment asks for this header in every file the team writes or changes. Put it at the top of both Jenkinsfiles, Dockerfiles, YAML files, and the runner requirements file. Change the comment mark to match the file.</p>
+<pre><code class="language-text">RMIT University Vietnam
+Course: COSC2767/COSC2805 Systems Deployment and Operations
+Semester: 2026B
+Assessment: Assignment 2
+Author: TEAM_MEMBER_NAME
+ID: STUDENT_ID
+Created date: DD/MM/YYYY
+Last modified: DD/MM/YYYY
+Acknowledgement: SOURCES_USED</code></pre>
+<p class="command-purpose"><strong>Do not invent a teammate's name or sources.</strong> The file owner fills those placeholders before commit.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> evidence covers webhook delivery, failed check, blocked merge, email, immutable images, Swarm services, staging live checks, and production health/version. The report states which parts are temporary and which limits remain.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="jenkins-limits">
+<h2 class="collapsible-header">⚠️ Step 10 — Limits, fixes, and the final check<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>10.1 · Known limits</h3>
+<pre><code class="language-bash">HTTPS
+  Jenkins uses public HTTP on 8080. Login traffic is not encrypted.
+
+Rollback
+  production failure prints a command. It does not run it.
+
+Controller
+  one Jenkins controller is also the only build executor.
+
+Docker socket
+  Jenkins has root-equivalent control of its EC2 host.
+
+Staging
+  one shared environment. New PR deploys overwrite old ones.
+
+Tests
+  Django check, Vue build, deliberate failure, and curl are temporary.
+  Real unit, integration, and Web UI suites are still required.
+
+Capacity
+  sibling Docker builds are not capped by the Jenkins limit
+  each Ansible runner has its own 768 MiB and 0.75 CPU limit</code></pre>
+<p class="command-purpose"><strong>Put these in the report.</strong> Specific limits are better than claims the demo cannot prove.</p>
+</div>
+<div class="card">
+<h3>10.2 · Fast fault map</h3>
+<pre><code class="language-bash">Webhook delivery is red:
+  check JENKINS_IP, port 8080 CIDR, trailing /github-webhook/, and secret
+
+PR job does not appear:
+  scan multibranch job, check github-token, PR discovery, and target main
+
+Docker permission denied:
+  re-read socket GID, rebuild runtime.env, recreate Jenkins container
+
+Ansible host is missing or unreachable:
+  check the selected static INI file, BACKEND/FRONTEND IPs, SSH user, and SG
+
+SSH host key failed:
+  compare fingerprint, then update known_hosts; never disable checking
+
+Migration failed:
+  stop. Do not update Swarm. Read migration output and target vault.
+
+Health works but version is old:
+  deployment failed. Check exact service image and GIT_COMMIT env.
+
+Email missing:
+  send a test email in Jenkins System page before debugging notify.groovy</code></pre>
+<p class="command-purpose"><strong>Debug one layer at a time.</strong> Webhook, checkout, checks, registry, Ansible, Swarm, endpoint, then email.</p>
+</div>
+<div class="card">
+<h3>10.3 · Final manual path</h3>
+<pre><code class="language-bash">open or update PR
+  → deliberate red check
+  → email arrives
+  → Merge blocked
+  → make placeholder green
+  → immutable PR images
+  → staging deploy + version proof
+  → Jenkins status green
+  → one human review
+  → press Merge
+  → protected main push
+  → immutable production images
+  → production deploy
+  → health, readiness, and version green</code></pre>
+<p class="command-purpose"><strong>This is the demo story.</strong> Keep the GitHub PR, Jenkins stage view, Docker Hub, staging page, production page, and inbox open before recording.</p>
+</div>
+<div class="card">
+<h3>10.4 · Future work</h3>
+<pre><code class="language-bash">1. Put HTTPS in front of Jenkins and use a DNS name.
+2. Move builds to isolated agents without the controller socket.
+3. Replace temporary checks with real unit, integration, and Web UI suites.
+4. Give each PR its own staging environment or add a global stale-run policy.
+5. Add a tested automatic rollback policy with migration safety.
+6. Pin plugin and dependency versions after the working demo is frozen.</code></pre>
+<p class="command-purpose"><strong>Do not add these before the two basic paths work.</strong> First prove red PR, green PR, protected Merge, and production smoke.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Final checkpoint:</strong> Jenkins is persistent, the Ansible runner is temporary, both image repositories are private, tags are immutable, secrets stay out of arguments and logs, shared staging is version-checked, protected <code>main</code> starts production, and every failure reaches the existing email module.</p>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-resources)" href="../sub_pages/rmit-store-ansible-swarm.html"><span class="pager__dir">← Previous</span><span class="pager__title">RMIT Store: Ansible & Docker Swarm</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-resources)" href="../sub_pages/rmit-store-alerting.html"><span class="pager__dir">Next →</span><span class="pager__title">RMIT Store: Automated Alerting</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="jenkins-overview"><a class="toc__link" href="#jenkins-overview"><span>Overview — two paths, one Jenkins server</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-aws"><a class="toc__link" href="#jenkins-aws"><span>Step 1 — Create the Jenkins EC2 box</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-server"><a class="toc__link" href="#jenkins-server"><span>Step 2 — Build the production Jenkins container</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-credentials"><a class="toc__link" href="#jenkins-credentials"><span>Step 3 — Add credentials and GitHub access</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-runner"><a class="toc__link" href="#jenkins-runner"><span>Step 4 — Build the short-lived Ansible runner</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-pr-file"><a class="toc__link" href="#jenkins-pr-file"><span>Step 5 — Create root Jenkinsfile.pr</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-production-file"><a class="toc__link" href="#jenkins-production-file"><span>Step 6 — Create root Jenkinsfile.production</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-jobs"><a class="toc__link" href="#jenkins-jobs"><span>Step 7 — Create the two jobs and webhook</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-protection"><a class="toc__link" href="#jenkins-protection"><span>Step 8 — Protect main and prove the gates</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-evidence"><a class="toc__link" href="#jenkins-evidence"><span>Step 9 — Capture evidence and hand off cleanly</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="jenkins-limits"><a class="toc__link" href="#jenkins-limits"><span>Step 10 — Limits, fixes, and the final check</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 11 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

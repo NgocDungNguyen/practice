@@ -54,7 +54,10 @@ PAGES = [
     ("week-10", "week-10-kubernetes-lab.html", "orchestration", "10", "Kubernetes"),
     ("week-11", "week-11-eks-aws-lab.html", "orchestration", "11", "EKS on AWS"),
     ("rmit-manual-deploy", "rmit-store-manual-deploy.html", "resources", "A2", "RMIT Store: Manual Deploy (A–E)"),
+    ("rmit-ansible-swarm", "rmit-store-ansible-swarm.html", "resources", "AN", "RMIT Store: Ansible & Docker Swarm"),
+    ("rmit-jenkins-pipeline", "rmit-store-jenkins-pipeline.html", "resources", "JE", "RMIT Store: Jenkins Pipelines"),
     ("rmit-alerting", "rmit-store-alerting.html", "resources", "AL", "RMIT Store: Automated Alerting"),
+    ("rmit-monitoring", "rmit-store-monitoring.html", "resources", "MO", "RMIT Store: Monitoring & Grafana"),
     ("sshkeys", "ssh-keys-github.html", "resources", "SK", "SSH Keys & GitHub Access"),
     ("cheatsheet", "devops-cheatsheet.html", "resources", "CS", "DevOps Cheatsheet"),
     ("resources", "useful-resources.html", "resources", "RX", "Useful Resources"),
@@ -100,12 +103,31 @@ LOCAL_PAGES = {
                 "containerise with Docker, then Docker Compose. Stops before "
                 "Plan F, the automation pipeline.",
     },
+    "rmit-ansible-swarm": {
+        "card": "Build separate staging and production Docker Swarms with Ansible: "
+                "five EC2 prerequisites, isolated RDS and S3 data, exact image "
+                "tags, explicit migrations, private backend traffic, repeatable "
+                "roles, and proof commands for both clusters.",
+    },
+    "rmit-jenkins-pipeline": {
+        "card": "Two Jenkins paths for Assignment 2: pull requests deploy to shared "
+                "staging and report a required GitHub status; protected main pushes "
+                "deploy to production. Includes immutable Docker Hub images, a "
+                "short-lived Ansible runner, smoke checks, and failure email.",
+    },
     "rmit-alerting": {
         "card": "Assignment 2 core requirement 8, built as a drop-in module: a "
                 "Groovy notify script plus Jenkins Configuration as Code that "
                 "emails the team on build, test and deploy failures — proven on "
                 "a throwaway Jenkins in Docker, then handed to the pipeline owner "
                 "as three lines to paste.",
+    },
+    "rmit-monitoring": {
+        "card": "Assignment 2 monitoring and alerting: Prometheus and Grafana on a "
+                "third EC2 box probing /healthz/, /readyz/ and the website, host "
+                "metrics from node_exporter, Jenkins metrics later — dashboards and "
+                "six email alerts provisioned as files, proven by stopping the API, "
+                "then handed to the Ansible owner as two small roles.",
     },
 }
 

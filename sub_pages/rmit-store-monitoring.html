@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Assignment 2 walkthrough: monitoring and alerting for the RMIT Store with Prometheus and Grafana on a third EC2 box — health probes on /healthz/ and /readyz/, host metrics from node_exporter, Jenkins metrics, dashboards and email alerts all provisioned as code, then handed to the Ansible owner as two small roles.">
+<title>RMIT Store: Monitoring & Grafana - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=ba72502410">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=93ddf335e0"></script>
+</head>
+<body data-page="rmit-monitoring" data-stage="resources" data-root="../" style="--stage-accent: var(--stage-resources)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Reference</span><span class="crumb-sep">/</span><span>RMIT Store: Monitoring & Grafana</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="7"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-ansible-swarm.html" data-page-key="rmit-ansible-swarm" data-sections="10"><span class="sidenav__num">AN</span><span>RMIT Store: Ansible & Docker Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-jenkins-pipeline.html" data-page-key="rmit-jenkins-pipeline" data-sections="11"><span class="sidenav__num">JE</span><span>RMIT Store: Jenkins Pipelines</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-alerting.html" data-page-key="rmit-alerting" data-sections="8"><span class="sidenav__num">AL</span><span>RMIT Store: Automated Alerting</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/rmit-store-monitoring.html" data-page-key="rmit-monitoring" data-sections="9"><span class="sidenav__num">MO</span><span>RMIT Store: Monitoring & Grafana</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><details class="sidenav__group sidenav__group--collapsible" style="--group-accent: var(--stage-archive, var(--rmit-red))"><summary class="sidenav__stage-label">Assignment 1 archive<span class="sidenav__chevron" aria-hidden="true"></span></summary><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></details></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Reference</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">📈</span>RMIT Store: Monitoring & Grafana</h1>
+<p class="page-hero__intro">Core requirement "monitoring and alerting with useful dashboards" — built as a <strong>third small EC2 box</strong> running Prometheus and Grafana in Docker Compose. It probes the API's <code>/healthz/</code> and <code>/readyz/</code>, the website's front page, reads CPU / RAM / disk from both app servers, and later Jenkins too. Dashboards and alert rules are <strong>files in the repo</strong>, not clicks. Alerts email the same team Gmail the Jenkins alerting module uses. You build it by hand first, prove it, then hand the Ansible owner two tiny roles.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>9</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>43</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>49</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="mon-overview">
+<h2 class="collapsible-header start-open">🎯 What you are building, and how the pieces talk<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>The requirement, in one line</h3>
+<p>Section 2 of the requirements: <em>monitoring and alerting</em>. Prometheus / Grafana / CloudWatch are all acceptable. The app already exposes <code>/healthz/</code> (is the process alive) and <code>/readyz/</code> (can it reach the database and S3). You must alert on failed checks, error rates and resource use. The rubric adds: <em>useful dashboards</em>.</p>
+<pre><code class="language-bash">monitoring-server (new t3.small)         api-server                 frontend-server
+---------------------------------        ----------------           -----------------
+prometheus  :9090  pulls metrics  ────►  node_exporter :9100        node_exporter :9100
+blackbox    :9115  probes URLs    ────►  api :8000/healthz/         web :80/
+                                         api :8000/readyz/
+grafana     :3000  reads prometheus, draws dashboards, fires alerts ──► team Gmail
+
+                                  ────►  jenkins-server :8080/prometheus   (when it exists)</code></pre>
+<p class="command-purpose"><strong>Pull, not push.</strong> Prometheus <em>scrapes</em>: every 15 seconds it asks each target "give me your numbers". Nothing on the app boxes knows Grafana exists. That is why the monitoring box needs to <em>reach</em> the others, and why the security-group rules in Step 1 matter.</p>
+</div>
+<div class="card">
+<h3>Four words you will see a lot</h3>
+<p><strong>Prometheus</strong> is the database of numbers over time. <strong>Exporter</strong> is any small program that turns something into numbers Prometheus can read: <code>node_exporter</code> reads the Linux host (CPU, RAM, disk), <code>blackbox_exporter</code> does an HTTP request to a URL and reports "did it answer 200, and how fast". <strong>Grafana</strong> draws the numbers and, since version 9, also <em>evaluates alert rules</em> and sends email, so no separate Alertmanager is needed. <strong>Provisioning</strong> is Grafana's word for "read datasources, dashboards and alert rules from files at boot".</p>
+<pre><code class="language-bash">metric          example                                      who produces it
+--------------  -------------------------------------------  ---------------------
+probe_success   probe_success{probe="api-healthz"} 1         blackbox_exporter
+probe_duration  probe_duration_seconds{...} 0.043             blackbox_exporter
+node_cpu_...    node_cpu_seconds_total{mode="idle"} 91234     node_exporter
+node_memory_..  node_memory_MemAvailable_bytes 1.2e9          node_exporter
+up              up{job="jenkins"} 1                          Prometheus itself (did the scrape work)</code></pre>
+<p class="command-purpose"><strong>Every metric is a name plus labels.</strong> <code>probe_success{probe="api-healthz"}</code> reads as "the probe_success number for the probe we labelled api-healthz". Alert rules and dashboard panels are just questions about these.</p>
+</div>
+<div class="card">
+<h3>What goes in the repo</h3>
+<p>All of it lives under a new <code>monitoring/</code> folder at the repo root, next to <code>server/</code>, <code>client/</code> and <code>jenkins/</code>. Plus two Ansible roles for the teammate who owns <code>ansible/</code>.</p>
+<pre><code class="language-bash">monitoring/
+├── docker-compose.yml                 # prometheus + blackbox + grafana
+├── .env.example                       # names of the secrets; real .env is gitignored
+├── README.md                          # hand-off for the Ansible owner (Step 6)
+├── prometheus/
+│   └── prometheus.yml                 # what to scrape (edit the IPs)
+├── blackbox/
+│   └── blackbox.yml                   # the http_2xx probe module
+└── grafana/
+    ├── provisioning/
+    │   ├── datasources/prometheus.yml
+    │   ├── dashboards/dashboards.yml
+    │   └── alerting/
+    │       ├── contact-points.yml     # the team email
+    │       ├── policies.yml           # everything goes to that email
+    │       └── rules.yml              # six alert rules
+    └── dashboards/
+        ├── rmit-store.json            # hand-made: health + hosts + jenkins
+        └── node-exporter-full.json    # community dashboard 1860, downloaded
+
+ansible/roles/node_exporter/           # runs the exporter on api + frontend
+ansible/roles/monitoring/              # copies monitoring/ to the box, docker compose up</code></pre>
+<p class="command-purpose"><strong>Secrets never go in git.</strong> Grafana admin password, Gmail user and app password live in <code>monitoring/.env</code> on the box only (later: Ansible vault). The repo carries <code>.env.example</code> with the names and no values.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>The decisions already made, so you do not re-decide them at 1 am.</strong> Prometheus + Grafana, not CloudWatch (better dashboards, and Learner Lab IAM is limited). A third box, so monitoring survives an API outage. Separate compose file and its own Ansible role, so the app deploy is untouched. Grafana's built-in alerting, no Alertmanager. Minimum scope first: health probes, host metrics, one dashboard, six alerts. cAdvisor and error-rate metrics are "future work" in the report.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="mon-aws">
+<h2 class="collapsible-header">☁️ Step 1 — AWS console: the box and the doors<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>1.1 · Security group <code>monitoring-sg</code></h3>
+<p><strong>Where:</strong> AWS console → EC2 → Security Groups → Create security group.</p>
+<pre><code class="language-bash">Name          monitoring-sg
+Description   Prometheus + Grafana box
+VPC           the default one (same as api-server-sg)
+
+Inbound rules
+  SSH          TCP 22     Source: My IP
+  Custom TCP   TCP 3000   Source: Anywhere-IPv4 (0.0.0.0/0)    # Grafana UI, has its own login
+
+Outbound       leave the default (all traffic)</code></pre>
+<p class="command-purpose"><strong>Why 3000 to the world:</strong> Grafana has a login page, anonymous access will be off, and you want teammates and the marker to open it. Prometheus (9090) is <em>not</em> opened: Grafana reaches it inside Docker.</p>
+</div>
+<div class="card">
+<h3>1.2 · Open the exporter ports on the two app boxes</h3>
+<p><strong>Where:</strong> EC2 → Security Groups → <code>api-server-sg</code> → Edit inbound rules → Add rule. Then the same on <code>frontend-server-sg</code>.</p>
+<pre><code class="language-bash">api-server-sg      add:  Custom TCP  9100   Source: monitoring-sg   (type "monitoring" in the box, pick the sg)
+frontend-server-sg add:  Custom TCP  9100   Source: monitoring-sg
+
+later, when Jenkins has its own box:
+jenkins-server-sg  add:  Custom TCP  8080   Source: monitoring-sg</code></pre>
+<p class="command-purpose"><strong>Source = a security group</strong> means "only machines wearing that group may knock". Nobody on the internet can read your host metrics. Ports 8000 and 80 are already public, so the blackbox probes need nothing new.</p>
+</div>
+<div class="card">
+<h3>1.3 · Launch <code>monitoring-server</code></h3>
+<p><strong>Where:</strong> EC2 → Instances → Launch instances. Same recipe as the api-server in Plan C of the manual-deploy page.</p>
+<pre><code class="language-bash">Name              monitoring-server
+AMI               Amazon Linux 2023 (x86_64)
+Instance type     t3.small            # 2 GB RAM. t3.micro (1 GB) will swap with Prometheus + Grafana
+Key pair          your existing .pem  (the one for api-server)
+Network           Select existing security group -&gt; monitoring-sg
+Storage           16 GiB gp3          # Prometheus keeps 15 days of data by default
+IAM role          none needed</code></pre>
+<p>Optional but wise: allocate an <strong>Elastic IP</strong> and associate it, exactly like C4 on the manual-deploy page. Otherwise the public IP changes every time the Learner Lab restarts and your Grafana link goes stale.</p>
+<p class="command-purpose"><strong>Write down three addresses</strong> now: the monitoring box public IP (<code>MONITORING_IP</code>), and the api-server and frontend-server public IPs (<code>API_IP</code>, <code>FRONTEND_IP</code>). You will paste them into files in Step 2.</p>
+</div>
+<div class="card">
+<h3>1.4 · Docker on the new box</h3>
+<p><strong>Where:</strong> your laptop terminal, then the monitoring box. Same as Step E of the manual-deploy page, and the same as the <code>docker_engine</code> Ansible role.</p>
+<pre><code class="language-bash"># laptop
+ssh -i ~/Downloads/your-key.pem ec2-user@MONITORING_IP
+
+# monitoring-server
+sudo dnf update -y
+sudo dnf install -y docker git
+sudo systemctl enable --now docker
+sudo usermod -aG docker ec2-user
+sudo mkdir -p /usr/local/lib/docker/cli-plugins
+sudo curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
+     -o /usr/local/lib/docker/cli-plugins/docker-compose
+sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+exit                      # log out and back in so the docker group applies
+
+# laptop, again
+ssh -i ~/Downloads/your-key.pem ec2-user@MONITORING_IP
+docker compose version    # prints a version: good</code></pre>
+<p class="command-purpose"><strong>Amazon Linux 2023 has no <code>docker-compose-plugin</code> package</strong>, hence the manual download into the CLI plugins folder. <code>usermod -aG docker</code> only takes effect after a fresh login, so the <code>exit</code> is not optional.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> you can SSH into <code>monitoring-server</code>, <code>docker compose version</code> works, and the three security groups have the rules above. Nothing else is installed yet.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="mon-stack">
+<h2 class="collapsible-header">🧱 Step 2 — Write the stack (laptop, in the repo)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>2.1 · Branch and folders</h3>
+<p><strong>Where:</strong> laptop, repo root (the folder with <code>server/</code>, <code>client/</code>, <code>jenkins/</code>).</p>
+<pre><code class="language-bash">git checkout main &amp;&amp; git pull
+git checkout -b feature/monitoring
+mkdir -p monitoring/prometheus monitoring/blackbox \
+         monitoring/grafana/provisioning/datasources \
+         monitoring/grafana/provisioning/dashboards \
+         monitoring/grafana/provisioning/alerting \
+         monitoring/grafana/dashboards
+echo "monitoring/.env" &gt;&gt; .gitignore</code></pre>
+<p class="command-purpose"><strong>Team convention:</strong> <code>feature/&lt;thing&gt;</code> branches, PR to <code>main</code>. The <code>.gitignore</code> line goes in <em>before</em> you ever create the real <code>.env</code>.</p>
+</div>
+<div class="card">
+<h3>2.2 · <code>monitoring/docker-compose.yml</code></h3>
+<p>Three services on one private Docker network. Only Grafana publishes a port to the host. Versions are pinned so it builds the same next month.</p>
+<pre><code class="language-yaml"># monitoring/docker-compose.yml
+# Prometheus + blackbox_exporter + Grafana for the RMIT Store.
+# Secrets come from ./.env (gitignored) - see .env.example.
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    # no ports: Grafana reaches it on the compose network as http://prometheus:9090
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.25.0
+    container_name: blackbox
+    restart: unless-stopped
+    volumes:
+      - ./blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    # no ports: only Prometheus talks to it
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SERVER_ROOT_URL: "http://${MONITORING_HOST}:3000"
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      # email - same Gmail account and app password as jenkins/casc/alerting.yaml
+      GF_SMTP_ENABLED: "true"
+      GF_SMTP_HOST: "smtp.gmail.com:587"
+      GF_SMTP_USER: "${GMAIL_USER}"
+      GF_SMTP_PASSWORD: "${GMAIL_APP_PASSWORD}"
+      GF_SMTP_FROM_ADDRESS: "${GMAIL_USER}"
+      GF_SMTP_FROM_NAME: "RMIT Store Monitoring"
+      # read by provisioning/alerting/contact-points.yml
+      ALERT_EMAILS: "${ALERT_EMAILS}"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  prometheus_data:
+  grafana_data:</code></pre>
+<p class="command-purpose"><strong>Port 587 with STARTTLS</strong> is what Grafana's mailer likes best. Jenkins used 465 with SSL. Same Gmail account, same app password, different door. <code>${NAME}</code> values come from <code>.env</code> in the same folder; Compose fills them in.</p>
+</div>
+<div class="card">
+<h3>2.3 · <code>monitoring/.env.example</code></h3>
+<pre><code class="language-bash"># monitoring/.env.example
+# Copy to monitoring/.env ON THE MONITORING BOX and fill in. Never commit .env.
+MONITORING_HOST=MONITORING_IP                 # public IP or DNS of this box (links in alert emails)
+GRAFANA_ADMIN_PASSWORD=CHANGE_ME_long_random  # the only Grafana login
+GMAIL_USER=rmit.store.alerts@gmail.com        # same account as the Jenkins alerting module
+GMAIL_APP_PASSWORD=xxxxxxxxxxxxxxxx           # 16-char Gmail app password, no spaces
+ALERT_EMAILS=s4043097@rmit.edu.vn             # comma-separated, no spaces, e.g. a@x.edu,b@x.edu</code></pre>
+<p class="command-purpose"><strong>One admin account</strong>, shared with the team through your password manager. Grafana cannot create users from files, so a read-only viewer for a teammate is a UI job later, if wanted.</p>
+</div>
+<div class="card">
+<h3>2.4 · <code>monitoring/prometheus/prometheus.yml</code></h3>
+<p>Three jobs now, a fourth waiting for Jenkins. The <code>probe</code> labels are what the alert rules and dashboard match on, so the rules never need an IP.</p>
+<pre><code class="language-yaml"># monitoring/prometheus/prometheus.yml
+# Replace API_IP and FRONTEND_IP with the public IPs of your two app boxes
+# (the Ansible role templates these in; by hand use the sed in Step 4.1).
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus watching itself - cheap, and proves scraping works at all
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Host metrics: CPU, RAM, disk, network on each app box
+  - job_name: node
+    static_configs:
+      - targets: ["API_IP:9100"]
+        labels: { host: api-server }
+      - targets: ["FRONTEND_IP:9100"]
+        labels: { host: frontend-server }
+
+  # HTTP probes through blackbox_exporter. Prometheus asks blackbox
+  # "probe this URL", blackbox does the request and reports probe_success 0/1.
+  - job_name: blackbox_http
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets: ["http://API_IP:8000/healthz/"]
+        labels: { probe: api-healthz }
+      - targets: ["http://API_IP:8000/readyz/"]
+        labels: { probe: api-readyz }
+      - targets: ["http://FRONTEND_IP/"]
+        labels: { probe: website }
+    relabel_configs:
+      # the target URL becomes the ?target= parameter ...
+      - source_labels: [__address__]
+        target_label: __param_target
+      # ... and stays visible as the instance label ...
+      - source_labels: [__param_target]
+        target_label: instance
+      # ... while the actual scrape goes to the blackbox container
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  # Jenkins, once it has its own EC2 box with the "prometheus" plugin (Step 7).
+  # Uncomment and set JENKINS_IP.
+  # - job_name: jenkins
+  #   metrics_path: /prometheus
+  #   static_configs:
+  #     - targets: ["JENKINS_IP:8080"]</code></pre>
+<p class="command-purpose"><strong>The relabel block is the only clever part.</strong> Without it Prometheus would try to scrape <code>http://API_IP:8000/healthz/</code> directly and get HTML, not metrics. With it, Prometheus calls <code>blackbox:9115/probe?module=http_2xx&amp;target=http://API_IP:8000/healthz/</code> and blackbox does the real request.</p>
+</div>
+<div class="card">
+<h3>2.5 · <code>monitoring/blackbox/blackbox.yml</code></h3>
+<pre><code class="language-yaml"># monitoring/blackbox/blackbox.yml
+modules:
+  http_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      preferred_ip_protocol: ip4
+      follow_redirects: true
+      # valid_status_codes defaults to 2xx, so /readyz/ answering 503 = probe_success 0</code></pre>
+<p class="command-purpose"><strong>This is why <code>/readyz/</code> is a real check:</strong> the Django view returns 503 when the database or S3 is unreachable. A 503 is not 2xx, so the probe fails, so the alert fires. The app's own readiness logic drives the monitoring for free.</p>
+</div>
+<div class="card">
+<h3>2.6 · Grafana datasource and dashboard provider</h3>
+<pre><code class="language-yaml"># monitoring/grafana/provisioning/datasources/prometheus.yml
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    uid: prometheus            # alert rules and dashboards refer to this uid
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false</code></pre>
+<pre><code class="language-yaml"># monitoring/grafana/provisioning/dashboards/dashboards.yml
+apiVersion: 1
+providers:
+  - name: rmit-store
+    folder: RMIT Store
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: false      # the file is the truth; edit in the UI, export, commit
+    options:
+      path: /var/lib/grafana/dashboards</code></pre>
+<p class="command-purpose"><strong><code>uid: prometheus</code></strong> is a name you choose. Every <code>"datasource": {"uid": "prometheus"}</code> in the dashboard JSON and every <code>datasourceUid: prometheus</code> in the rules points back here. Change one, change all.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> six files exist under <code>monitoring/</code>, none of them contains a password, and <code>git status</code> does not list <code>monitoring/.env</code> (because you have not created it, and it is ignored anyway). Dashboards and alert rules are next.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="mon-dash">
+<h2 class="collapsible-header">📊 Step 3 — Dashboards and alert rules, as files<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>3.1 · The community host dashboard (zero effort, many panels)</h3>
+<p><strong>Where:</strong> laptop, repo root. Dashboard 1860 "Node Exporter Full" is the standard one. The download refers to the datasource as <code>${DS_PROMETHEUS}</code>, a placeholder the import <em>wizard</em> would fill in; file provisioning does not, so swap it for your uid.</p>
+<pre><code class="language-bash">curl -sL https://grafana.com/api/dashboards/1860/revisions/latest/download \
+     -o monitoring/grafana/dashboards/node-exporter-full.json
+sed -i '' 's/\${DS_PROMETHEUS}/prometheus/g' monitoring/grafana/dashboards/node-exporter-full.json   # macOS
+# Linux:  sed -i 's/\${DS_PROMETHEUS}/prometheus/g' monitoring/grafana/dashboards/node-exporter-full.json
+grep -c DS_PROMETHEUS monitoring/grafana/dashboards/node-exporter-full.json    # should print 0</code></pre>
+<p class="command-purpose"><strong>Two dashboards, one screenshot each</strong> for the report: this one proves "resource use", the hand-made one proves "health checks".</p>
+</div>
+<div class="card">
+<h3>3.2 · <code>monitoring/grafana/dashboards/rmit-store.json</code> (hand-made)</h3>
+<p>Three traffic lights, probe latency, CPU / RAM / disk per host, and a Jenkins row that says "No data" until Step 7. The <code>expr</code> lines are the whole content; the rest is layout.</p>
+<pre><code class="language-json">{
+  "uid": "rmit-store",
+  "title": "RMIT Store - Health and Hosts",
+  "tags": ["rmit-store"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "panels": [
+    { "type": "row", "title": "Health checks", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "id": 1 },
+
+    { "type": "stat", "title": "API /healthz/", "id": 2,
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "probe_success{probe=\"api-healthz\"}", "instant": true } ],
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value",
+                   "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "fieldConfig": { "defaults": {
+        "mappings": [ { "type": "value", "options": {
+          "0": { "text": "DOWN", "color": "red" },
+          "1": { "text": "UP",   "color": "green" } } } ],
+        "color": { "mode": "thresholds" },
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }
+      }, "overrides": [] } },
+
+    { "type": "stat", "title": "API /readyz/ (DB + S3)", "id": 3,
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "probe_success{probe=\"api-readyz\"}", "instant": true } ],
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value",
+                   "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "fieldConfig": { "defaults": {
+        "mappings": [ { "type": "value", "options": {
+          "0": { "text": "NOT READY", "color": "red" },
+          "1": { "text": "READY",     "color": "green" } } } ],
+        "color": { "mode": "thresholds" },
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }
+      }, "overrides": [] } },
+
+    { "type": "stat", "title": "Website /", "id": 4,
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "probe_success{probe=\"website\"}", "instant": true } ],
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value",
+                   "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "fieldConfig": { "defaults": {
+        "mappings": [ { "type": "value", "options": {
+          "0": { "text": "DOWN", "color": "red" },
+          "1": { "text": "UP",   "color": "green" } } } ],
+        "color": { "mode": "thresholds" },
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }
+      }, "overrides": [] } },
+
+    { "type": "timeseries", "title": "Probe response time", "id": 5,
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "probe_duration_seconds", "legendFormat": "{{probe}}" } ],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } } },
+
+    { "type": "row", "title": "Hosts", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 }, "id": 10 },
+
+    { "type": "timeseries", "title": "CPU busy %", "id": 11,
+      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "legendFormat": "{{host}}",
+        "expr": "100 * (1 - avg by (host) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))" } ],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100,
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 80 } ] } },
+        "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } } },
+
+    { "type": "timeseries", "title": "Memory used %", "id": 12,
+      "gridPos": { "h": 7, "w": 8, "x": 8, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "legendFormat": "{{host}}",
+        "expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)" } ],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100,
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 85 } ] } },
+        "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } } },
+
+    { "type": "timeseries", "title": "Root disk used %", "id": 13,
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "legendFormat": "{{host}}",
+        "expr": "100 * (1 - node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"tmpfs\"} / node_filesystem_size_bytes{mountpoint=\"/\",fstype!=\"tmpfs\"})" } ],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100,
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 85 } ] } },
+        "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } } },
+
+    { "type": "row", "title": "CI/CD - Jenkins", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 20 }, "id": 20 },
+
+    { "type": "stat", "title": "Jenkins reachable", "id": 21,
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 21 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "up{job=\"jenkins\"}", "instant": true } ],
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value",
+                   "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "fieldConfig": { "defaults": {
+        "mappings": [ { "type": "value", "options": {
+          "0": { "text": "DOWN", "color": "red" },
+          "1": { "text": "UP",   "color": "green" } } } ],
+        "color": { "mode": "thresholds" },
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }
+      }, "overrides": [] } },
+
+    { "type": "stat", "title": "Build queue", "id": 22,
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 21 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "jenkins_queue_size_value", "instant": true } ],
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "value",
+                   "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" },
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 3 } ] } },
+        "overrides": [] } },
+
+    { "type": "stat", "title": "Failed builds (total)", "id": 23,
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 21 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "sum(default_jenkins_builds_failed_build_count)", "instant": true } ],
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "value",
+                   "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" },
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } },
+        "overrides": [] } }
+  ]
+}</code></pre>
+<p class="command-purpose"><strong>Read one panel and you have read them all:</strong> <code>gridPos</code> is where it sits (24 columns wide), <code>targets[].expr</code> is the question asked of Prometheus, <code>mappings</code> turn 0/1 into DOWN/UP. To add a panel, copy one block, change <code>id</code>, <code>gridPos.y</code> and <code>expr</code>. The Jenkins metric names come from the Jenkins <code>prometheus</code> plugin; if one shows "No data" in Step 7, open <code>http://JENKINS_IP:8080/prometheus</code> in a browser and search for <code>failed</code> to find the exact name your plugin version uses.</p>
+</div>
+<div class="card">
+<h3>3.3 · Contact point and policy</h3>
+<pre><code class="language-yaml"># monitoring/grafana/provisioning/alerting/contact-points.yml
+apiVersion: 1
+contactPoints:
+  - orgId: 1
+    name: team-email
+    receivers:
+      - uid: team-email
+        type: email
+        settings:
+          addresses: "${ALERT_EMAILS}"    # env var from docker-compose.yml, comma-separated
+          singleEmail: true</code></pre>
+<pre><code class="language-yaml"># monitoring/grafana/provisioning/alerting/policies.yml
+apiVersion: 1
+policies:
+  - orgId: 1
+    receiver: team-email
+    group_by: [grafana_folder, alertname]
+    group_wait: 30s        # wait 30 s to batch alerts that fire together
+    group_interval: 5m
+    repeat_interval: 4h    # re-send a still-firing alert every 4 h, not every minute</code></pre>
+<p class="command-purpose"><strong>Grafana expands <code>${ALERT_EMAILS}</code> from the container environment</strong> when it reads provisioning files. That is how the address list stays out of git while the rule files stay in.</p>
+</div>
+<div class="card">
+<h3>3.4 · <code>monitoring/grafana/provisioning/alerting/rules.yml</code> — six alerts</h3>
+<p>Each rule is two steps: query <strong>A</strong> asks Prometheus for a number, expression <strong>C</strong> compares it to a threshold. <code>for:</code> is how long it must stay bad before anyone is emailed.</p>
+<pre><code class="language-yaml"># monitoring/grafana/provisioning/alerting/rules.yml
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: rmit-store
+    folder: RMIT Store
+    interval: 1m
+    rules:
+
+      - uid: api-healthz-down
+        title: API healthz down
+        condition: C
+        for: 1m
+        noDataState: Alerting          # if the probe itself vanishes, that is also bad
+        execErrState: Error
+        labels: { severity: critical, service: api }
+        annotations:
+          summary: "The API is not answering /healthz/ (process down or port 8000 unreachable)."
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model: { refId: A, instant: true, expr: 'probe_success{probe="api-healthz"}' }
+          - refId: C
+            datasourceUid: __expr__
+            model: { refId: C, type: threshold, expression: A,
+                     conditions: [ { evaluator: { type: lt, params: [1] } } ] }
+
+      - uid: api-readyz-failing
+        title: API readyz failing (database or S3)
+        condition: C
+        for: 2m
+        noDataState: Alerting
+        execErrState: Error
+        labels: { severity: critical, service: api }
+        annotations:
+          summary: "The API is up but /readyz/ returns 503: check RDS and the S3 bucket."
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model: { refId: A, instant: true, expr: 'probe_success{probe="api-readyz"}' }
+          - refId: C
+            datasourceUid: __expr__
+            model: { refId: C, type: threshold, expression: A,
+                     conditions: [ { evaluator: { type: lt, params: [1] } } ] }
+
+      - uid: website-down
+        title: Website down
+        condition: C
+        for: 1m
+        noDataState: Alerting
+        execErrState: Error
+        labels: { severity: critical, service: frontend }
+        annotations:
+          summary: "The frontend is not serving its home page on port 80."
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model: { refId: A, instant: true, expr: 'probe_success{probe="website"}' }
+          - refId: C
+            datasourceUid: __expr__
+            model: { refId: C, type: threshold, expression: A,
+                     conditions: [ { evaluator: { type: lt, params: [1] } } ] }
+
+      - uid: host-cpu-high
+        title: Host CPU above 80% for 5 minutes
+        condition: C
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.host }} CPU is above 80%."
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model: { refId: A, instant: true,
+                     expr: '100 * (1 - avg by (host) (rate(node_cpu_seconds_total{mode="idle"}[5m])))' }
+          - refId: C
+            datasourceUid: __expr__
+            model: { refId: C, type: threshold, expression: A,
+                     conditions: [ { evaluator: { type: gt, params: [80] } } ] }
+
+      - uid: host-disk-high
+        title: Host root disk above 85%
+        condition: C
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.host }} root filesystem is above 85% full."
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model: { refId: A, instant: true,
+                     expr: '100 * (1 - node_filesystem_avail_bytes{mountpoint="/",fstype!="tmpfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!="tmpfs"})' }
+          - refId: C
+            datasourceUid: __expr__
+            model: { refId: C, type: threshold, expression: A,
+                     conditions: [ { evaluator: { type: gt, params: [85] } } ] }
+
+      - uid: jenkins-down
+        title: Jenkins down
+        condition: C
+        for: 2m
+        noDataState: OK               # OK, not Alerting: stays quiet until the jenkins job exists
+        execErrState: Error
+        labels: { severity: warning, service: cicd }
+        annotations:
+          summary: "Prometheus cannot scrape Jenkins on port 8080."
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model: { refId: A, instant: true, expr: 'up{job="jenkins"}' }
+          - refId: C
+            datasourceUid: __expr__
+            model: { refId: C, type: threshold, expression: A,
+                     conditions: [ { evaluator: { type: lt, params: [1] } } ] }</code></pre>
+<p class="command-purpose"><strong><code>noDataState</code> is the subtle one.</strong> For the health probes, "no data" means blackbox or Prometheus died, so we alert. For hosts and Jenkins, "no data" means "not set up yet", so we stay quiet. Getting this wrong means either a silent outage or an inbox full of noise.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> <code>python3 -c "import json;json.load(open('monitoring/grafana/dashboards/rmit-store.json'))"</code> prints nothing (valid JSON). <code>git status</code> shows only files under <code>monitoring/</code> and <code>.gitignore</code>. Commit: <code>git add -A &amp;&amp; git commit -m "Add Prometheus + Grafana monitoring stack"</code>.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="mon-run">
+<h2 class="collapsible-header">🚀 Step 4 — Bring it up by hand and prove it<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>4.1 · node_exporter on the two app boxes</h3>
+<p><strong>Where:</strong> SSH into api-server, run the block, then SSH into frontend-server and run it again.</p>
+<pre><code class="language-bash">docker run -d --name node_exporter --restart unless-stopped \
+  --net host --pid host \
+  -v /:/host:ro,rslave \
+  prom/node-exporter:v1.8.2 --path.rootfs=/host
+
+curl -s localhost:9100/metrics | head -5      # lines starting with "# HELP": good</code></pre>
+<p class="command-purpose"><strong><code>--net host</code></strong> makes it listen on the box's real port 9100 (no <code>-p</code> needed). <strong><code>-v /:/host:ro</code></strong> lets it read the host's disk and memory stats read-only. This is the exact command the Ansible role will run in Step 6.</p>
+</div>
+<div class="card">
+<h3>4.2 · Copy the stack to the monitoring box and fill in <code>.env</code></h3>
+<p><strong>Where:</strong> laptop, repo root, then the monitoring box.</p>
+<pre><code class="language-bash"># laptop: copy the folder (no git clone needed, so no deploy key on this box)
+scp -i ~/Downloads/your-key.pem -r monitoring ec2-user@MONITORING_IP:~/monitoring
+
+# monitoring-server
+ssh -i ~/Downloads/your-key.pem ec2-user@MONITORING_IP
+cd ~/monitoring
+sed -i 's/API_IP/1.2.3.4/g; s/FRONTEND_IP/5.6.7.8/g' prometheus/prometheus.yml   # your real IPs
+grep -n "_IP" prometheus/prometheus.yml        # only the commented JENKINS_IP line should remain
+
+cp .env.example .env
+nano .env                                      # fill every line; chmod after
+chmod 600 .env</code></pre>
+<p class="command-purpose"><strong>Why <code>scp</code> and not <code>git clone</code>:</strong> the repo is private and this box has no deploy key. Copying the one folder is enough. The Ansible role does the same with <code>ansible.builtin.copy</code>.</p>
+</div>
+<div class="card">
+<h3>4.3 · Start it, then check each layer in order</h3>
+<pre><code class="language-bash"># monitoring-server, in ~/monitoring
+docker compose up -d
+docker compose ps                              # three containers "running"
+docker compose logs grafana | grep -iE "provision|error" | head -20
+#   want: lines about provisioning datasources / dashboards / alerting, no "error"
+
+# 1. Prometheus sees its targets?
+curl -s localhost:9090/api/v1/targets | python3 -m json.tool | grep -E '"health"|"scrapeUrl"'
+#   want: "health": "up" for prometheus, both node targets, all three blackbox probes
+
+# 2. blackbox says the API is healthy?
+curl -s 'localhost:9090/api/v1/query?query=probe_success' | python3 -m json.tool | grep -B2 '"1"'</code></pre>
+<p class="command-purpose"><strong>Debug bottom-up.</strong> A target that is <code>"down"</code> with <code>connection refused</code> means the exporter is not running there; <code>i/o timeout</code> means the security group rule from 1.2 is missing. Fix Prometheus before you even open Grafana.</p>
+</div>
+<div class="card">
+<h3>4.4 · Open Grafana</h3>
+<p><strong>Where:</strong> a browser on your laptop: <code>http://MONITORING_IP:3000</code>. Login <code>admin</code> / the <code>GRAFANA_ADMIN_PASSWORD</code> from <code>.env</code>.</p>
+<pre><code class="language-bash">Dashboards -&gt; RMIT Store folder    -&gt; "RMIT Store - Health and Hosts": three green tiles, CPU/RAM/disk lines
+                                   -&gt; "Node Exporter Full": pick host in the dropdown, lots of panels
+Alerting -&gt; Alert rules            -&gt; six rules, state Normal (Jenkins one may say "No data": fine)
+Alerting -&gt; Contact points         -&gt; team-email -&gt; "Test" -&gt; Send test notification
+                                      -&gt; the email arrives in the ALERT_EMAILS inbox</code></pre>
+<p class="command-purpose"><strong>If the test email fails</strong>, <code>docker compose logs grafana | grep -i smtp</code>. "535 Username and Password not accepted" is a wrong app password (16 chars, no spaces). "connection refused" on 587 means the Learner Lab blocked outbound SMTP: try <code>GF_SMTP_HOST: smtp.gmail.com:465</code> instead, restart with <code>docker compose up -d</code>.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> three green tiles, host graphs moving, and one test email received. Take the dashboard screenshot for the report <em>now</em>, while everything is green. Next you break it on purpose.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="mon-fire">
+<h2 class="collapsible-header">🔥 Step 5 — Make an alert fire, watch the email arrive<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>5.1 · Kill the API</h3>
+<p><strong>Where:</strong> SSH into api-server. Keep the Grafana dashboard open in a browser tab and the inbox in another.</p>
+<pre><code class="language-bash"># api-server
+cd ~/a2 &amp;&amp; docker compose stop api
+date                                           # note the time</code></pre>
+<pre><code class="language-bash">what you will see, in order:
+  ~15 s   dashboard tile "API /healthz/" turns red DOWN, "/readyz/" too
+  ~1 min  Alerting -&gt; Alert rules: "API healthz down" goes Pending, then Firing
+  ~1.5 m  email "[FIRING:1] API healthz down" in the inbox (group_wait adds 30 s)
+  ~3 min  "API readyz failing" fires too (its for: is 2m)</code></pre>
+<p class="command-purpose"><strong>This is the rubric moment.</strong> Screenshot the red tile, the Firing rule, and the email. Those three images are "alerting on failed health checks", proven.</p>
+</div>
+<div class="card">
+<h3>5.2 · Bring it back</h3>
+<pre><code class="language-bash"># api-server
+docker compose start api
+curl -s localhost:8000/healthz/                # {"status":"ok"}</code></pre>
+<pre><code class="language-bash">what you will see:
+  ~15 s   tiles back to green
+  ~1 min  rule state Normal
+  ~1.5 m  email "[RESOLVED] API healthz down"</code></pre>
+<p class="command-purpose"><strong>Two emails per incident, red then green, then silence.</strong> Same policy the Jenkins alerting module follows. <code>repeat_interval: 4h</code> means a problem you ignore nags you every four hours, not every minute.</p>
+</div>
+<div class="card">
+<h3>5.3 · Optional: prove the readiness check on its own</h3>
+<p>Stopping <code>api</code> proves liveness. To show <code>/readyz/</code> catching a <em>dependency</em> failure while the process is fine, temporarily break the database address.</p>
+<pre><code class="language-bash"># api-server
+cd ~/a2
+cp server/.env server/.env.bak
+sed -i 's/^DB_HOST=.*/DB_HOST=nowhere.invalid/' server/.env    # check the exact key name in server/.env first
+docker compose up -d api
+curl -si localhost:8000/healthz/ | head -1     # HTTP/1.1 200 OK       - alive
+curl -si localhost:8000/readyz/  | head -1     # HTTP/1.1 503          - not ready
+# wait ~3 min: only "API readyz failing" fires; healthz stays green
+cp server/.env.bak server/.env &amp;&amp; docker compose up -d api</code></pre>
+<p class="command-purpose"><strong>This distinction is worth a sentence in the report:</strong> liveness says "restart me", readiness says "do not send me traffic, my database is gone". Two probes, two different alerts, two different responses.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> you have a FIRING email and a RESOLVED email, and everything is green again. Commit nothing here; this step changed only the running servers. Now make it repeatable.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="mon-ansible">
+<h2 class="collapsible-header">🤖 Step 6 — Hand it to the Ansible owner as two roles<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>6.1 · Role <code>node_exporter</code> (runs on api + frontend)</h3>
+<p>Same style as the existing roles: FQCN modules, <code>ansible.builtin.command</code> for docker, one <code>tasks/main.yml</code>. Idempotent: it checks before it runs.</p>
+<pre><code class="language-yaml"># ansible/roles/node_exporter/tasks/main.yml
+---
+# Host metrics for Prometheus (CPU, RAM, disk). Listens on 9100 - open that
+# port only to monitoring-sg. Same docker run as the monitoring guide, Step 4.1.
+
+- name: Check whether node_exporter is already running
+  ansible.builtin.command:
+    cmd: docker ps -q --filter name=^node_exporter$
+  register: node_exporter_ps
+  changed_when: false
+
+- name: Run node_exporter
+  ansible.builtin.command:
+    cmd: &gt;
+      docker run -d --name node_exporter --restart unless-stopped
+      --net host --pid host
+      -v /:/host:ro,rslave
+      prom/node-exporter:{{ node_exporter_version }} --path.rootfs=/host
+  when: node_exporter_ps.stdout == ""</code></pre>
+<p class="command-purpose"><strong><code>changed_when: false</code></strong> on the check keeps the play's summary honest: looking is not changing. The <code>when:</code> makes a second run a no-op.</p>
+</div>
+<div class="card">
+<h3>6.2 · Role <code>monitoring</code> (runs on the monitoring box)</h3>
+<pre><code class="language-yaml"># ansible/roles/monitoring/tasks/main.yml
+---
+# Prometheus + blackbox + Grafana via docker compose. Copies the repo's
+# monitoring/ folder to the box, renders prometheus.yml and .env from vars.
+
+- name: Copy the monitoring stack (compose, blackbox, grafana provisioning)
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../monitoring/"
+    dest: "{{ monitoring_dest }}/"
+    owner: ec2-user
+    group: ec2-user
+    mode: "0644"
+    directory_mode: "0755"
+
+- name: Render prometheus.yml with the real host addresses
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ monitoring_dest }}/prometheus/prometheus.yml"
+    owner: ec2-user
+    group: ec2-user
+    mode: "0644"
+
+- name: Render .env with secrets from the vault
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ monitoring_dest }}/.env"
+    owner: ec2-user
+    group: ec2-user
+    mode: "0600"
+
+- name: Bring up the monitoring stack
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: "{{ monitoring_dest }}"
+  register: compose_up
+  changed_when: "'Started' in compose_up.stderr or 'Created' in compose_up.stderr"</code></pre>
+<pre><code class="language-yaml"># ansible/roles/monitoring/templates/env.j2
+MONITORING_HOST={{ monitoring_server_ip }}
+GRAFANA_ADMIN_PASSWORD={{ vault_grafana_admin_password }}
+GMAIL_USER={{ vault_gmail_user }}
+GMAIL_APP_PASSWORD={{ vault_gmail_app_password }}
+ALERT_EMAILS={{ alert_emails }}</code></pre>
+<p class="command-purpose"><strong><code>prometheus.yml.j2</code></strong> is the file from 2.4 with three swaps: <code>API_IP</code> → <code>{{ app_server_ip }}</code>, <code>FRONTEND_IP</code> → <code>{{ frontend_server_ip }}</code>, and the Jenkins job wrapped in <code>{% if jenkins_host %} ... {% endif %}</code> with <code>{{ jenkins_host }}:8080</code> as the target. Copy, swap, save as <code>ansible/roles/monitoring/templates/prometheus.yml.j2</code>.</p>
+</div>
+<div class="card">
+<h3>6.3 · Wire it into inventory, vars and <code>site.yml</code></h3>
+<pre><code class="language-ini"># ansible/inventory.ini.example  (add a third group)
+[monitoring_servers]
+monitoring ansible_host=&lt;your-monitoring-server-public-ip&gt; ansible_ssh_private_key_file=~/path/to/your-key.pem</code></pre>
+<pre><code class="language-yaml"># ansible/group_vars/all.yml  (append)
+monitoring_dest: "/home/ec2-user/monitoring"
+monitoring_server_ip: "{{ hostvars[groups['monitoring_servers'][0]].ansible_host }}"
+node_exporter_version: "v1.8.2"
+alert_emails: "s4043097@rmit.edu.vn"      # comma-separated, no spaces
+jenkins_host: ""                          # public IP of jenkins-server once it exists; blank = no jenkins job</code></pre>
+<pre><code class="language-yaml"># ansible/group_vars/vault.yml.example  (append; real values go in the encrypted vault.yml)
+vault_grafana_admin_password: "CHANGE_ME"
+vault_gmail_user: "rmit.store.alerts@gmail.com"
+vault_gmail_app_password: "CHANGE_ME_16_chars"</code></pre>
+<pre><code class="language-yaml"># ansible/site.yml  (edit the first play's hosts, add node_exporter to two plays, add a fourth play)
+- name: Common docker engine on every box
+  hosts: app_servers:frontend_servers:monitoring_servers      # was app_servers:frontend_servers
+  become: true
+  roles:
+    - docker_engine
+
+- name: App server (db-less API via compose, RDS + S3 backed)
+  hosts: app_servers
+  become: false
+  vars_files:
+    - group_vars/vault.yml
+  roles:
+    - app_server
+    - node_exporter                                            # new
+
+- name: Frontend server (nginx serving the built SPA)
+  hosts: frontend_servers
+  become: false
+  vars_files:
+    - group_vars/vault.yml
+  roles:
+    - frontend_server
+    - node_exporter                                            # new
+
+- name: Monitoring server (Prometheus + Grafana via compose)   # new play
+  hosts: monitoring_servers
+  become: false
+  vars_files:
+    - group_vars/vault.yml
+  roles:
+    - monitoring</code></pre>
+<p class="command-purpose"><strong>Nothing about the app plays changes</strong> except one extra role line each. The Ansible owner can read the whole diff in two minutes, which is the point.</p>
+</div>
+<div class="card">
+<h3>6.4 · <code>monitoring/README.md</code> for the teammate, and the PR</h3>
+<pre><code class="language-bash"># Monitoring (Prometheus + Grafana)
+
+What: probes /healthz/, /readyz/ and the website, reads host metrics from both
+app boxes, emails the team on failure. Dashboards + alert rules are files here.
+
+Manual: see the guide page "RMIT Store: Monitoring &amp; Grafana", Steps 1-5.
+
+Ansible (roles/node_exporter, roles/monitoring):
+  1. AWS console once: monitoring-server (t3.small, AL2023, monitoring-sg: 22 My IP, 3000 anywhere);
+     add 9100 from monitoring-sg on api-server-sg and frontend-server-sg.
+  2. inventory.ini: add the [monitoring_servers] group (see inventory.ini.example).
+  3. vault.yml: add vault_grafana_admin_password, vault_gmail_user, vault_gmail_app_password.
+  4. group_vars/all.yml: alert_emails; jenkins_host when Jenkins has a box.
+  5. ansible-playbook site.yml --ask-vault-pass
+  6. open http://&lt;monitoring-ip&gt;:3000, login admin / vault password.
+
+Secrets: only in monitoring/.env on the box (rendered from vault). Never in git.
+Not automated: security groups, EC2 launch (same as the rest of ansible/README.md).</code></pre>
+<pre><code class="language-bash">git add -A
+git commit -m "Add monitoring: node_exporter + monitoring Ansible roles, README"
+git push -u origin feature/monitoring
+# PR feature/monitoring -&gt; main. Description: link this page; list monitoring/ and the two roles;
+# attach the green dashboard, the FIRING email and the RESOLVED email screenshots.</code></pre>
+<p class="command-purpose"><strong>Ask the Ansible owner to run <code>ansible-playbook site.yml --check --diff</code> first.</strong> Dry run, shows what would change, changes nothing. If that reads right, the real run is the same command without <code>--check</code>.</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the PR contains <code>monitoring/</code>, two roles, three small edits (<code>inventory.ini.example</code>, <code>group_vars/all.yml</code>, <code>vault.yml.example</code>) and <code>site.yml</code>. No file in it contains a password. The teammate can reproduce the whole monitoring box with one command.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="mon-jenkins">
+<h2 class="collapsible-header">🔧 Step 7 — Watch Jenkins too (when it has its box)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>7.1 · One plugin line</h3>
+<p><strong>Where:</strong> laptop, <code>jenkins/local/Dockerfile</code> from the alerting module. The <code>prometheus</code> plugin publishes Jenkins' own numbers at <code>/prometheus</code>.</p>
+<pre><code class="language-bash">RUN jenkins-plugin-cli --plugins \
+    configuration-as-code \
+    email-ext \
+    workflow-aggregator \
+    git \
+    pipeline-stage-view \
+    prometheus                       # &lt;- add this line</code></pre>
+<pre><code class="language-yaml"># jenkins/casc/alerting.yaml  (optional, append under `unclassified:`)
+  prometheusConfiguration:
+    path: prometheus                  # endpoint = http://JENKINS:8080/prometheus
+    collectingMetricsPeriodInSeconds: 60
+    useAuthenticatedEndpoint: false   # Prometheus scrapes without a login; port 8080 is only open to monitoring-sg</code></pre>
+<p class="command-purpose"><strong>On the real Jenkins box</strong> (whoever runs it): Manage Jenkins → Plugins → install "Prometheus metrics", restart. Then <code>curl -s localhost:8080/prometheus | head</code> should print metric lines. Add a note to <code>jenkins/README.md</code> so the pipeline owner knows why the plugin is there.</p>
+</div>
+<div class="card">
+<h3>7.2 · Point Prometheus at it</h3>
+<pre><code class="language-bash"># by hand, on monitoring-server:
+#   uncomment the jenkins job in ~/monitoring/prometheus/prometheus.yml, set JENKINS_IP
+docker compose restart prometheus
+curl -s localhost:9090/api/v1/targets | python3 -m json.tool | grep -A3 jenkins   # "health": "up"
+
+# with Ansible: set jenkins_host in group_vars/all.yml, re-run site.yml
+# and in the AWS console: jenkins-server-sg  add  Custom TCP 8080  Source: monitoring-sg</code></pre>
+<p class="command-purpose"><strong>Then the dashboard's Jenkins row fills in</strong> and the "Jenkins down" rule starts guarding it. Stop the Jenkins service for two minutes to prove that one too, if the report wants a CI/CD alert screenshot.</p>
+</div>
+<div class="card">
+<h3>7.3 · Why not Ansible metrics?</h3>
+<p>Ansible is a tool that runs and exits; there is no process to scrape. Its "health" is the exit status of the playbook, which lives in the Jenkins job that runs it. So Jenkins metrics <em>are</em> the Ansible metrics: a failed deploy job counts in <code>failed_build_count</code>, and the Jenkins alerting module already emails on it.</p>
+<p class="command-purpose"><strong>Report sentence:</strong> "Pipeline health (including Ansible deploys) is observed through Jenkins build metrics; runtime health through blackbox probes and node_exporter."</p>
+</div>
+</div>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> <code>up{job="jenkins"}</code> is 1 in Prometheus, the Jenkins tiles show numbers, and the <code>prometheus</code> plugin line is committed in <code>jenkins/local/Dockerfile</code>.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="mon-demo">
+<h2 class="collapsible-header">🎬 Step 8 — The demo and the report<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>8.1 · Ninety seconds in the video</h3>
+<pre><code class="language-bash">0:00  "Monitoring: Prometheus scrapes, Grafana shows and alerts. All of it is files in monitoring/."
+      show the folder tree for 5 s, then the dashboard: three green tiles, CPU/RAM/disk
+0:20  "Node Exporter Full" dashboard, switch host dropdown api -&gt; frontend
+0:30  terminal on api-server: docker compose stop api
+0:45  dashboard: healthz + readyz tiles red. Alerting page: Pending -&gt; Firing
+1:10  inbox: "[FIRING:1] API healthz down". Open it, point at the summary line.
+1:20  docker compose start api. Tiles green. "And the RESOLVED email follows."
+1:30  done</code></pre>
+<p class="command-purpose"><strong>Rehearse the wait.</strong> <code>for: 1m</code> plus <code>group_wait: 30s</code> means about 90 s from stop to email. Cut the video, or have the earlier FIRING email open in a second tab as a backup.</p>
+</div>
+<div class="card">
+<h3>8.2 · What to put in the report</h3>
+<pre><code class="language-bash">Design       blackbox probes (/healthz/, /readyz/, /) + node_exporter -&gt; Prometheus -&gt; Grafana dashboards + alert rules -&gt; Gmail
+Why 3rd box  monitoring survives an API outage; app boxes untouched except one 9100 rule + one container
+Why as code  datasource, 2 dashboards, contact point, policy, 6 rules are files; any teammate rebuilds it with ansible
+Alerts       healthz 1m, readyz 2m, website 1m (critical); CPU&gt;80% 5m, disk&gt;85% (warning); Jenkins down
+Evidence     screenshot green dashboard; screenshot red tiles + Firing rule; FIRING and RESOLVED emails
+Limits       no HTTP error-rate metric yet (needs django-prometheus or nginx logs); no cAdvisor per-container
+             metrics; single Grafana admin user; t3.small monitoring box, 15-day retention</code></pre>
+<p class="command-purpose"><strong>The "Limits" line is your future work</strong> and it maps exactly to the requirement's "error rates" phrase. Naming it honestly reads better than pretending the 5xx alert exists.</p>
+</div>
+<div class="card">
+<h3>8.3 · Cleaning up and Learner Lab restarts</h3>
+<pre><code class="language-bash"># when the lab session restarts, all three boxes come back with the same containers
+#   (restart: unless-stopped) - but public IPs change unless you used Elastic IPs.
+# if IPs changed: fix API_IP / FRONTEND_IP in ~/monitoring/prometheus/prometheus.yml and
+docker compose restart prometheus
+# Grafana data (login, nothing else of value) is in the grafana_data volume; provisioning re-reads files at boot.
+
+# to remove everything from the monitoring box:
+cd ~/monitoring &amp;&amp; docker compose down -v</code></pre>
+<p class="command-purpose"><strong>Because everything is provisioned from files,</strong> <code>down -v</code> then <code>up -d</code> gives you an identical Grafana in about a minute. That is the sentence that justifies "as code" in the report.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>The whole point:</strong> monitoring is graded on whether you can <em>see</em> the system's state and get <em>told</em> when it breaks, with enough context to act. Three tiles, two graphs, one email that says what and where, arriving before anyone goes looking, is the entire deliverable.</p>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-resources)" href="../sub_pages/rmit-store-alerting.html"><span class="pager__dir">← Previous</span><span class="pager__title">RMIT Store: Automated Alerting</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-resources)" href="../sub_pages/ssh-keys-github.html"><span class="pager__dir">Next →</span><span class="pager__title">SSH Keys & GitHub Access</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="mon-overview"><a class="toc__link" href="#mon-overview"><span>What you are building, and how the pieces talk</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="mon-aws"><a class="toc__link" href="#mon-aws"><span>Step 1 — AWS console: the box and the doors</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="mon-stack"><a class="toc__link" href="#mon-stack"><span>Step 2 — Write the stack (laptop, in the repo)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="mon-dash"><a class="toc__link" href="#mon-dash"><span>Step 3 — Dashboards and alert rules, as files</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="mon-run"><a class="toc__link" href="#mon-run"><span>Step 4 — Bring it up by hand and prove it</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="mon-fire"><a class="toc__link" href="#mon-fire"><span>Step 5 — Make an alert fire, watch the email arrive</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="mon-ansible"><a class="toc__link" href="#mon-ansible"><span>Step 6 — Hand it to the Ansible owner as two roles</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="mon-jenkins"><a class="toc__link" href="#mon-jenkins"><span>Step 7 — Watch Jenkins too (when it has its box)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="mon-demo"><a class="toc__link" href="#mon-demo"><span>Step 8 — The demo and the report</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 9 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

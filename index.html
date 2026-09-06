@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/main.css?v=4e8671e0c7">
+<link rel="stylesheet" href="css/main.css?v=ba72502410">
 <script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
 <script type="module" src="js/main.js?v=93ddf335e0"></script>
 </head>
@@ -195,10 +195,25 @@
 <h3>RMIT Store: Manual Deploy (A–E)</h3>
 <p>The Assignment 2 store, deployed by hand before any pipeline — following the repo README's own Plan A–E: run it locally, ship it to one EC2 box, split it across servers with S3 and RDS, containerise with Docker, then Docker Compose. Stops before Plan F, the automation pipeline.</p>
 <span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/rmit-store-ansible-swarm.html">
+<span class="week-card__top"><span class="week-card__num">AN</span><span class="week-card__emoji" aria-hidden="true">🐝</span></span>
+<h3>RMIT Store: Ansible & Docker Swarm</h3>
+<p>Build separate staging and production Docker Swarms with Ansible: five EC2 prerequisites, isolated RDS and S3 data, exact image tags, explicit migrations, private backend traffic, repeatable roles, and proof commands for both clusters.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/rmit-store-jenkins-pipeline.html">
+<span class="week-card__top"><span class="week-card__num">JE</span><span class="week-card__emoji" aria-hidden="true">🔧</span></span>
+<h3>RMIT Store: Jenkins Pipelines</h3>
+<p>Two Jenkins paths for Assignment 2: pull requests deploy to shared staging and report a required GitHub status; protected main pushes deploy to production. Includes immutable Docker Hub images, a short-lived Ansible runner, smoke checks, and failure email.</p>
+<span class="go-to-link">Open reference</span>
 </a><a class="week-card" data-stage="resources" href="sub_pages/rmit-store-alerting.html">
 <span class="week-card__top"><span class="week-card__num">AL</span><span class="week-card__emoji" aria-hidden="true">🚨</span></span>
 <h3>RMIT Store: Automated Alerting</h3>
 <p>Assignment 2 core requirement 8, built as a drop-in module: a Groovy notify script plus Jenkins Configuration as Code that emails the team on build, test and deploy failures — proven on a throwaway Jenkins in Docker, then handed to the pipeline owner as three lines to paste.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/rmit-store-monitoring.html">
+<span class="week-card__top"><span class="week-card__num">MO</span><span class="week-card__emoji" aria-hidden="true">📈</span></span>
+<h3>RMIT Store: Monitoring & Grafana</h3>
+<p>Assignment 2 monitoring and alerting: Prometheus and Grafana on a third EC2 box probing /healthz/, /readyz/ and the website, host metrics from node_exporter, Jenkins metrics later — dashboards and six email alerts provisioned as files, proven by stopping the API, then handed to the Ansible owner as two small roles.</p>
 <span class="go-to-link">Open reference</span>
 </a></div>
 </section>
