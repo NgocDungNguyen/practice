@@ -2286,3 +2286,10 @@ a.card:hover .go-to-link::after { transform: translateX(4px); }
     .step-list::before { display: none; }
     .step__main, .done-when, .plan-brief { break-inside: avoid-page; }
 }
+
+/* Monitoring page: config blocks carry a comment on almost every line, so let
+   long lines wrap instead of hiding the comments behind a horizontal scroll. */
+body[data-page="rmit-monitoring"] pre code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
