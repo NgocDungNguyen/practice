@@ -39,7 +39,7 @@
 </div>
 <h1><span class="hero-emoji" aria-hidden="true">📈</span>RMIT Store: Monitoring & Grafana</h1>
 <p class="page-hero__intro">Core requirement "monitoring and alerting with useful dashboards" — built as a <strong>third small EC2 box</strong> running Prometheus and Grafana in Docker Compose. It probes the API's <code>/healthz/</code> and <code>/readyz/</code>, the website's front page, reads CPU / RAM / disk from both app servers, and later Jenkins too. Dashboards and alert rules are <strong>files in the repo</strong>, not clicks. Alerts email the same team Gmail the Jenkins alerting module uses. You build it by hand first, prove it, then hand the Ansible owner two tiny roles.</p>
-<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>9</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>46</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>60</strong>&nbsp;min</span></div>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>9</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>46</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>62</strong>&nbsp;min</span></div>
 </div>
 
 <section class="cheatsheet-section" id="mon-overview">
@@ -49,14 +49,18 @@
 <div class="card">
 <h3>The requirement, in one line</h3>
 <p>Section 2 of the requirements: <em>monitoring and alerting</em>. Prometheus / Grafana / CloudWatch are all acceptable. The app already exposes <code>/healthz/</code> (is the process alive) and <code>/readyz/</code> (can it reach the database and S3). You must alert on failed checks, error rates and resource use. The rubric adds: <em>useful dashboards</em>.</p>
-<pre><code class="language-bash">monitoring-server (new t3.small)         api-server                 frontend-server
----------------------------------        ----------------           -----------------
-prometheus  :9090  pulls metrics  ────►  node_exporter :9100        node_exporter :9100
-blackbox    :9115  probes URLs    ────►  api :8000/healthz/         web :80/
-                                         api :8000/readyz/
-grafana     :3000  reads prometheus, draws dashboards, fires alerts ──► team Gmail
+<pre><code class="language-bash">monitoring (new t3.small)        stg-server (api + web)     prd-api-server        prd-frontend-server
+-------------------------        ----------------------     ---------------       -------------------
+prometheus :9090  pulls  ────►   node_exporter :9100        node_exporter :9100   node_exporter :9100
+blackbox   :9115  probes ────►   api :8000/healthz/         api :8000/healthz/    web :80/
+                                 api :8000/readyz/          api :8000/readyz/
+                                 web :80/
+grafana    :3000  reads prometheus, draws dashboards, fires alerts ──► team Gmail
 
-                                  ────►  jenkins-server :8080/prometheus   (when it exists)</code></pre>
+                         ────►   jenkins :8080/prometheus   (Step 7)
+
+5 Elastic IPs total: jenkins, prd-api, prd-frontend, monitoring, stg (one box runs both api and web).
+ansible-master has none and is not monitored; it only makes outgoing SSH calls.</code></pre>
 <p class="command-purpose"><strong>Pull, not push.</strong> Prometheus <em>scrapes</em>: every 15 seconds it asks each target "give me your numbers". Nothing on the app boxes knows Grafana exists. That is why the monitoring box needs to <em>reach</em> the others, and why the security-group rules in Step 1 matter.</p>
 </div>
 <div class="card">
@@ -100,18 +104,19 @@ ansible/roles/monitoring/  # copies monitoring/ to the box, docker compose up</c
 </div>
 <div class="card">
 <h3>Security groups: every door you must open, all boxes</h3>
-<p>One table to check against the AWS console. Only the <strong>new</strong> rules are listed; the ones you already have (22, 80, 8000, 5432) stay as they are. "Source: monitoring-sg" means only the monitoring box may knock, not the internet.</p>
+<p>One table to check against the AWS console. Only the <strong>new</strong> rules are listed; the ones you already have (22, 80, 8000, 5432) stay as they are. Source <code>MONITORING_IP/32</code> means only the monitoring box may knock, not the internet. (Using "source = monitoring-sg" looks tidier, but it only matches if the monitoring instance really wears that group. The <code>/32</code> always works.)</p>
 <pre><code class="language-bash">security group       new inbound rule            source           why
 ------------------   -------------------------   --------------   -------------------------------------------
-monitoring-sg (new)  TCP 22                      My IP            SSH for you
-monitoring-sg (new)  TCP 3000                    0.0.0.0/0        Grafana UI (has its own login)
-api-server-sg  (BE)  TCP 9100                    monitoring-sg    node_exporter: CPU / RAM / disk of the API box
-frontend-server-sg   TCP 9100                    monitoring-sg    node_exporter: CPU / RAM / disk of the FE box
-jenkins-server-sg    TCP 8080                    monitoring-sg    Jenkins /prometheus metrics (Step 7, later)
+monitoring-sg (new)  TCP 22                      My IP              SSH for you
+monitoring-sg (new)  TCP 3000                    0.0.0.0/0          Grafana UI (has its own login)
+stg box's sg         TCP 9100                    MONITORING_IP/32   node_exporter: CPU / RAM / disk of the stg box
+prd-api-sg           TCP 9100                    MONITORING_IP/32   node_exporter of the prd API box
+prd-frontend-sg      TCP 9100                    MONITORING_IP/32   node_exporter of the prd FE box
+jenkins-sg           TCP 8080                    MONITORING_IP/32   Jenkins /prometheus metrics (Step 7, later)
 
 NOT needed:  9090 (Prometheus) and 9115 (blackbox) stay closed; Grafana talks to them inside Docker.
              8000 (API) and 80 (FE) are already open to the world, so the health probes need nothing new.</code></pre>
-<p class="command-purpose"><strong>How to add one:</strong> EC2 → Security Groups → pick the group → Edit inbound rules → Add rule → Type "Custom TCP", Port, Source: start typing <code>monitoring</code> and pick the sg from the list → Save. Details in Step 1.</p>
+<p class="command-purpose"><strong>How to add one:</strong> EC2 → Security Groups → pick the group → Edit inbound rules → Add rule → Type "Custom TCP", Port, Source "Custom", type <code>MONITORING_IP/32</code> (no trailing dot) and press Enter, remove any <code>0.0.0.0/0</code> chip → Save. Details in Step 1.</p>
 </div>
 </div>
 <p class="callout callout--note"><strong>The decisions already made, so you do not re-decide them at 1 am.</strong> Prometheus + Grafana, not CloudWatch (better dashboards, and Learner Lab IAM is limited). A third box, so monitoring survives an API outage. Separate compose file and its own Ansible role, so the app deploy is untouched. Grafana's built-in alerting, no Alertmanager. Minimum scope first: health probes, host metrics, one dashboard, six alerts. cAdvisor and error-rate metrics are "future work" in the report.</p>
@@ -126,7 +131,7 @@ NOT needed:  9090 (Prometheus) and 9115 (blackbox) stay closed; Grafana talks to
 <p><strong>Where:</strong> AWS console → EC2 → Security Groups → Create security group.</p>
 <pre><code class="language-bash">Name          monitoring-sg
 Description   Prometheus + Grafana box
-VPC           the default one (same as api-server-sg)
+VPC           the default one (same as your app boxes)
 
 Inbound rules
   SSH          TCP 22     Source: My IP
@@ -136,14 +141,15 @@ Outbound       leave the default (all traffic)</code></pre>
 <p class="command-purpose"><strong>Why 3000 to the world:</strong> Grafana has a login page, anonymous access will be off, and you want teammates and the marker to open it. Prometheus (9090) is <em>not</em> opened: Grafana reaches it inside Docker.</p>
 </div>
 <div class="card">
-<h3>1.2 · Open the exporter ports on the two app boxes</h3>
-<p><strong>Where:</strong> EC2 → Security Groups → <code>api-server-sg</code> → Edit inbound rules → Add rule. Then the same on <code>frontend-server-sg</code>.</p>
-<pre><code class="language-bash">api-server-sg      add:  Custom TCP  9100   Source: monitoring-sg   (type "monitoring" in the box, pick the sg)
-frontend-server-sg add:  Custom TCP  9100   Source: monitoring-sg
+<h3>1.2 · Open the exporter port on the three app boxes</h3>
+<p><strong>Where:</strong> EC2 → Instances → click the box → Security tab → click its security group → Edit inbound rules → Add rule. Do it for <code>stg</code>, <code>prd-api</code> and <code>prd-frontend</code>. Go through the Instances tab so you edit the group the box actually wears.</p>
+<pre><code class="language-bash">stg box's sg     add:  Custom TCP  9100   Source: Custom  MONITORING_IP/32
+prd-api-sg       add:  Custom TCP  9100   Source: Custom  MONITORING_IP/32
+prd-frontend-sg  add:  Custom TCP  9100   Source: Custom  MONITORING_IP/32
 
-later, when Jenkins has its own box:
-jenkins-server-sg  add:  Custom TCP  8080   Source: monitoring-sg</code></pre>
-<p class="command-purpose"><strong>Source = a security group</strong> means "only machines wearing that group may knock". Nobody on the internet can read your host metrics. Ports 8000 and 80 are already public, so the blackbox probes need nothing new.</p>
+later, when Jenkins has its box (Step 7):
+jenkins-sg       add:  Custom TCP  8080   Source: Custom  MONITORING_IP/32</code></pre>
+<p class="command-purpose"><strong><code>/32</code> means "this one address only".</strong> Nobody on the internet can read your host metrics. Type it with no trailing dot, press Enter so it becomes a chip, and remove any <code>0.0.0.0/0</code> chip the console added. Ports 8000 and 80 are already public, so the blackbox probes need nothing new.</p>
 </div>
 <div class="card">
 <h3>1.3 · Launch <code>monitoring-server</code></h3>
@@ -151,12 +157,12 @@ jenkins-server-sg  add:  Custom TCP  8080   Source: monitoring-sg</code></pre>
 <pre><code class="language-bash">Name              monitoring-server
 AMI               Amazon Linux 2023 (x86_64)
 Instance type     t3.small  # 2 GB RAM. t3.micro (1 GB) will swap with Prometheus + Grafana
-Key pair          your existing .pem  (the one for api-server)
+Key pair          your existing .pem  (the one for your app boxes)
 Network           Select existing security group -&gt; monitoring-sg
 Storage           16 GiB gp3  # Prometheus keeps 15 days of data by default
 IAM role          none needed</code></pre>
 <p>Optional but wise: allocate an <strong>Elastic IP</strong> and associate it, exactly like C4 on the manual-deploy page. Otherwise the public IP changes every time the Learner Lab restarts and your Grafana link goes stale.</p>
-<p class="command-purpose"><strong>Write down three addresses</strong> now: the monitoring box public IP (<code>MONITORING_IP</code>), and the api-server and frontend-server public IPs (<code>API_IP</code>, <code>FRONTEND_IP</code>). You will paste them into files in Step 2.</p>
+<p class="command-purpose"><strong>Write down four addresses</strong> now: the monitoring box (<code>MONITORING_IP</code>), the staging box (<code>STG_IP</code>), and the two prod boxes (<code>PRD_API_IP</code>, <code>PRD_FE_IP</code>). You will paste them into files in Step 2. They are Elastic IPs, so they are safe to commit.</p>
 </div>
 <div class="card">
 <h3>1.4 · Docker on the new box</h3>
@@ -282,10 +288,10 @@ ALERT_EMAILS=s4043097@rmit.edu.vn</code></pre>
 </div>
 <div class="card">
 <h3>2.4 · <code>monitoring/prometheus/prometheus.yml</code></h3>
-<p>Three jobs now, a fourth waiting for Jenkins. The <code>probe</code> labels are what the alert rules and dashboard match on, so the rules never need an IP.</p>
+<p>Three jobs now, a fourth waiting for Jenkins. Every target carries two labels: <code>env</code> (<code>stg</code> or <code>prod</code>) and either <code>host</code> or <code>probe</code>. The alert rules and dashboard match on <code>probe</code>, so one rule covers both envs and the email says which one broke.</p>
 <pre><code class="language-yaml"># monitoring/prometheus/prometheus.yml
-# Replace API_IP and FRONTEND_IP with the public IPs of your two app boxes
-# (the Ansible role templates these in; by hand use the sed in Step 4.1).
+# Replace STG_IP, PRD_API_IP and PRD_FE_IP with the Elastic IPs of your boxes
+# (they do not change, so real IPs in git are fine; the Ansible role templates them anyway).
 
 global:
   scrape_interval: 15s  # how often to go and collect numbers from every target
@@ -300,10 +306,12 @@ scrape_configs:  # one "job" = one kind of thing to collect from
   # Host metrics: CPU, RAM, disk, network on each app box
   - job_name: node
     static_configs:
-      - targets: ["API_IP:9100"]  # node_exporter on the api box
-        labels: { host: api-server }  # sticks host="api-server" onto every number from it
-      - targets: ["FRONTEND_IP:9100"]  # node_exporter on the frontend box
-        labels: { host: frontend-server }
+      - targets: ["STG_IP:9100"]  # node_exporter on the staging box (api + web together)
+        labels: { host: stg-server, env: stg }  # sticks host="stg-server" env="stg" onto every number from it
+      - targets: ["PRD_API_IP:9100"]  # node_exporter on the prod api box
+        labels: { host: api-server, env: prod }
+      - targets: ["PRD_FE_IP:9100"]  # node_exporter on the prod frontend box
+        labels: { host: frontend-server, env: prod }
 
   # HTTP probes through blackbox_exporter. Prometheus asks blackbox
   # "probe this URL", blackbox does the request and reports probe_success 0/1.
@@ -312,12 +320,18 @@ scrape_configs:  # one "job" = one kind of thing to collect from
     params:
       module: [http_2xx]  # which check to run (defined in blackbox.yml)
     static_configs:  # the "targets" here are URLs to probe, not exporters to scrape
-      - targets: ["http://API_IP:8000/healthz/"]
-        labels: { probe: api-healthz }  # the name the dashboard + alert rules match on
-      - targets: ["http://API_IP:8000/readyz/"]
-        labels: { probe: api-readyz }
-      - targets: ["http://FRONTEND_IP/"]
-        labels: { probe: website }
+      - targets: ["http://STG_IP:8000/healthz/"]
+        labels: { probe: api-healthz, env: stg }  # probe = the name the dashboard + alert rules match on
+      - targets: ["http://STG_IP:8000/readyz/"]
+        labels: { probe: api-readyz, env: stg }
+      - targets: ["http://STG_IP/"]
+        labels: { probe: website, env: stg }
+      - targets: ["http://PRD_API_IP:8000/healthz/"]
+        labels: { probe: api-healthz, env: prod }  # same probe name, different env
+      - targets: ["http://PRD_API_IP:8000/readyz/"]
+        labels: { probe: api-readyz, env: prod }
+      - targets: ["http://PRD_FE_IP/"]
+        labels: { probe: website, env: prod }
     relabel_configs:  # rewrite rules that run before the scrape
   # the target URL becomes the ?target= parameter ...
       - source_labels: [__address__]  # take the URL from the targets list above
@@ -335,7 +349,7 @@ scrape_configs:  # one "job" = one kind of thing to collect from
   #   metrics_path: /prometheus  # the Jenkins plugin publishes here, not /metrics
   #   static_configs:
   #     - targets: ["JENKINS_IP:8080"]</code></pre>
-<p class="command-purpose"><strong>The relabel block is the only clever part.</strong> Without it Prometheus would try to scrape <code>http://API_IP:8000/healthz/</code> directly and get HTML, not metrics. With it, Prometheus calls <code>blackbox:9115/probe?module=http_2xx&amp;target=http://API_IP:8000/healthz/</code> and blackbox does the real request.</p>
+<p class="command-purpose"><strong>The relabel block is the only clever part.</strong> Without it Prometheus would try to scrape <code>http://STG_IP:8000/healthz/</code> directly and get HTML, not metrics. With it, Prometheus calls <code>blackbox:9115/probe?module=http_2xx&amp;target=http://STG_IP:8000/healthz/</code> and blackbox does the real request. <strong>Django gotcha:</strong> if a probe returns 0 but <code>curl</code> shows a <code>400 Bad Request</code> page, the box IP is missing from <code>ALLOWED_HOSTS</code> in the API's <code>server/.env</code>. Add it and recreate the api container.</p>
 </div>
 <div class="card">
 <h3>2.5 · <code>monitoring/blackbox/blackbox.yml</code></h3>
@@ -717,8 +731,8 @@ groups:  # rules live in groups; a group shares one check interval
 <div class="collapsible-content"><div class="collapse-glue">
 <div class="grid-container grid-container--wide">
 <div class="card">
-<h3>4.1 · node_exporter on the two app boxes</h3>
-<p><strong>Where:</strong> SSH into api-server, run the block, then SSH into frontend-server and run it again.</p>
+<h3>4.1 · node_exporter on the three app boxes</h3>
+<p><strong>Where:</strong> SSH into the stg box, run the block. Then the same on prd-api and prd-frontend. One container per box, even when the box runs both api and web.</p>
 <pre><code class="language-bash"># paste this one (a comment after a "\" would break it, so the explanation is below)
 docker run -d --name node_exporter --restart unless-stopped \
   --net host --pid host \
@@ -746,8 +760,9 @@ scp -i ~/Downloads/your-key.pem -r monitoring ec2-user@MONITORING_IP:~/monitorin
 # monitoring-server
 ssh -i ~/Downloads/your-key.pem ec2-user@MONITORING_IP
 cd ~/monitoring
-sed -i 's/API_IP/1.2.3.4/g; s/FRONTEND_IP/5.6.7.8/g' prometheus/prometheus.yml  # your real IPs
-grep -n "_IP" prometheus/prometheus.yml  # only the commented JENKINS_IP line should remain
+# skip the sed if you already put the real IPs in the file on your laptop
+sed -i 's/STG_IP/1.2.3.4/g; s/PRD_API_IP/5.6.7.8/g; s/PRD_FE_IP/9.10.11.12/g' prometheus/prometheus.yml
+grep -n "_IP" prometheus/prometheus.yml  # only the commented JENKINS_IP line should remain (prod lines too, until prod exists)
 
 cp .env.example .env
 nano .env  # fill every line; chmod after
@@ -763,11 +778,11 @@ docker compose logs grafana | grep -iE "provision|error" | head -20
 #   want: lines about provisioning datasources / dashboards / alerting, no "error"
 
 # 1. Prometheus sees its targets?
-curl -s localhost:9090/api/v1/targets | python3 -m json.tool | grep -E '"health"|"scrapeUrl"'
+docker compose exec grafana curl -s http://prometheus:9090/api/v1/targets | python3 -m json.tool | grep -E '"health"|"scrapeUrl"'
 #   want: "health": "up" for prometheus, both node targets, all three blackbox probes
 
 # 2. blackbox says the API is healthy?
-curl -s 'localhost:9090/api/v1/query?query=probe_success' | python3 -m json.tool | grep -B2 '"1"'</code></pre>
+docker compose exec grafana curl -s 'http://prometheus:9090/api/v1/query?query=probe_success' | python3 -m json.tool | grep -B2 '"1"'</code></pre>
 <p class="command-purpose"><strong>Debug bottom-up.</strong> A target that is <code>"down"</code> with <code>connection refused</code> means the exporter is not running there; <code>i/o timeout</code> means the security group rule from 1.2 is missing. Fix Prometheus before you even open Grafana.</p>
 </div>
 <div class="card">
@@ -790,8 +805,8 @@ Alerting -&gt; Contact points         -&gt; team-email -&gt; "Test" -&gt; Send t
 <div class="grid-container grid-container--wide">
 <div class="card">
 <h3>5.1 · Kill the API</h3>
-<p><strong>Where:</strong> SSH into api-server. Keep the Grafana dashboard open in a browser tab and the inbox in another.</p>
-<pre><code class="language-bash"># api-server
+<p><strong>Where:</strong> SSH into the stg box (the one running the api). Keep the Grafana dashboard open in a browser tab and the inbox in another.</p>
+<pre><code class="language-bash"># stg box (where the api runs)
 cd ~/a2 &amp;&amp; docker compose stop api
 date  # note the time</code></pre>
 <pre><code class="language-bash">what you will see, in order:
@@ -803,7 +818,7 @@ date  # note the time</code></pre>
 </div>
 <div class="card">
 <h3>5.2 · Bring it back</h3>
-<pre><code class="language-bash"># api-server
+<pre><code class="language-bash"># stg box (where the api runs)
 docker compose start api
 curl -s localhost:8000/healthz/  # {"status":"ok"}</code></pre>
 <pre><code class="language-bash">what you will see:
@@ -815,7 +830,7 @@ curl -s localhost:8000/healthz/  # {"status":"ok"}</code></pre>
 <div class="card">
 <h3>5.3 · Optional: prove the readiness check on its own</h3>
 <p>Stopping <code>api</code> proves liveness. To show <code>/readyz/</code> catching a <em>dependency</em> failure while the process is fine, temporarily break the database address.</p>
-<pre><code class="language-bash"># api-server
+<pre><code class="language-bash"># stg box (where the api runs)
 cd ~/a2
 cp server/.env server/.env.bak
 sed -i 's/^DB_HOST=.*/DB_HOST=nowhere.invalid/' server/.env  # check the exact key name in server/.env first
@@ -835,12 +850,14 @@ cp server/.env.bak server/.env &amp;&amp; docker compose up -d api</code></pre>
 <div class="collapsible-content"><div class="collapse-glue">
 <div class="grid-container grid-container--wide">
 <div class="card">
-<h3>6.1 · Role <code>node_exporter</code> (runs on api + frontend)</h3>
+<h3>6.1 · Role <code>node_exporter</code> (runs on every app box)</h3>
 <p>Same style as the existing roles: FQCN modules, <code>ansible.builtin.command</code> for docker, one <code>tasks/main.yml</code>. Idempotent: it checks before it runs.</p>
 <pre><code class="language-yaml"># ansible/roles/node_exporter/tasks/main.yml
 ---
 # Host metrics for Prometheus (CPU, RAM, disk). Listens on 9100 - open that
-# port only to monitoring-sg. Same docker run as the monitoring guide, Step 4.1.
+# port only to MONITORING_IP/32. Same docker run as the monitoring guide, Step 4.1.
+# The stg host is in both app_servers and frontend_servers, so this role runs
+# twice on it - the check below makes the second run a no-op.
 
 - name: Check whether node_exporter is already running  # task 1: look
   ansible.builtin.command:  # run a shell command on the box
@@ -906,7 +923,7 @@ GMAIL_USER={{ vault_gmail_user }}
 GMAIL_APP_PASSWORD={{ vault_gmail_app_password }}
 # plain var in group_vars/all.yml (addresses are not secret)
 ALERT_EMAILS={{ alert_emails }}</code></pre>
-<p class="command-purpose"><strong><code>prometheus.yml.j2</code></strong> is the file from 2.4 with three swaps: <code>API_IP</code> → <code>{{ app_server_ip }}</code>, <code>FRONTEND_IP</code> → <code>{{ frontend_server_ip }}</code>, and the Jenkins job wrapped in <code>{% if jenkins_host %} ... {% endif %}</code> with <code>{{ jenkins_host }}:8080</code> as the target. Copy, swap, save as <code>ansible/roles/monitoring/templates/prometheus.yml.j2</code>.</p>
+<p class="command-purpose"><strong><code>prometheus.yml.j2</code></strong> is the file from 2.4 with four swaps: <code>STG_IP</code> → <code>{{ stg_server_ip }}</code>, <code>PRD_API_IP</code> → <code>{{ prd_api_ip }}</code>, <code>PRD_FE_IP</code> → <code>{{ prd_fe_ip }}</code>, and the Jenkins job wrapped in <code>{% if jenkins_host %} ... {% endif %}</code> with <code>{{ jenkins_host }}:8080</code> as the target. Copy, swap, save as <code>ansible/roles/monitoring/templates/prometheus.yml.j2</code>.</p>
 </div>
 <div class="card">
 <h3>6.3 · Wire it into inventory, vars and <code>site.yml</code></h3>
@@ -916,6 +933,9 @@ monitoring ansible_host=&lt;your-monitoring-server-public-ip&gt; ansible_ssh_pri
 <pre><code class="language-yaml"># ansible/group_vars/all.yml  (append)
 monitoring_dest: "/home/ec2-user/monitoring"
 monitoring_server_ip: "{{ hostvars[groups['monitoring_servers'][0]].ansible_host }}"
+stg_server_ip: "1.2.3.4"  # Elastic IP of the stg box (api + web); or derive from inventory like app_server_ip
+prd_api_ip: "5.6.7.8"  # Elastic IP of prd-api-server
+prd_fe_ip: "9.10.11.12"  # Elastic IP of prd-frontend-server
 node_exporter_version: "v1.8.2"
 alert_emails: "s4043097@rmit.edu.vn"  # comma-separated, no spaces
 jenkins_host: ""  # public IP of jenkins-server once it exists; blank = no jenkins job</code></pre>
@@ -961,14 +981,14 @@ vault_gmail_app_password: "CHANGE_ME_16_chars"</code></pre>
 <h3>6.4 · <code>monitoring/README.md</code> for the teammate, and the PR</h3>
 <pre><code class="language-bash"># Monitoring (Prometheus + Grafana)
 
-What: probes /healthz/, /readyz/ and the website, reads host metrics from both
-app boxes, emails the team on failure. Dashboards + alert rules are files here.
+What: probes /healthz/, /readyz/ and the website on stg and prod, reads host metrics
+from all three app boxes, emails the team on failure. Dashboards + alert rules are files here.
 
 Manual: see the guide page "RMIT Store: Monitoring &amp; Grafana", Steps 1-5.
 
 Ansible (roles/node_exporter, roles/monitoring):
   1. AWS console once: monitoring-server (t3.small, AL2023, monitoring-sg: 22 My IP, 3000 anywhere);
-     add 9100 from monitoring-sg on api-server-sg and frontend-server-sg.
+     add 9100 from MONITORING_IP/32 on the stg, prd-api and prd-frontend security groups.
   2. inventory.ini: add the [monitoring_servers] group (see inventory.ini.example).
   3. vault.yml: add vault_grafana_admin_password, vault_gmail_user, vault_gmail_app_password.
   4. group_vars/all.yml: alert_emails; jenkins_host when Jenkins has a box.
@@ -1006,7 +1026,7 @@ git push -u origin feature/monitoring
   prometheusConfiguration:
     path: prometheus  # endpoint = http://JENKINS:8080/prometheus
     collectingMetricsPeriodInSeconds: 60
-    useAuthenticatedEndpoint: false  # Prometheus scrapes without a login; port 8080 is only open to monitoring-sg</code></pre>
+    useAuthenticatedEndpoint: false  # Prometheus scrapes without a login; port 8080 is only open to MONITORING_IP/32</code></pre>
 <p class="command-purpose"><strong>On the real Jenkins box</strong> (whoever runs it): Manage Jenkins → Plugins → install "Prometheus metrics", restart. Then <code>curl -s localhost:8080/prometheus | head</code> should print metric lines. Add a note to <code>jenkins/README.md</code> so the pipeline owner knows why the plugin is there.</p>
 </div>
 <div class="card">
@@ -1014,10 +1034,10 @@ git push -u origin feature/monitoring
 <pre><code class="language-bash"># by hand, on monitoring-server:
 #   uncomment the jenkins job in ~/monitoring/prometheus/prometheus.yml, set JENKINS_IP
 docker compose restart prometheus
-curl -s localhost:9090/api/v1/targets | python3 -m json.tool | grep -A3 jenkins  # "health": "up"
+docker compose exec grafana curl -s http://prometheus:9090/api/v1/targets | python3 -m json.tool | grep -A3 jenkins  # "health": "up"
 
 # with Ansible: set jenkins_host in group_vars/all.yml, re-run site.yml
-# and in the AWS console: jenkins-server-sg  add  Custom TCP 8080  Source: monitoring-sg</code></pre>
+# and in the AWS console: jenkins-sg  add  Custom TCP 8080  Source: MONITORING_IP/32</code></pre>
 <p class="command-purpose"><strong>Then the dashboard's Jenkins row fills in</strong> and the "Jenkins down" rule starts guarding it. Stop the Jenkins service for two minutes to prove that one too, if the report wants a CI/CD alert screenshot.</p>
 </div>
 <div class="card">
@@ -1038,7 +1058,7 @@ curl -s localhost:9090/api/v1/targets | python3 -m json.tool | grep -A3 jenkins 
 <pre><code class="language-bash">0:00  "Monitoring: Prometheus scrapes, Grafana shows and alerts. All of it is files in monitoring/."
       show the folder tree for 5 s, then the dashboard: three green tiles, CPU/RAM/disk
 0:20  "Node Exporter Full" dashboard, switch host dropdown api -&gt; frontend
-0:30  terminal on api-server: docker compose stop api
+0:30  terminal on the stg box: docker compose stop api
 0:45  dashboard: healthz + readyz tiles red. Alerting page: Pending -&gt; Firing
 1:10  inbox: "[FIRING:1] API healthz down". Open it, point at the summary line.
 1:20  docker compose start api. Tiles green. "And the RESOLVED email follows."
@@ -1048,7 +1068,7 @@ curl -s localhost:9090/api/v1/targets | python3 -m json.tool | grep -A3 jenkins 
 <div class="card">
 <h3>8.2 · What to put in the report</h3>
 <pre><code class="language-bash">Design       blackbox probes (/healthz/, /readyz/, /) + node_exporter -&gt; Prometheus -&gt; Grafana dashboards + alert rules -&gt; Gmail
-Why 3rd box  monitoring survives an API outage; app boxes untouched except one 9100 rule + one container
+Why 3rd box  monitoring survives an API outage; app boxes untouched except one 9100 rule + one container each
 Why as code  datasource, 2 dashboards, contact point, policy, 6 rules are files; any teammate rebuilds it with ansible
 Alerts       healthz 1m, readyz 2m, website 1m (critical); CPU&gt;80% 5m, disk&gt;85% (warning); Jenkins down
 Evidence     screenshot green dashboard; screenshot red tiles + Firing rule; FIRING and RESOLVED emails
@@ -1060,7 +1080,7 @@ Limits       no HTTP error-rate metric yet (needs django-prometheus or nginx log
 <h3>8.3 · Cleaning up and Learner Lab restarts</h3>
 <pre><code class="language-bash"># when the lab session restarts, all three boxes come back with the same containers
 #   (restart: unless-stopped) - but public IPs change unless you used Elastic IPs.
-# if IPs changed: fix API_IP / FRONTEND_IP in ~/monitoring/prometheus/prometheus.yml and
+# if an IP changed (should not, with Elastic IPs): fix it in ~/monitoring/prometheus/prometheus.yml and
 docker compose restart prometheus
 # Grafana data (login, nothing else of value) is in the grafana_data volume; provisioning re-reads files at boot.
 

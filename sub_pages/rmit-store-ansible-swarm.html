@@ -39,7 +39,7 @@
 </div>
 <h1><span class="hero-emoji" aria-hidden="true">🐝</span>RMIT Store: Ansible + Docker Swarm</h1>
 <p class="page-hero__intro">This is page 1 of 2 for the teammate who owns <code>app/ansible/</code>. It covers the AWS setup, server setup, two Docker Swarms, and a manual deployment proof. Jenkins comes on page 2. You will keep <strong>staging</strong> and <strong>production</strong> apart. Each environment has one frontend manager and one backend worker. nginx is the only public app door. It listens on port 80 and sends API requests to the private <code>api:8000</code> service over a Swarm overlay network.</p>
-<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>10</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>53</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>50</strong>&nbsp;min</span></div>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>10</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>53</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>52</strong>&nbsp;min</span></div>
 </div>
 
 <section class="cheatsheet-section" id="swarm-overview">
@@ -47,23 +47,25 @@
 <div class="collapsible-content"><div class="collapse-glue">
 <div class="grid-container grid-container--wide">
 <div class="card">
-<h3>0.1 · The six EC2 instances</h3>
-<pre><code class="language-bash">CONTROL BOXES, page 2
-jenkins-server         t3.small    builds and pushes images
-ansible-server         t3.small    runs every deployment
+<h3>0.1 · The six EC2 instances and the five Elastic IPs</h3>
+<pre><code class="language-bash">CONTROL BOXES, page 2                                                          Elastic IP
+jenkins-server         t3.small    builds and pushes images                    yes
+ansible-server         t3.small    runs every deployment                       no (private IP is enough)
 
-STAGING SWARM
-staging-frontend       t3.small    manager   label app_role=frontend   public :80
-staging-backend        t3.small    worker    label app_role=backend    no public :8000
+STAGING SWARM, one node
+staging                t3.small    manager   labels runs_frontend + runs_backend   public :80   yes
 
-PRODUCTION SWARM
-production-frontend    t3.small    manager   label app_role=frontend   public :80
-production-backend     t3.small    worker    label app_role=backend    no public :8000
+PRODUCTION SWARM, two nodes
+production-frontend    t3.small    manager   label runs_frontend    public :80                  yes
+production-backend     t3.small    worker    label runs_backend     no public :8000             yes
 
-All six: Amazon Linux 2023, x86_64, same VPC.
+MONITORING, separate page
+monitoring-server      t3.small    Prometheus + Grafana, scrapes :9100 on the three app boxes  yes
+
+All six: Amazon Linux 2023, x86_64, same VPC. Learner Lab allows 5 Elastic IPs; ansible-server goes without.
 Existing production frontend and backend boxes may be reused.</code></pre>
-<p class="command-purpose"><strong>Two Swarms means two trust boundaries.</strong> A staging command cannot update a production service. Each manager knows only its one worker.</p>
-<p><strong>Build and deploy sit on separate boxes.</strong> <code>jenkins-server</code> runs Docker and pushes images. <code>ansible-server</code> holds the SSH deploy key and the vault password and is the only box allowed to SSH into the four app hosts. The box with a root-equivalent Docker socket therefore has no path into production.</p>
+<p class="command-purpose"><strong>Two Swarms means two trust boundaries.</strong> A staging command cannot update a production service. Staging is a one-node Swarm: the same stack file, but both services land on the single node. Production keeps the manager + worker split.</p>
+<p><strong>Build and deploy sit on separate boxes.</strong> <code>jenkins-server</code> runs Docker and pushes images. <code>ansible-server</code> holds the SSH deploy key and the vault password and is the only box allowed to SSH into the three app hosts. The box with a root-equivalent Docker socket therefore has no path into production.</p>
 </div>
 <div class="card">
 <h3>0.2 · Request path</h3>
@@ -100,8 +102,8 @@ ansible-server, this page plus next page:
   Jenkins runs this box as a build agent labelled "ansible"
 
 Docker Swarm:
-  place frontend on app_role=frontend
-  place API on app_role=backend
+  place frontend where runs_frontend=true
+  place API where runs_backend=true   (staging: same node; production: the worker)
   restart failed tasks and roll service updates
 
 AWS console, once:
@@ -127,7 +129,7 @@ Jenkins flow: merged main gets a new immutable production tag
 <p class="command-purpose"><strong>Never use <code>latest</code>.</strong> An exact tag tells you what is running and gives Jenkins a stable input for a later rollback feature.</p>
 </div>
 </div>
-<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> draw two boxes around the two Swarms. Each box has one frontend manager and one backend worker. Only frontend port 80 is public. <code>jenkins-server</code> and <code>ansible-server</code> both sit outside the clusters and come next.</p>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> draw two boxes around the two Swarms. Staging holds one node that runs both services. Production holds one frontend manager and one backend worker. Only frontend port 80 is public. <code>jenkins-server</code> and <code>ansible-server</code> both sit outside the clusters and come next.</p>
 </div></div>
 </section>
 <section class="cheatsheet-section" id="swarm-aws">
@@ -141,42 +143,33 @@ Jenkins flow: merged main gets a new immutable production tag
 ----------------------  -----------  --------------------------
 jenkins-server          t3.small     Amazon Linux 2023, x86_64
 ansible-server          t3.small     Amazon Linux 2023, x86_64
-staging-frontend        t3.small     Amazon Linux 2023, x86_64
-staging-backend         t3.small     Amazon Linux 2023, x86_64
+staging                 t3.small     Amazon Linux 2023, x86_64   (api + frontend on one node)
 production-frontend     t3.small     Amazon Linux 2023, x86_64
 production-backend      t3.small     Amazon Linux 2023, x86_64
+monitoring-server       t3.small     Amazon Linux 2023, x86_64   (see the Monitoring page)
 
 Network:       same VPC as the existing RDS instance
 Key pair:      the team deployment key pair
 Storage:       16 GiB gp3 for each app box and ansible-server
                30 GiB gp3 for jenkins-server, it stores images
 Public IPv4:   enabled for this Learner Lab design
-Backend IAM:    LabInstanceProfile or LabRole on both backend boxes
+Backend IAM:    LabInstanceProfile or LabRole on staging and production-backend (they run the API)
 Control IAM:    none needed; deployment uses static inventory</code></pre>
 <p>Reuse the two current production boxes if they match. Do not rebuild a working production server just to change its name. Add clear <code>Name</code> and <code>Environment</code> tags.</p>
-<p class="command-purpose"><strong>Record two addresses per app box.</strong> Inventory uses the public IP for SSH from a laptop. Swarm uses the private IP for cluster traffic. An Elastic IP is useful, but Learner Lab quotas vary. If you cannot allocate one, update inventory after a lab restart.</p>
+<p class="command-purpose"><strong>Record two addresses per app box.</strong> Inventory uses the public IP for SSH from a laptop. Swarm uses the private IP for cluster traffic. Allocate the five Elastic IPs to <code>jenkins-server</code>, <code>staging</code>, <code>production-frontend</code>, <code>production-backend</code> and <code>monitoring-server</code>, so the committed inventories never go stale. <code>ansible-server</code> keeps an auto-assigned public IP: Jenkins reaches it by private IP, and you only need its public IP for your own SSH.</p>
 </div>
 <div class="card">
-<h3>1.2 · Staging security groups</h3>
-<p>Create <code>staging-frontend-sg</code> and <code>staging-backend-sg</code>. Add each line as an inbound rule. Keep default outbound all traffic.</p>
-<pre><code class="language-bash">staging-frontend-sg
+<h3>1.2 · Staging security group</h3>
+<p>Create one <code>staging-sg</code>. Add each line as an inbound rule. Keep default outbound all traffic.</p>
+<pre><code class="language-bash">staging-sg
   TCP 22     source TEAM_PUBLIC_IP/32       teammate SSH
   TCP 22     source ansible-server-sg       automated deploys later
   TCP 80     source 0.0.0.0/0               public store
-  TCP 2377   source staging-backend-sg      worker joins manager
-  TCP 7946   source staging-backend-sg      Swarm node traffic
-  UDP 7946   source staging-backend-sg      Swarm node traffic
-  UDP 4789   source staging-backend-sg      overlay network
+  TCP 9100   source MONITORING_IP/32        node_exporter for the Monitoring page
 
-staging-backend-sg
-  TCP 22     source TEAM_PUBLIC_IP/32       teammate SSH
-  TCP 22     source ansible-server-sg       automated deploys later
-  TCP 7946   source staging-frontend-sg     Swarm node traffic
-  UDP 7946   source staging-frontend-sg     Swarm node traffic
-  UDP 4789   source staging-frontend-sg     overlay network
-
-No inbound TCP 8000 rule.</code></pre>
-<p class="command-purpose"><strong>Pair only.</strong> Do not use one broad Swarm group for all four app boxes. The staging nodes may talk on Swarm ports only to each other.</p>
+No inbound TCP 8000 rule.
+No 2377 / 7946 / 4789 rules: a one-node Swarm talks to itself on loopback.</code></pre>
+<p class="command-purpose"><strong>One node, no cluster ports.</strong> The overlay network still exists inside the node, so nginx reaches <code>api:8000</code> by service name exactly like production. Nothing about the stack file changes between the two environments.</p>
 </div>
 <div class="card">
 <h3>1.3 · Production security groups</h3>
@@ -185,6 +178,7 @@ No inbound TCP 8000 rule.</code></pre>
   TCP 22     source TEAM_PUBLIC_IP/32
   TCP 22     source ansible-server-sg
   TCP 80     source 0.0.0.0/0
+  TCP 9100   source MONITORING_IP/32          node_exporter
   TCP 2377   source production-backend-sg
   TCP 7946   source production-backend-sg
   UDP 7946   source production-backend-sg
@@ -193,18 +187,19 @@ No inbound TCP 8000 rule.</code></pre>
 production-backend-sg
   TCP 22     source TEAM_PUBLIC_IP/32
   TCP 22     source ansible-server-sg
+  TCP 9100   source MONITORING_IP/32          node_exporter
   TCP 7946   source production-frontend-sg
   UDP 7946   source production-frontend-sg
   UDP 4789   source production-frontend-sg
 
 No inbound TCP 8000 rule.</code></pre>
 <p>If a reused production box still serves the old split-host design on public port 8000, keep that old rule only while you build the new path. Remove it after Step 8 proves the nginx proxy. The final state has no public 8000.</p>
-<p class="command-purpose"><strong>Port 2377 belongs on the manager only.</strong> The worker starts that connection. Ports 7946 and 4789 are needed in both directions.</p>
+<p class="command-purpose"><strong>Port 2377 belongs on the manager only.</strong> The worker starts that connection. Ports 7946 and 4789 are needed in both directions. Source <code>MONITORING_IP/32</code> is the monitoring box's Elastic IP; a security-group source only matches if that box really wears the group, the <code>/32</code> always does.</p>
 </div>
 <div class="card">
 <h3>1.4 · RDS and control-box rules</h3>
 <pre><code class="language-bash">rds-sg
-  TCP 5432   source staging-backend-sg
+  TCP 5432   source staging-sg
   TCP 5432   source production-backend-sg
   Public access: No
   No 0.0.0.0/0 rule
@@ -213,6 +208,7 @@ jenkins-server-sg
   TCP 22     source TEAM_PUBLIC_IP/32
   TCP 8080   source TEAM_PUBLIC_IP/32
   TCP 8080   source each current GitHub webhook CIDR
+  TCP 8080   source MONITORING_IP/32          Prometheus reads /prometheus
 
 ansible-server-sg
   TCP 22     source TEAM_PUBLIC_IP/32       teammate SSH
@@ -222,19 +218,19 @@ ansible-server-sg
 app box SSH rules
   use one TEAM_PUBLIC_IP/32 rule per teammate if needed
   add ansible-server-sg as a separate source rule</code></pre>
-<p>Port 8080 and the Ansible group are listed now so the six-box map is complete. The next page shows how to get GitHub's current webhook CIDRs and set up Jenkins authentication, the webhook secret, credentials, and the Ansible agent. If the Learner Lab cannot hold every GitHub range, opening 8080 to <code>0.0.0.0/0</code> is a recorded temporary fallback, not the preferred final rule.</p>
-<p class="command-purpose"><strong>SSH flows one way only.</strong> Jenkins opens port 22 on <code>ansible-server</code>, and <code>ansible-server</code> opens port 22 on the four app boxes. Nothing lets <code>jenkins-server</code> reach an app box directly. RDS still accepts the two backend groups only, so neither control box can query the database and migrations run on the target backend worker.</p>
+<p>Port 8080 and the Ansible group are listed now so the six-box map is complete. <code>monitoring-sg</code> itself (22 from you, 3000 public) is on the Monitoring page. The next page shows how to get GitHub's current webhook CIDRs and set up Jenkins authentication, the webhook secret, credentials, and the Ansible agent. If the Learner Lab cannot hold every GitHub range, opening 8080 to <code>0.0.0.0/0</code> is a recorded temporary fallback, not the preferred final rule.</p>
+<p class="command-purpose"><strong>SSH flows one way only.</strong> Jenkins opens port 22 on <code>ansible-server</code>, and <code>ansible-server</code> opens port 22 on the three app boxes. Nothing lets <code>jenkins-server</code> reach an app box directly. RDS still accepts only the two groups that run the API, so neither control box can query the database and migrations run on the node that runs the API.</p>
 </div>
 <div class="card">
 <h3>1.5 · Let backend containers use the IAM role</h3>
-<p>On each backend instance, open Actions → Security → Modify IAM role. Select the Learner Lab instance profile for <code>LabRole</code>. Then open Actions → Instance settings → Modify instance metadata options.</p>
+<p>On <code>staging</code> and <code>production-backend</code> (the two boxes that run the API), open Actions → Security → Modify IAM role. Select the Learner Lab instance profile for <code>LabRole</code>. Then open Actions → Instance settings → Modify instance metadata options.</p>
 <pre><code class="language-bash">Instance metadata service:    Enabled
 IMDSv2:                       Required
 Metadata response hop limit:  2</code></pre>
 <p class="command-purpose"><strong>Why hop limit 2:</strong> boto3 runs inside the API container. It needs one extra network hop to read temporary role credentials. Do not put AWS access keys in a vault or environment file.</p>
 </div>
 </div>
-<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the four app boxes are running in one VPC. Frontends expose 80. No box exposes 8000. Each Swarm pair has only 2377, 7946, and 4789 between that pair. RDS 5432 accepts only the two backend groups. App-box SSH now names <code>ansible-server-sg</code>, not <code>jenkins-server-sg</code>.</p>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the three app boxes are running in one VPC. Frontends expose 80. No box exposes 8000. The production pair has only 2377, 7946, and 4789 between the two of them; staging has no cluster ports at all. Every app box has 9100 from <code>MONITORING_IP/32</code>. RDS 5432 accepts only <code>staging-sg</code> and <code>production-backend-sg</code>. App-box SSH now names <code>ansible-server-sg</code>, not <code>jenkins-server-sg</code>.</p>
 </div></div>
 </section>
 <section class="cheatsheet-section" id="swarm-data">
@@ -254,7 +250,7 @@ Add on the same RDS instance
 </div>
 <div class="card">
 <h3>2.2 · Create the staging database and login once</h3>
-<p><strong>Where:</strong> SSH to <code>staging-backend</code>. Install only the PostgreSQL client. Connect with the RDS master login for this one setup step.</p>
+<p><strong>Where:</strong> SSH to <code>staging</code>. Install only the PostgreSQL client. Connect with the RDS master login for this one setup step.</p>
 <pre><code class="language-bash">sudo dnf install -y postgresql16
 
 psql \
@@ -292,7 +288,7 @@ psql -h RDS_ENDPOINT -U RMIT_PRODUCTION_APP_USER -d rmit_store -W \
 </div>
 <div class="card">
 <h3>2.4 · Test both app logins from the right boxes</h3>
-<pre><code class="language-bash"># on staging-backend
+<pre><code class="language-bash"># on staging
 psql -h RDS_ENDPOINT -U rmit_staging_app -d rmit_store_staging -W \
   -c "select current_user, current_database();"
 
@@ -366,10 +362,11 @@ ansible/site-swarm.yml</code></pre>
 <div class="card">
 <h3>3.3 · Complete <code>ansible/inventories/staging.ini</code></h3>
 <pre><code class="language-ini">[swarm_managers]
-staging-frontend ansible_host=STAGING_FRONTEND_IP swarm_advertise_addr=STAGING_FRONTEND_PRIVATE_IP
+staging ansible_host=STAGING_IP swarm_advertise_addr=STAGING_PRIVATE_IP
 
 [swarm_workers]
-staging-backend ansible_host=STAGING_BACKEND_IP swarm_advertise_addr=STAGING_BACKEND_PRIVATE_IP
+# empty on purpose: staging is a one-node Swarm. The roles below read this and
+# put the backend label on the manager, and the worker play simply has no hosts.
 
 [swarm_nodes:children]
 swarm_managers
@@ -395,7 +392,7 @@ swarm_workers
 [all:vars]
 ansible_user=ec2-user
 ansible_python_interpreter=/usr/bin/python3</code></pre>
-<p>Both inventory files use the same group names. The <code>-i</code> argument chooses one cluster at a time.</p>
+<p>Both inventory files use the same group names, so the same roles and plays run against either. The only difference is that staging's <code>[swarm_workers]</code> is empty. The <code>-i</code> argument chooses one cluster at a time.</p>
 <p class="command-purpose"><strong><code>-i</code> overrides <code>ansible.cfg</code>.</strong> This matters because the existing config still points at <code>inventory.ini</code>.</p>
 </div>
 <div class="card">
@@ -407,9 +404,9 @@ stack_name: rmit-store
 dockerhub_user: DOCKERHUB_USER
 aws_region: AWS_REGION
 s3_bucket_name: RMIT_STORE_STAGING_BUCKET
-frontend_origin: http://STAGING_FRONTEND_IP
-allowed_hosts: STAGING_FRONTEND_IP,localhost,127.0.0.1
-api_replicas: 2
+frontend_origin: http://STAGING_IP
+allowed_hosts: STAGING_IP,localhost,127.0.0.1
+api_replicas: 1  # one t3.small runs nginx and the API together
 
 # ansible/group_vars/production.yml
 ---
@@ -421,7 +418,7 @@ s3_bucket_name: RMIT_STORE_PRODUCTION_BUCKET
 frontend_origin: http://PRODUCTION_FRONTEND_IP
 allowed_hosts: PRODUCTION_FRONTEND_IP,localhost,127.0.0.1
 api_replicas: 2</code></pre>
-<p>Two API replicas show Swarm scaling, but both run on the one backend worker. They do not give host high availability.</p>
+<p>Production's two API replicas show Swarm scaling, but both run on the one backend worker. They do not give host high availability. Staging runs one replica because the whole app shares one 2 GiB box.</p>
 <p class="command-purpose"><strong>These values are not passwords.</strong> Keep exact image tags out of these files. Pass <code>image_tag</code>, <code>git_commit</code>, and <code>app_version</code> for each release.</p>
 </div>
 <div class="card">
@@ -479,14 +476,22 @@ head -1 ansible/group_vars/vault-production.yml
   community.docker.docker_node:
     hostname: "{{ ansible_hostname }}"
     labels:
-      app_role: frontend
+      runs_frontend: "true"
     labels_state: merge
+
+- name: Also label the manager for backend placement when there is no worker
+  community.docker.docker_node:
+    hostname: "{{ ansible_hostname }}"
+    labels:
+      runs_backend: "true"
+    labels_state: merge
+  when: groups['swarm_workers'] | default([]) | length == 0
 
 - name: Keep the worker join token in memory
   ansible.builtin.set_fact:
     swarm_worker_join_token: "{{ swarm_manager_result.swarm_facts.JoinTokens.Worker }}"
   no_log: true</code></pre>
-<p><code>community.docker.docker_swarm</code> is idempotent. It creates a Swarm only when the host is not already a manager. The token stays in Ansible memory and is hidden from output.</p>
+<p><code>community.docker.docker_swarm</code> is idempotent. It creates a Swarm only when the host is not already a manager. The token stays in Ansible memory and is hidden from output. Two boolean labels instead of one <code>app_role</code> value let a single node carry both roles: staging gets both labels, production splits them.</p>
 <p class="command-purpose"><strong>One manager is deliberate but not highly available.</strong> If the frontend manager dies, Swarm control and the public site stop. Record this in the report.</p>
 </div>
 <div class="card">
@@ -515,7 +520,7 @@ head -1 ansible/group_vars/vault-production.yml
   community.docker.docker_node:
     hostname: "{{ ansible_hostname }}"
     labels:
-      app_role: backend
+      runs_backend: "true"
     labels_state: merge
   delegate_to: "{{ groups['swarm_managers'][0] }}"</code></pre>
 <p>If a host already belongs to the wrong Swarm, this role should fail. Do not make it run <code>docker swarm leave --force</code> by itself. Confirm the host and environment first, then leave the wrong cluster by hand.</p>
@@ -553,7 +558,7 @@ join token:
 <p class="command-purpose"><strong>Module state drives the result.</strong> There is no hand-written parsing of <code>docker swarm init</code> output, so a change in its human text does not break the play.</p>
 </div>
 </div>
-<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the manager role creates one manager, labels it frontend, and keeps the join token hidden. The worker role joins one private manager address and labels itself backend. A second run should not recreate the Swarm.</p>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> the manager role creates one manager, labels it <code>runs_frontend</code> (and <code>runs_backend</code> too when the inventory has no worker), and keeps the join token hidden. The worker role joins one private manager address and labels itself <code>runs_backend</code>. A second run should not recreate the Swarm.</p>
 </div></div>
 </section>
 <section class="cheatsheet-section" id="swarm-stack">
@@ -695,7 +700,7 @@ services:
       replicas: ${API_REPLICAS}
       placement:
         constraints:
-          - node.labels.app_role == backend
+          - node.labels.runs_backend == true
       update_config:
         parallelism: 1
         delay: 10s
@@ -729,7 +734,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.labels.app_role == frontend
+          - node.labels.runs_frontend == true
       update_config:
         parallelism: 1
         order: stop-first
@@ -774,6 +779,10 @@ future hardening:
 <div class="card">
 <h3>6.1 · Complete <code>ansible/roles/swarm_deploy/tasks/main.yml</code></h3>
 <pre><code class="language-yaml">---
+- name: Pick the node that runs the API (the worker, or the manager itself on one-node staging)
+  ansible.builtin.set_fact:
+    backend_node: "{{ groups['swarm_workers'][0] if (groups['swarm_workers'] | default([]) | length &gt; 0) else inventory_hostname }}"
+
 - name: Create deployment directory on manager
   ansible.builtin.file:
     path: /opt/rmit-store
@@ -789,7 +798,7 @@ future hardening:
     owner: ec2-user
     group: ec2-user
     mode: "0755"
-  delegate_to: "{{ groups['swarm_workers'][0] }}"
+  delegate_to: "{{ backend_node }}"
 
 - name: Render stack file on manager
   ansible.builtin.template:
@@ -807,7 +816,7 @@ future hardening:
     owner: root
     group: root
     mode: "0600"
-  delegate_to: "{{ groups['swarm_workers'][0] }}"
+  delegate_to: "{{ backend_node }}"
   register: api_env_template
   no_log: true
 
@@ -815,14 +824,14 @@ future hardening:
   community.docker.docker_login:
     username: "{{ dockerhub_user }}"
     password: "{{ vault_dockerhub_token }}"
-  delegate_to: "{{ groups['swarm_workers'][0] }}"
+  delegate_to: "{{ backend_node }}"
   no_log: true
 
 - name: Pull exact API image on backend worker
   community.docker.docker_image:
     name: "{{ dockerhub_user }}/rmit-store-api:{{ image_tag }}"
     source: pull
-  delegate_to: "{{ groups['swarm_workers'][0] }}"
+  delegate_to: "{{ backend_node }}"
 
 - name: Run database migration before service update
   ansible.builtin.command:
@@ -838,7 +847,7 @@ future hardening:
       - manage.py
       - migrate
       - --noinput
-  delegate_to: "{{ groups['swarm_workers'][0] }}"
+  delegate_to: "{{ backend_node }}"
   register: migration_result
   changed_when: "'Applying ' in migration_result.stdout"
   failed_when: migration_result.rc != 0
@@ -939,7 +948,7 @@ future hardening:
 - name: Print deployed service table
   ansible.builtin.debug:
     var: stack_services.stdout_lines</code></pre>
-<p>The migration runs on the backend worker because only its security group can reach RDS. The manager logs in separately so <code>--with-registry-auth</code> can pass private registry auth to Swarm tasks.</p>
+<p>The migration runs on <code>backend_node</code>: the worker in production, the single manager in staging. Only those security groups can reach RDS. The manager logs in separately so <code>--with-registry-auth</code> can pass private registry auth to Swarm tasks.</p>
 <p>The two <code>uri</code> tasks run from the Ansible control node, your laptop now and <code>ansible-server</code> once page 2 is wired, not from an EC2 target. They wait up to five minutes for readiness and the requested commit through nginx. The role returns only after the public rollout is ready and <code>/api/version/</code> contains the full <code>git_commit</code> or its first eight characters.</p>
 <p class="command-purpose"><strong>Failure stops the play.</strong> A nonzero migration result prevents the stack command from running. A rollout or version timeout also fails the role. Output text can differ by Docker version, so proof comes from service state and public HTTP checks.</p>
 </div>
@@ -963,7 +972,7 @@ future hardening:
           - app_version | length &gt; 0
         fail_msg: Use staging or production and pass image_tag, git_commit, and app_version.
 
-- name: Install Docker on both Swarm nodes
+- name: Install Docker on every Swarm node
   hosts: swarm_nodes
   become: true
   roles:
@@ -975,7 +984,7 @@ future hardening:
   roles:
     - swarm_manager
 
-- name: Join the Swarm worker
+- name: Join the Swarm worker  # skipped in staging: the group is empty
   hosts: swarm_workers
   become: true
   roles:
@@ -1079,25 +1088,25 @@ ansible-playbook \
 </div>
 <div class="card">
 <h3>7.4 · Prove the staging cluster on its manager</h3>
-<pre><code class="language-bash">ssh -i ~/Downloads/TEAM_KEY.pem ec2-user@STAGING_FRONTEND_IP
+<pre><code class="language-bash">ssh -i ~/Downloads/TEAM_KEY.pem ec2-user@STAGING_IP
 
 sudo docker node ls
 sudo docker node inspect self --pretty
 sudo docker stack services rmit-store
 sudo docker stack ps rmit-store --no-trunc
 sudo docker network ls | grep rmit_store_app</code></pre>
-<p>Expect two nodes with status <code>Ready</code>. The frontend node is <code>Leader</code>. Frontend has one running task on the manager. API has two running tasks on the worker.</p>
-<p class="command-purpose"><strong>Output wording can vary.</strong> Check the facts: two ready nodes, correct placement, desired replica counts, exact image tag, and an overlay network.</p>
+<p>Expect one node with status <code>Ready</code> and <code>Leader</code>. Frontend has one running task and API has one running task, both on that node. <code>docker node inspect self --pretty</code> shows both labels, <code>runs_frontend</code> and <code>runs_backend</code>.</p>
+<p class="command-purpose"><strong>Output wording can vary.</strong> Check the facts: one ready node with both labels, desired replica counts, exact image tag, and an overlay network.</p>
 </div>
 <div class="card">
 <h3>7.5 · Prove every public route from your laptop</h3>
-<pre><code class="language-bash">curl -fsSI http://STAGING_FRONTEND_IP/
-curl -fsS  http://STAGING_FRONTEND_IP/healthz/
-curl -fsS  http://STAGING_FRONTEND_IP/readyz/
-curl -fsS  http://STAGING_FRONTEND_IP/api/version/
+<pre><code class="language-bash">curl -fsSI http://STAGING_IP/
+curl -fsS  http://STAGING_IP/healthz/
+curl -fsS  http://STAGING_IP/readyz/
+curl -fsS  http://STAGING_IP/api/version/
 
 # port 8000 must not be a public app route
-curl --connect-timeout 3 http://STAGING_BACKEND_IP:8000/</code></pre>
+curl --connect-timeout 3 http://STAGING_IP:8000/</code></pre>
 <p><code>/readyz/</code> must report database and storage ready. <code>/api/version/</code> must show the commit and app version you passed. The last command should fail to connect from the internet because there is no port 8000 security-group rule and no published API port.</p>
 <p class="command-purpose"><strong>Use the frontend address for all good checks.</strong> This proves nginx, overlay DNS, API, RDS, and S3 in one path.</p>
 </div>
@@ -1115,7 +1124,7 @@ curl --connect-timeout 3 http://STAGING_BACKEND_IP:8000/</code></pre>
 <p class="command-purpose"><strong>Idempotent means no needless rebuild or cluster recreation.</strong> Save the second recap and compare it with the first.</p>
 </div>
 </div>
-<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> staging has two ready nodes, frontend on the manager, API only on the worker, exact immutable tags, green health and readiness through port 80, correct version data, and no public backend connection on 8000.</p>
+<p class="callout callout--checkpoint"><strong>Checkpoint:</strong> staging has one ready node carrying both labels, one frontend task and one API task, exact immutable tags, green health and readiness through port 80, correct version data, and no public backend connection on 8000.</p>
 </div></div>
 </section>
 <section class="cheatsheet-section" id="swarm-production">
@@ -1203,11 +1212,11 @@ curl --connect-timeout 3 http://PRODUCTION_BACKEND_IP:8000/</code></pre>
 <div class="card">
 <h3>9.1 · Screenshot and command evidence</h3>
 <pre><code class="language-bash">AWS console:
-  six EC2 names and sizes
+  six EC2 names and sizes, five Elastic IPs
   app SSH rules naming ansible-server-sg
-  staging pair security-group rules
+  staging-sg rules (one node, no cluster ports)
   production pair security-group rules
-  RDS 5432 sources are the two backend groups
+  RDS 5432 sources are staging-sg and production-backend-sg
   backend IAM instance profile
   separate staging and production S3 bucket names
 
@@ -1249,7 +1258,7 @@ Core 9  Orchestration:
 <div class="card">
 <h3>9.3 · Limits to write plainly</h3>
 <pre><code class="language-bash">not highly available:
-  one manager and one worker per environment
+  staging is one node; production is one manager and one worker
 
 not automatic:
   AWS provisioning

@@ -47,14 +47,14 @@ GitHub private repo             │
         STAGING PATH, one shared slot                         PRODUCTION PATH
         ┌─────────────────────────┐                           ┌─────────────────────────┐
         │ staging Docker Swarm    │                           │ production Docker Swarm │
-        │ API + frontend services │                           │ API + frontend services │
+        │ one node: API + frontend│                           │ manager + worker        │
         └───────────┬─────────────┘                           └───────────┬─────────────┘
                     │                                                     │
              ┌──────┴──────┐                                       ┌──────┴──────┐
              ▼             ▼                                       ▼             ▼
         RDS staging   S3 staging                              RDS production  S3 production
         database      media bucket                            database        media bucket</code></pre>
-<p class="command-purpose"><strong>Jenkins and Ansible sit on separate EC2 hosts.</strong> Jenkins keeps the Docker socket and the registry token. <code>ansible-server</code> keeps the SSH deploy key, the vault password, and the only route into the four app boxes. Neither box can do the other one's job.</p>
+<p class="command-purpose"><strong>Jenkins and Ansible sit on separate EC2 hosts.</strong> Jenkins keeps the Docker socket and the registry token. <code>ansible-server</code> keeps the SSH deploy key, the vault password, and the only route into the three app boxes. Neither box can do the other one's job.</p>
 <p>Jenkins still owns sequence. It runs <code>ansible-server</code> as a permanent build agent labelled <code>ansible</code>, so the deploy stage is an ordinary pipeline stage with normal console output, normal credential binding, and a red stage on failure. Nothing is triggered by a fire-and-forget remote command.</p>
 </div>
 <div class="card">
@@ -113,8 +113,11 @@ Storage           16 GiB gp3        no images stored here
 IAM role          none needed
 Security group    ansible-server-sg
 
-Use Elastic IPs if the Learner Lab allows them.
-Write the public values down as JENKINS_IP and ANSIBLE_IP.</code></pre>
+Elastic IP:  jenkins-server yes (GitHub's webhook needs a fixed address)
+             ansible-server no. The lab allows 5, and they go to jenkins, staging,
+             production-frontend, production-backend and monitoring-server.
+Write down JENKINS_IP (fixed), ANSIBLE_PRIVATE_IP (fixed, Jenkins uses it)
+and ANSIBLE_IP (public, may change after a lab restart; only you use it for SSH).</code></pre>
 <p class="command-purpose"><strong>The public URL is</strong> <code>http://JENKINS_IP:8080</code>. HTTPS is future work. Do not claim that this HTTP setup protects login traffic. <code>ansible-server</code> publishes nothing at all; you reach it only over SSH.</p>
 </div>
 <div class="card">
@@ -124,13 +127,14 @@ Write the public values down as JENKINS_IP and ANSIBLE_IP.</code></pre>
   SSH         TCP 22     source TEAM_PUBLIC_IP/32
   Jenkins     TCP 8080   source TEAM_PUBLIC_IP/32
   Jenkins     TCP 8080   source each current GitHub hooks CIDR
+  Metrics     TCP 8080   source MONITORING_IP/32          Prometheus reads /prometheus
 
 ansible-server-sg inbound:
   SSH         TCP 22     source TEAM_PUBLIC_IP/32
   SSH         TCP 22     source jenkins-server-sg
   no other inbound rule
 
-app Swarm security groups:
+app Swarm security groups (staging-sg, production-frontend-sg, production-backend-sg):
   SSH         TCP 22     source ansible-server-sg
 
 # Get GitHub's current webhook CIDRs. Run on your laptop.
@@ -207,7 +211,7 @@ python3 --version</code></pre>
 <p class="command-purpose"><strong>No Docker and no swap here.</strong> <code>ansible-playbook</code> is light work: it opens SSH connections and waits. The heavy container work happens on the app boxes and on <code>jenkins-server</code>.</p>
 </div>
 </div>
-<p class="callout"><strong>Checkpoint:</strong> <code>docker version</code> and <code>docker compose version</code> work on <code>jenkins-server</code> after a fresh SSH login, and <code>free -h</code> shows 2 GiB of swap. <code>java -version</code> works on <code>ansible-server</code>. <code>JENKINS_IP</code> and <code>ANSIBLE_IP</code> are stable. The app security groups name <code>ansible-server-sg</code> for SSH.</p>
+<p class="callout"><strong>Checkpoint:</strong> <code>docker version</code> and <code>docker compose version</code> work on <code>jenkins-server</code> after a fresh SSH login, and <code>free -h</code> shows 2 GiB of swap. <code>java -version</code> works on <code>ansible-server</code>. <code>JENKINS_IP</code> and <code>ANSIBLE_PRIVATE_IP</code> are stable; if the lab restarts, re-read <code>ANSIBLE_IP</code> before you SSH in. The app security groups name <code>ansible-server-sg</code> for SSH.</p>
 </div>
 </section>
 
@@ -416,7 +420,7 @@ ansible-agent-ssh
 ec2-deploy-key
   Kind: SSH Username with private key
   Username: ec2-user
-  Private key: key accepted by the four app EC2 hosts
+  Private key: key accepted by the three app EC2 hosts
 
 ansible-vault-password
   Kind: Secret text
@@ -430,7 +434,7 @@ gmail-smtp
   Kind: Username with password
   Created by existing jenkins/casc/alerting.yaml
   Username/password come from GMAIL_USER and GMAIL_APP_PASSWORD</code></pre>
-<p>The split needs two different SSH keys. <code>ansible-agent-ssh</code> lets Jenkins into <code>ansible-server</code>. <code>ec2-deploy-key</code> lets Ansible into the four app boxes. Generate them separately, so losing one does not hand over both hops.</p>
+<p>The split needs two different SSH keys. <code>ansible-agent-ssh</code> lets Jenkins into <code>ansible-server</code>. <code>ec2-deploy-key</code> lets Ansible into the three app boxes. Generate them separately, so losing one does not hand over both hops.</p>
 <p class="command-purpose"><strong>Keep each ID exact.</strong> The two root Jenkinsfiles below refer to these strings. <code>ansible-agent-ssh</code> is the exception: only the node configuration in Step 4 uses it.</p>
 </div>
 <div class="card">
@@ -524,13 +528,13 @@ Launch method           Launch agents via SSH
 mkdir -p ~/.ssh
 chmod 700 ~/.ssh
 
-for IP in STAGING_BACKEND_IP STAGING_FRONTEND_IP \
+for IP in STAGING_IP \
           PRODUCTION_BACKEND_IP PRODUCTION_FRONTEND_IP; do
   ssh-keyscan -H "$IP" &gt;&gt; ~/.ssh/known_hosts
 done
 
 chmod 600 ~/.ssh/known_hosts
-ssh-keygen -F STAGING_BACKEND_IP -f ~/.ssh/known_hosts</code></pre>
+ssh-keygen -F STAGING_IP -f ~/.ssh/known_hosts</code></pre>
 <p>These keys used to live in <code>/var/jenkins_home/.ssh/known_hosts</code>. They belong here now, because this is the box that opens the connections. The Jenkins box keeps a <code>known_hosts</code> file too, but it holds exactly one entry: <code>ansible-server</code>.</p>
 <p>Use the same address form here that <code>ansible_host</code> uses in the page 1 inventories. A key scanned for a public IP does not match a connection made to the private IP.</p>
 <p class="command-purpose"><strong>Strict checking stays on.</strong> The deploy command below overrides the <code>host_key_checking = False</code> line in the page 1 <code>ansible.cfg</code>. Compare fingerprints with a teammate through a trusted channel; never accept an unknown key inside a pipeline.</p>
@@ -590,7 +594,7 @@ ANSIBLE_HOST_KEY_CHECKING=True \
 <p class="command-purpose"><strong>Jenkins owns sequence; Ansible owns deployment.</strong> Jenkins selects one static inventory and passes <code>target_environment</code>, <code>image_tag</code>, <code>git_commit</code>, and <code>app_version</code>. Page 1 owns the playbook and vault selection. Splitting the boxes did not move this line; it only moved where the playbook process starts.</p>
 </div>
 </div>
-<p class="callout"><strong>Checkpoint:</strong> <code>ansible-server</code> shows as an online Jenkins node with the <code>ansible</code> label and one executor. The venv reports a bounded <code>ansible-core</code> and can list <code>community.docker</code>. A manual <code>ansible ... -m ping</code> reaches all four app hosts with strict host key checking on. The manual clone and any copied key are deleted.</p>
+<p class="callout"><strong>Checkpoint:</strong> <code>ansible-server</code> shows as an online Jenkins node with the <code>ansible</code> label and one executor. The venv reports a bounded <code>ansible-core</code> and can list <code>community.docker</code>. A manual <code>ansible ... -m ping</code> reaches all three app hosts with strict host key checking on. The manual clone and any copied key are deleted.</p>
 </div>
 </section>
 
@@ -615,7 +619,7 @@ pipeline {
     BREAK_PIPELINE_TESTS = 'no'
     ANSIBLE_BIN = '/opt/ansible-venv/bin/ansible-playbook'
     ANSIBLE_COLLECTIONS_PATH = '/opt/ansible-collections'
-    STAGING_FRONTEND = 'http://STAGING_FRONTEND_IP'
+    STAGING_FRONTEND = 'http://STAGING_IP'
   }
 
   stages {
@@ -850,7 +854,7 @@ pipeline {
 <p>The single executor on <code>ansible-server</code> is a second, coarser limit on the same thing. Even without the lock, two deployments could not run at once. Keep the lock anyway: it is what makes the newest PR win, and it also covers the production job, which uses the other inventory but the same Swarm cluster pair.</p>
 <p>An older run from a different PR can still remain in the lock queue. Cancel stale queue entries during the assignment demo. Jenkins has no per-PR staging copy in this design.</p>
 <pre><code class="language-bash"># Before a teammate starts manual staging tests:
-curl -fsS http://STAGING_FRONTEND_IP/api/version/
+curl -fsS http://STAGING_IP/api/version/
 
 # The "commit" value must match that PR's SHORTSHA.
 # If it differs, staging belongs to another run.</code></pre>
@@ -1377,7 +1381,7 @@ docker volume ls
 curl -fsS http://localhost:8080/prometheus | grep -m1 jenkins
 
 # prove the split: jenkins-server cannot reach an app box over SSH
-timeout 5 bash -c '&lt;/dev/tcp/STAGING_BACKEND_PRIVATE_IP/22' \
+timeout 5 bash -c '&lt;/dev/tcp/STAGING_PRIVATE_IP/22' \
   &amp;&amp; echo "UNEXPECTED: remove jenkins-server-sg from the app groups" \
   || echo "expected: no SSH route from jenkins-server"
 
@@ -1406,7 +1410,7 @@ Configuration:
 
 Separation of duties:
   jenkins-server builds and pushes; ansible-server is the only box
-  with SSH access to the four application hosts.
+  with SSH access to the three application hosts.
 
 Failure:
   later stages stop, GitHub is red, and notify.groovy emails the team.
