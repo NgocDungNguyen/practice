@@ -53,6 +53,7 @@ PAGES = [
     ("week-9", "week-9-docker-compose-swarm-lab.html", "automation", "09", "Docker Compose and Swarm"),
     ("week-10", "week-10-kubernetes-lab.html", "orchestration", "10", "Kubernetes"),
     ("week-11", "week-11-eks-aws-lab.html", "orchestration", "11", "EKS on AWS"),
+    ("rmit-e2e-pipeline", "rmit-store-e2e-pipeline.html", "resources", "E2E", "RMIT Store: End-to-End CI/CD"),
     ("rmit-manual-deploy", "rmit-store-manual-deploy.html", "resources", "A2", "RMIT Store: Manual Deploy (A–E)"),
     ("rmit-ansible-swarm", "rmit-store-ansible-swarm.html", "resources", "AN", "RMIT Store: Ansible & Docker Swarm"),
     ("rmit-jenkins-pipeline", "rmit-store-jenkins-pipeline.html", "resources", "JE", "RMIT Store: Jenkins Pipelines"),
@@ -76,6 +77,11 @@ PAGE_BY_KEY = {p[0]: p for p in PAGES}
 # reference-shelf blurb (mirror pages get theirs from the original homepage).
 LOCAL_DIR = PROJECT / "tools" / "local_pages"
 LOCAL_PAGES = {
+    "rmit-e2e-pipeline": {
+        "card": "The Assignment 2 master runbook: see the whole delivery path, "
+                "follow Jenkins from checkout and unit test through Ansible build, "
+                "push and deployment, then run E2E and publish the final result.",
+    },
     "setup": {
         "card": "Stand up Docker, Maven, Tomcat, and Jenkins from a blank "
                 "machine, verify every layer, then reset to a clean slate "
@@ -104,16 +110,14 @@ LOCAL_PAGES = {
                 "Plan F, the automation pipeline.",
     },
     "rmit-ansible-swarm": {
-        "card": "Build separate staging and production Docker Swarms with Ansible: "
-                "five EC2 prerequisites, isolated RDS and S3 data, exact image "
-                "tags, explicit migrations, private backend traffic, repeatable "
-                "roles, and proof commands for both clusters.",
+        "card": "Use Ansible to build and push immutable images, then migrate and "
+                "deploy the exact pair to separate staging and production Docker "
+                "Swarms before Jenkins runs end-to-end tests.",
     },
     "rmit-jenkins-pipeline": {
-        "card": "Two Jenkins paths for Assignment 2: pull requests deploy to shared "
-                "staging and report a required GitHub status; protected main pushes "
-                "deploy to production. Includes immutable Docker Hub images, a "
-                "short-lived Ansible runner, smoke checks, and failure email.",
+        "card": "Jenkins pulls code, runs unit tests, calls Ansible to build, push, "
+                "and deploy, runs E2E against the deployment, then publishes the "
+                "result and sends failure email.",
     },
     "rmit-alerting": {
         "card": "Assignment 2 core requirement 8, built as a drop-in module: a "
@@ -661,12 +665,16 @@ def build_home(mirror: Path, totals: dict) -> None:
     # generate theirs from the registry blurb instead.
     for key, local_meta in LOCAL_PAGES.items():
         _k, filename, _stage, num, label = PAGE_BY_KEY[key]
-        resource_cards_html.append(f"""<a class="week-card" data-stage="resources" href="sub_pages/{filename}">
+        local_card = f"""<a class="week-card" data-stage="resources" href="sub_pages/{filename}">
 <span class="week-card__top"><span class="week-card__num">{num}</span><span class="week-card__emoji" aria-hidden="true">{PAGE_EMOJI.get(key, "📘")}</span></span>
 <h3>{label}</h3>
 <p>{local_meta["card"]}</p>
 <span class="go-to-link">Open reference</span>
-</a>""")
+</a>"""
+        if key == "rmit-e2e-pipeline":
+            resource_cards_html.insert(0, local_card)
+        else:
+            resource_cards_html.append(local_card)
 
     home = f"""{head_html("COSC2767 - Systems Deployment and Operations", description, "")}
 <body data-page="home" data-root="">

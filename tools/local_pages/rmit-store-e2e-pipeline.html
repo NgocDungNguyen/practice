@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="RMIT Store Assignment 2 end-to-end CI/CD map: Jenkins pulls the code, runs unit tests, calls Ansible to build, push, and deploy immutable images, runs end-to-end tests, and publishes the result.">
+<title>RMIT Store: End-to-End CI/CD - COSC2767</title>
+</head>
+<body>
+<header>
+<div class="container">
+<h1>🧭 RMIT Store: End-to-End CI/CD</h1>
+<p class="intro">This is the master map for Assignment 2 delivery. Jenkins owns the pipeline order and the final result. Ansible owns the middle delivery stage: build both images, push their immutable tags, and deploy those exact tags. The end-to-end test runs only after the deployment is ready.</p>
+</div>
+</header>
+<main class="container">
+
+<section class="cheatsheet-section" id="e2e-map">
+<h2 class="collapsible-header start-open">🗺️ The complete path<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>One commit through the delivery system</h3>
+<pre><code class="language-bash">developer pushes code
+        |
+        v
+GitHub webhook starts Jenkins
+        |
+        v
+1. Pull code
+   Jenkins checks out the exact commit
+        |
+        v
+2. Unit test
+   temporary tests now, real team tests later
+        |
+        v
+3. Ansible: build, push, deploy
+   build API + frontend images
+   push one immutable tag pair to private Docker Hub
+   migrate and deploy the same pair to the target environment
+        |
+        v
+4. E2E test
+   exercise the deployed application through its public frontend
+        |
+        v
+5. Result
+   Jenkins publishes SUCCESS or FAILURE
+   GitHub receives the Jenkins status
+   the team receives failure email
+
+Any failed stage stops every later stage and makes the Jenkins result red.
+Prometheus and Grafana observe the deployed staging and production hosts.</code></pre>
+<p class="command-purpose"><strong>Jenkins orchestrates the flow.</strong> GitHub stores the code and triggers Jenkins. Ansible builds, pushes, and deploys. Docker Hub stores the immutable images. Jenkins runs the post-deployment test and publishes the result.</p>
+</div>
+</div>
+<p class="callout"><strong>Order is the gate:</strong> failed unit tests prevent Ansible from running. A failed Ansible task prevents E2E. A failed E2E test makes the final Jenkins result red.</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="e2e-now">
+<h2 class="collapsible-header start-open">🔧 The Jenkins stage order<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Build this flow</h3>
+<pre><code class="language-bash">Pull code
+  -&gt; Unit test
+  -&gt; Ansible: build, push, deploy
+  -&gt; E2E test
+  -&gt; Result</code></pre>
+<p>The unit and E2E commands are temporary placeholders for now. Keep them in separate stages so the testing teammate can replace each command without changing the delivery order.</p>
+</div>
+<div class="card">
+<h3>What each gate proves</h3>
+<pre><code class="language-bash">Unit test fails     -&gt; no image build, push, or deployment
+Ansible fails       -&gt; no E2E test
+E2E test fails      -&gt; deployment happened, result is FAILURE
+Every stage passes  -&gt; result is SUCCESS</code></pre>
+<p class="command-purpose"><strong>Do not combine the two tests.</strong> Unit tests run against the checked-out code before delivery. E2E tests run against the deployed application after delivery.</p>
+</div>
+</div>
+<p class="callout"><strong>Next page:</strong> follow <a href="rmit-store-jenkins-pipeline.html#jenkins-flow">Jenkins Pipelines: Required flow</a>, then use the Ansible and Swarm runbook for the build, push, and deploy playbook.</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="e2e-contract">
+<h2 class="collapsible-header">📦 The Jenkins to Ansible contract<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Jenkins supplies</h3>
+<pre><code class="language-bash">GIT_COMMIT=full source commit
+IMAGE_TAG=immutable commit-based tag
+TARGET_ENVIRONMENT=staging | production
+WORKSPACE=checked-out source tree</code></pre>
+<p>Jenkins creates the tag from the checked-out commit and starts the Ansible stage only after unit tests pass.</p>
+</div>
+<div class="card">
+<h3>Ansible completes</h3>
+<pre><code class="language-bash">build API_IMAGE and FRONTEND_IMAGE from WORKSPACE
+push both images with IMAGE_TAG
+run the target database migration
+deploy both images with the same IMAGE_TAG
+wait until GIT_COMMIT is live</code></pre>
+<p>Ansible owns image build, registry push, and deployment. It returns a nonzero exit code if any task fails, which stops the Jenkins pipeline before E2E.</p>
+</div>
+<div class="card">
+<h3>Rules that keep the handoff honest</h3>
+<ul>
+<li>Never deploy <code>latest</code>.</li>
+<li>Run unit tests before the Ansible build starts.</li>
+<li>Build on <code>ansible-server</code>, not on a Swarm node.</li>
+<li>Never mix an API tag from one build with a frontend tag from another.</li>
+<li>Do not overwrite a published release tag.</li>
+<li>Run E2E only after Ansible confirms the expected commit is live.</li>
+<li>Keep secrets out of the manifest, image, repository, and console log.</li>
+</ul>
+</div>
+</div>
+<p class="callout"><strong>Artifact rule:</strong> Ansible builds each immutable tag once, pushes the pair, and deploys that same pair. A rerun may reuse the pair only after it verifies that both tags already exist.</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="e2e-environments">
+<h2 class="collapsible-header">🚦 Pull request and production paths<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Pull request path</h3>
+<pre><code class="language-bash">PR update
+  -&gt; Jenkins pulls the PR commit and runs unit tests
+  -&gt; Ansible builds, pushes, and deploys the exact PR tag to shared staging
+  -&gt; Jenkins runs E2E against staging
+  -&gt; Jenkins posts green or red status
+  -&gt; GitHub requires green status + one approval</code></pre>
+<p>Staging is shared. Check <code>/api/version/</code> before manual testing because another PR may replace it.</p>
+</div>
+<div class="card">
+<h3>Protected main path</h3>
+<pre><code class="language-bash">human merges approved PR
+  -&gt; GitHub creates protected main push
+  -&gt; Jenkins pulls the merged commit and runs unit tests
+  -&gt; Ansible builds, pushes, and deploys the exact tag to production
+  -&gt; Jenkins runs the deployed-environment E2E checks
+  -&gt; Jenkins records the result</code></pre>
+<p>A failed production E2E check leaves the pipeline red and sends email. The operator decides whether to run the printed rollback command with the previous immutable tag.</p>
+</div>
+</div>
+<p class="callout"><strong>Approval boundary:</strong> Jenkins reports the result. GitHub branch protection blocks the merge. A human approves and merges. Jenkins does not approve its own release.</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="e2e-runbooks">
+<h2 class="collapsible-header">📚 Runbooks and ownership<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>1 · Manual deployment baseline</h3>
+<p><a href="rmit-store-manual-deploy.html">RMIT Store: Manual Deploy</a> proves the application path before automation. It covers local, EC2, RDS, S3, Docker, and Compose.</p>
+</div>
+<div class="card">
+<h3>2 · Jenkins CI and orchestration</h3>
+<p><a href="rmit-store-jenkins-pipeline.html">RMIT Store: Jenkins Pipelines</a> installs the persistent Jenkins controller, connects GitHub, runs temporary unit tests, calls the Ansible build/push/deploy stage, runs temporary E2E tests, and records the result.</p>
+</div>
+<div class="card">
+<h3>3 · Ansible and Docker Swarm</h3>
+<p><a href="rmit-store-ansible-swarm.html">RMIT Store: Ansible and Docker Swarm</a> prepares staging and production, builds and pushes immutable images, manages environment configuration, migrates the database, and deploys the exact tags.</p>
+</div>
+<div class="card">
+<h3>4 · Failure notification</h3>
+<p><a href="rmit-store-alerting.html">RMIT Store: Automated Alerting</a> provides the Jenkins email configuration and reusable <code>notify.groovy</code> module.</p>
+</div>
+<div class="card">
+<h3>5 · Runtime visibility</h3>
+<p><a href="rmit-store-monitoring.html">RMIT Store: Monitoring and Grafana</a> adds health probes, host metrics, dashboards, and runtime alerts after the application environments exist.</p>
+</div>
+</div>
+<p class="callout"><strong>Use this page as the index.</strong> Each detailed runbook owns its commands. When a command changes, update it in one place and keep this page focused on sequence and contracts.</p>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="e2e-done">
+<h2 class="collapsible-header">✅ What complete means<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Jenkins evidence</h3>
+<ul>
+<li>GitHub webhook delivery returns HTTP 200.</li>
+<li>A deliberate failed unit test prevents the Ansible stage.</li>
+<li>A passing unit test allows the Ansible stage to start.</li>
+<li>Jenkins shows separate Ansible and E2E stages.</li>
+<li>Jenkins records the final result and sends failure email.</li>
+</ul>
+</div>
+<div class="card">
+<h3>CD evidence</h3>
+<ul>
+<li>Ansible builds and pushes both images with one immutable tag.</li>
+<li>Ansible deploys the same tag it just pushed.</li>
+<li>Staging and production use separate inventories, vaults, RDS data, and S3 buckets.</li>
+<li>Migrations finish before the API service update.</li>
+<li>E2E starts only after health and version checks prove the expected commit is live.</li>
+</ul>
+</div>
+<div class="card">
+<h3>Operations evidence</h3>
+<ul>
+<li>Prometheus scrapes the application hosts and Jenkins.</li>
+<li>Grafana shows the health and host dashboards.</li>
+<li>A controlled failure sends the correct alert.</li>
+<li>The team can identify and manually redeploy the previous immutable tag.</li>
+</ul>
+</div>
+</div>
+<p class="callout"><strong>Finish line:</strong> one Jenkins run shows the whole order: pull code, unit test, Ansible build/push/deploy, E2E test, and final result.</p>
+</div>
+</section>
+
+</main>
+</body>
+</html>

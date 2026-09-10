@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="RMIT Store Assignment 2 end-to-end CI/CD map: Jenkins pulls the code, runs unit tests, calls Ansible to build, push, and deploy immutable images, runs end-to-end tests, and publishes the result.">
+<title>RMIT Store: End-to-End CI/CD - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=c80633c8b7">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=93ddf335e0"></script>
+</head>
+<body data-page="rmit-e2e-pipeline" data-stage="resources" data-root="../" style="--stage-accent: var(--stage-resources)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Reference</span><span class="crumb-sep">/</span><span>RMIT Store: End-to-End CI/CD</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/rmit-store-e2e-pipeline.html" data-page-key="rmit-e2e-pipeline" data-sections="6"><span class="sidenav__num">E2E</span><span>RMIT Store: End-to-End CI/CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="7"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-ansible-swarm.html" data-page-key="rmit-ansible-swarm" data-sections="10"><span class="sidenav__num">AN</span><span>RMIT Store: Ansible & Docker Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-jenkins-pipeline.html" data-page-key="rmit-jenkins-pipeline" data-sections="12"><span class="sidenav__num">JE</span><span>RMIT Store: Jenkins Pipelines</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-alerting.html" data-page-key="rmit-alerting" data-sections="8"><span class="sidenav__num">AL</span><span>RMIT Store: Automated Alerting</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-monitoring.html" data-page-key="rmit-monitoring" data-sections="9"><span class="sidenav__num">MO</span><span>RMIT Store: Monitoring & Grafana</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><details class="sidenav__group sidenav__group--collapsible" style="--group-accent: var(--stage-archive, var(--rmit-red))"><summary class="sidenav__stage-label">Assignment 1 archive<span class="sidenav__chevron" aria-hidden="true"></span></summary><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></details></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Reference</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">🧭</span>RMIT Store: End-to-End CI/CD</h1>
+<p class="page-hero__intro">This is the master map for Assignment 2 delivery. Jenkins owns the pipeline order and the final result. Ansible owns the middle delivery stage: build both images, push their immutable tags, and deploy those exact tags. The end-to-end test runs only after the deployment is ready.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>6</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>7</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>8</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="e2e-map">
+<h2 class="collapsible-header start-open">🗺️ The complete path<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>One commit through the delivery system</h3>
+<pre><code class="language-bash">developer pushes code
+        |
+        v
+GitHub webhook starts Jenkins
+        |
+        v
+1. Pull code
+   Jenkins checks out the exact commit
+        |
+        v
+2. Unit test
+   temporary tests now, real team tests later
+        |
+        v
+3. Ansible: build, push, deploy
+   build API + frontend images
+   push one immutable tag pair to private Docker Hub
+   migrate and deploy the same pair to the target environment
+        |
+        v
+4. E2E test
+   exercise the deployed application through its public frontend
+        |
+        v
+5. Result
+   Jenkins publishes SUCCESS or FAILURE
+   GitHub receives the Jenkins status
+   the team receives failure email
+
+Any failed stage stops every later stage and makes the Jenkins result red.
+Prometheus and Grafana observe the deployed staging and production hosts.</code></pre>
+<p class="command-purpose"><strong>Jenkins orchestrates the flow.</strong> GitHub stores the code and triggers Jenkins. Ansible builds, pushes, and deploys. Docker Hub stores the immutable images. Jenkins runs the post-deployment test and publishes the result.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Order is the gate:</strong> failed unit tests prevent Ansible from running. A failed Ansible task prevents E2E. A failed E2E test makes the final Jenkins result red.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="e2e-now">
+<h2 class="collapsible-header start-open">🔧 The Jenkins stage order<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Build this flow</h3>
+<pre><code class="language-bash">Pull code
+  -&gt; Unit test
+  -&gt; Ansible: build, push, deploy
+  -&gt; E2E test
+  -&gt; Result</code></pre>
+<p>The unit and E2E commands are temporary placeholders for now. Keep them in separate stages so the testing teammate can replace each command without changing the delivery order.</p>
+</div>
+<div class="card">
+<h3>What each gate proves</h3>
+<pre><code class="language-bash">Unit test fails     -&gt; no image build, push, or deployment
+Ansible fails       -&gt; no E2E test
+E2E test fails      -&gt; deployment happened, result is FAILURE
+Every stage passes  -&gt; result is SUCCESS</code></pre>
+<p class="command-purpose"><strong>Do not combine the two tests.</strong> Unit tests run against the checked-out code before delivery. E2E tests run against the deployed application after delivery.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Next page:</strong> follow <a href="rmit-store-jenkins-pipeline.html#jenkins-flow">Jenkins Pipelines: Required flow</a>, then use the Ansible and Swarm runbook for the build, push, and deploy playbook.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="e2e-contract">
+<h2 class="collapsible-header">📦 The Jenkins to Ansible contract<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Jenkins supplies</h3>
+<pre><code class="language-bash">GIT_COMMIT=full source commit
+IMAGE_TAG=immutable commit-based tag
+TARGET_ENVIRONMENT=staging | production
+WORKSPACE=checked-out source tree</code></pre>
+<p>Jenkins creates the tag from the checked-out commit and starts the Ansible stage only after unit tests pass.</p>
+</div>
+<div class="card">
+<h3>Ansible completes</h3>
+<pre><code class="language-bash">build API_IMAGE and FRONTEND_IMAGE from WORKSPACE
+push both images with IMAGE_TAG
+run the target database migration
+deploy both images with the same IMAGE_TAG
+wait until GIT_COMMIT is live</code></pre>
+<p>Ansible owns image build, registry push, and deployment. It returns a nonzero exit code if any task fails, which stops the Jenkins pipeline before E2E.</p>
+</div>
+<div class="card">
+<h3>Rules that keep the handoff honest</h3>
+<ul>
+<li>Never deploy <code>latest</code>.</li>
+<li>Run unit tests before the Ansible build starts.</li>
+<li>Build on <code>ansible-server</code>, not on a Swarm node.</li>
+<li>Never mix an API tag from one build with a frontend tag from another.</li>
+<li>Do not overwrite a published release tag.</li>
+<li>Run E2E only after Ansible confirms the expected commit is live.</li>
+<li>Keep secrets out of the manifest, image, repository, and console log.</li>
+</ul>
+</div>
+</div>
+<p class="callout callout--note"><strong>Artifact rule:</strong> Ansible builds each immutable tag once, pushes the pair, and deploys that same pair. A rerun may reuse the pair only after it verifies that both tags already exist.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="e2e-environments">
+<h2 class="collapsible-header">🚦 Pull request and production paths<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Pull request path</h3>
+<pre><code class="language-bash">PR update
+  -&gt; Jenkins pulls the PR commit and runs unit tests
+  -&gt; Ansible builds, pushes, and deploys the exact PR tag to shared staging
+  -&gt; Jenkins runs E2E against staging
+  -&gt; Jenkins posts green or red status
+  -&gt; GitHub requires green status + one approval</code></pre>
+<p>Staging is shared. Check <code>/api/version/</code> before manual testing because another PR may replace it.</p>
+</div>
+<div class="card">
+<h3>Protected main path</h3>
+<pre><code class="language-bash">human merges approved PR
+  -&gt; GitHub creates protected main push
+  -&gt; Jenkins pulls the merged commit and runs unit tests
+  -&gt; Ansible builds, pushes, and deploys the exact tag to production
+  -&gt; Jenkins runs the deployed-environment E2E checks
+  -&gt; Jenkins records the result</code></pre>
+<p>A failed production E2E check leaves the pipeline red and sends email. The operator decides whether to run the printed rollback command with the previous immutable tag.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Approval boundary:</strong> Jenkins reports the result. GitHub branch protection blocks the merge. A human approves and merges. Jenkins does not approve its own release.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="e2e-runbooks">
+<h2 class="collapsible-header">📚 Runbooks and ownership<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>1 · Manual deployment baseline</h3>
+<p><a href="rmit-store-manual-deploy.html">RMIT Store: Manual Deploy</a> proves the application path before automation. It covers local, EC2, RDS, S3, Docker, and Compose.</p>
+</div>
+<div class="card">
+<h3>2 · Jenkins CI and orchestration</h3>
+<p><a href="rmit-store-jenkins-pipeline.html">RMIT Store: Jenkins Pipelines</a> installs the persistent Jenkins controller, connects GitHub, runs temporary unit tests, calls the Ansible build/push/deploy stage, runs temporary E2E tests, and records the result.</p>
+</div>
+<div class="card">
+<h3>3 · Ansible and Docker Swarm</h3>
+<p><a href="rmit-store-ansible-swarm.html">RMIT Store: Ansible and Docker Swarm</a> prepares staging and production, builds and pushes immutable images, manages environment configuration, migrates the database, and deploys the exact tags.</p>
+</div>
+<div class="card">
+<h3>4 · Failure notification</h3>
+<p><a href="rmit-store-alerting.html">RMIT Store: Automated Alerting</a> provides the Jenkins email configuration and reusable <code>notify.groovy</code> module.</p>
+</div>
+<div class="card">
+<h3>5 · Runtime visibility</h3>
+<p><a href="rmit-store-monitoring.html">RMIT Store: Monitoring and Grafana</a> adds health probes, host metrics, dashboards, and runtime alerts after the application environments exist.</p>
+</div>
+</div>
+<p class="callout callout--note"><strong>Use this page as the index.</strong> Each detailed runbook owns its commands. When a command changes, update it in one place and keep this page focused on sequence and contracts.</p>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="e2e-done">
+<h2 class="collapsible-header">✅ What complete means<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Jenkins evidence</h3>
+<ul>
+<li>GitHub webhook delivery returns HTTP 200.</li>
+<li>A deliberate failed unit test prevents the Ansible stage.</li>
+<li>A passing unit test allows the Ansible stage to start.</li>
+<li>Jenkins shows separate Ansible and E2E stages.</li>
+<li>Jenkins records the final result and sends failure email.</li>
+</ul>
+</div>
+<div class="card">
+<h3>CD evidence</h3>
+<ul>
+<li>Ansible builds and pushes both images with one immutable tag.</li>
+<li>Ansible deploys the same tag it just pushed.</li>
+<li>Staging and production use separate inventories, vaults, RDS data, and S3 buckets.</li>
+<li>Migrations finish before the API service update.</li>
+<li>E2E starts only after health and version checks prove the expected commit is live.</li>
+</ul>
+</div>
+<div class="card">
+<h3>Operations evidence</h3>
+<ul>
+<li>Prometheus scrapes the application hosts and Jenkins.</li>
+<li>Grafana shows the health and host dashboards.</li>
+<li>A controlled failure sends the correct alert.</li>
+<li>The team can identify and manually redeploy the previous immutable tag.</li>
+</ul>
+</div>
+</div>
+<p class="callout callout--note"><strong>Finish line:</strong> one Jenkins run shows the whole order: pull code, unit test, Ansible build/push/deploy, E2E test, and final result.</p>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-orchestration)" href="../sub_pages/week-11-eks-aws-lab.html"><span class="pager__dir">← Previous</span><span class="pager__title">EKS on AWS</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-resources)" href="../sub_pages/rmit-store-manual-deploy.html"><span class="pager__dir">Next →</span><span class="pager__title">RMIT Store: Manual Deploy (A–E)</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="e2e-map"><a class="toc__link" href="#e2e-map"><span>The complete path</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="e2e-now"><a class="toc__link" href="#e2e-now"><span>The Jenkins stage order</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="e2e-contract"><a class="toc__link" href="#e2e-contract"><span>The Jenkins to Ansible contract</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="e2e-environments"><a class="toc__link" href="#e2e-environments"><span>Pull request and production paths</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="e2e-runbooks"><a class="toc__link" href="#e2e-runbooks"><span>Runbooks and ownership</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="e2e-done"><a class="toc__link" href="#e2e-done"><span>What complete means</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 6 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>
