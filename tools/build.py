@@ -36,7 +36,7 @@ STAGES = {
     "automation": {"label": "Automation", "weeks": "Weeks 6, 8–9"},
     "orchestration": {"label": "Operations", "weeks": "Weeks 10–11"},
     "resources": {"label": "Reference", "weeks": ""},
-    "archive": {"label": "Assignment 1 archive", "weeks": ""},
+    "archive": {"label": "Archive", "weeks": ""},
 }
 # Sidebar groups rendered closed unless they hold the active page.
 COLLAPSED_STAGES = {"archive"}
@@ -53,15 +53,20 @@ PAGES = [
     ("week-9", "week-9-docker-compose-swarm-lab.html", "automation", "09", "Docker Compose and Swarm"),
     ("week-10", "week-10-kubernetes-lab.html", "orchestration", "10", "Kubernetes"),
     ("week-11", "week-11-eks-aws-lab.html", "orchestration", "11", "EKS on AWS"),
-    ("rmit-manual-deploy", "rmit-store-manual-deploy.html", "resources", "A2", "RMIT Store: Manual Deploy (A–E)"),
-    ("rmit-alerting", "rmit-store-alerting.html", "resources", "AL", "RMIT Store: Automated Alerting"),
     ("sshkeys", "ssh-keys-github.html", "resources", "SK", "SSH Keys & GitHub Access"),
     ("cheatsheet", "devops-cheatsheet.html", "resources", "CS", "DevOps Cheatsheet"),
     ("resources", "useful-resources.html", "resources", "RX", "Useful Resources"),
-    # Assignment 1 (Java / Maven / Tomcat / Jenkins) material, kept but shelved.
+    # Finished assignment material, kept but shelved: Assignment 1
+    # (Java / Maven / Tomcat / Jenkins) then Assignment 2 (RMIT Store).
     ("setup", "setup.html", "archive", "SU", "Practice Environment Setup"),
     ("challenge6", "challenge-6-setup-script.html", "archive", "C6", "Challenge 6 Setup Script"),
     ("sshagent-debug", "debug-jenkins-ssh-agent.html", "archive", "DL", "Debug Log: Jenkins SSH Agent"),
+    ("rmit-e2e-pipeline", "rmit-store-e2e-pipeline.html", "archive", "E2E", "RMIT Store: End-to-End CI/CD"),
+    ("rmit-manual-deploy", "rmit-store-manual-deploy.html", "archive", "A2", "RMIT Store: Manual Deploy (A–E)"),
+    ("rmit-ansible-swarm", "rmit-store-ansible-swarm.html", "archive", "AN", "RMIT Store: Ansible & Docker Swarm"),
+    ("rmit-jenkins-pipeline", "rmit-store-jenkins-pipeline.html", "archive", "JE", "RMIT Store: Jenkins Pipelines"),
+    ("rmit-alerting", "rmit-store-alerting.html", "archive", "AL", "RMIT Store: Automated Alerting"),
+    ("rmit-monitoring", "rmit-store-monitoring.html", "archive", "MO", "RMIT Store: Monitoring & Grafana"),
 ]
 
 PAGE_BY_KEY = {p[0]: p for p in PAGES}
@@ -73,6 +78,11 @@ PAGE_BY_KEY = {p[0]: p for p in PAGES}
 # reference-shelf blurb (mirror pages get theirs from the original homepage).
 LOCAL_DIR = PROJECT / "tools" / "local_pages"
 LOCAL_PAGES = {
+    "rmit-e2e-pipeline": {
+        "card": "The Assignment 2 master runbook: see the whole delivery path, "
+                "follow Jenkins from checkout and unit test through Ansible build, "
+                "push and deployment, then run E2E and publish the final result.",
+    },
     "setup": {
         "card": "Stand up Docker, Maven, Tomcat, and Jenkins from a blank "
                 "machine, verify every layer, then reset to a clean slate "
@@ -100,12 +110,29 @@ LOCAL_PAGES = {
                 "containerise with Docker, then Docker Compose. Stops before "
                 "Plan F, the automation pipeline.",
     },
+    "rmit-ansible-swarm": {
+        "card": "Use Ansible to build and push immutable images, then migrate and "
+                "deploy the exact pair to separate staging and production Docker "
+                "Swarms before Jenkins runs end-to-end tests.",
+    },
+    "rmit-jenkins-pipeline": {
+        "card": "Jenkins pulls code, runs unit tests, calls Ansible to build, push, "
+                "and deploy, runs E2E against the deployment, then publishes the "
+                "result and sends failure email.",
+    },
     "rmit-alerting": {
         "card": "Assignment 2 core requirement 8, built as a drop-in module: a "
                 "Groovy notify script plus Jenkins Configuration as Code that "
                 "emails the team on build, test and deploy failures — proven on "
                 "a throwaway Jenkins in Docker, then handed to the pipeline owner "
                 "as three lines to paste.",
+    },
+    "rmit-monitoring": {
+        "card": "Assignment 2 monitoring and alerting: Prometheus and Grafana on a "
+                "third EC2 box probing /healthz/, /readyz/ and the website, host "
+                "metrics from node_exporter, Jenkins metrics later — dashboards and "
+                "six email alerts provisioned as files, proven by stopping the API, "
+                "then handed to the Ansible owner as two small roles.",
     },
 }
 
@@ -639,12 +666,16 @@ def build_home(mirror: Path, totals: dict) -> None:
     # generate theirs from the registry blurb instead.
     for key, local_meta in LOCAL_PAGES.items():
         _k, filename, _stage, num, label = PAGE_BY_KEY[key]
-        resource_cards_html.append(f"""<a class="week-card" data-stage="resources" href="sub_pages/{filename}">
+        local_card = f"""<a class="week-card" data-stage="resources" href="sub_pages/{filename}">
 <span class="week-card__top"><span class="week-card__num">{num}</span><span class="week-card__emoji" aria-hidden="true">{PAGE_EMOJI.get(key, "📘")}</span></span>
 <h3>{label}</h3>
 <p>{local_meta["card"]}</p>
 <span class="go-to-link">Open reference</span>
-</a>""")
+</a>"""
+        if key == "rmit-e2e-pipeline":
+            resource_cards_html.insert(0, local_card)
+        else:
+            resource_cards_html.append(local_card)
 
     home = f"""{head_html("COSC2767 - Systems Deployment and Operations", description, "")}
 <body data-page="home" data-root="">

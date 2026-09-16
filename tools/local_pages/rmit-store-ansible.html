@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Assignment 2 walkthrough for the teammate who owns ansible/: audit the current feature/ansible baseline, split staging and production inventory, commit encrypted vault files, run migrations before backend updates, and expose a stable deploy command Jenkins calls with Docker Hub image tags. Docker Swarm is someone else's prerequisite.">
+<title>RMIT Store: Ansible Deploy - COSC2767</title>
+</head>
+<body>
+<header>
+<div class="container">
+<h1>🤖 RMIT Store: Ansible Deploy</h1>
+<p class="intro">Core requirement 7 — <strong>Configuration Management</strong> (Ansible). You own <code>ansible/</code>. Advanced requirement 1 (Infrastructure as Code) is CloudFormation; that is a different teammate. Jenkins builds and pushes images. You deploy them to the team's <strong>shared five EC2 boxes</strong>: one Jenkins server plus staging API, staging frontend, production API, and production frontend. <strong>Docker Swarm is not your job.</strong> Another teammate initializes the cluster and writes the stack logic behind <code>deploy.yml</code>. Your deliverable is inventory, encrypted vars, migrations, and this stable handoff:</p>
+<p class="intro"><code>ansible-playbook -i ansible/inventory/aws_ec2.yml ansible/deploy.yml -e target=... -e api_image=... -e frontend_image=...</code> (from repo root; dynamic EC2 inventory committed in git).</p>
+</div>
+</header>
+<main class="container">
+
+<section class="cheatsheet-section" id="ans-overview">
+<h2 class="collapsible-header start-open">🎯 Overview — who owns what, and how data flows<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>0.1 · Three owners, one pipeline</h3>
+<p><strong>Jenkins teammate</strong> runs CI on the shared <code>jenkins-server</code>. Checkout, temporary checks, <code>docker build</code>, push to private Docker Hub, then call your deploy command with image tags.</p>
+<p><strong>Swarm teammate</strong> (prerequisite) initialized Docker Swarm on the four app boxes. They labeled nodes and wrote the service-update logic your <code>deploy.yml</code> will call. You do not teach or implement Swarm here.</p>
+<p><strong>You (Ansible owner)</strong> keep inventory accurate. Secrets live in committed encrypted vault files. Run DB migrations <em>before</em> rolling the API image. Verify health endpoints after every deploy.</p>
+<pre><code class="language-bash">GitHub  ──webhook──►  jenkins-server (:8080)
+                         │  builds + pushes images to Docker Hub (private repos)
+                         │  runs ephemeral ansible-runner container
+                         ▼
+              ansible/deploy.yml  -e target=staging|production
+                         │        -e api_image=...
+                         │        -e frontend_image=...
+                         ▼
+              ┌──────────┴──────────┐
+              ▼                     ▼
+     STAGING (two EC2)      PRODUCTION (two EC2)
+     staging-api  :8000     production-api  :8000   ◄── agreed design
+     staging-fe   :80       production-fe   :80     ◄── agreed design
+              │                     │
+              └──────────┬──────────┘
+                         ▼
+                    RDS Postgres (one instance)
+                      rmit_store_staging  (staging)
+                      rmit_store          (production)
+                         +
+                    S3 (separate bucket per environment)</code></pre>
+<p class="command-purpose"><strong>Five EC2 boxes, one shared team set.</strong> One Jenkins runner, two staging app boxes, two production app boxes. RDS and S3 are AWS managed services. Ansible SSHes to the four app boxes on port 22 from team IPs and from <code>jenkins-server-sg</code>.</p>
+</div>
+<div class="card">
+<h3>0.2 · What you are <em>not</em> building</h3>
+<p>Do not write a Swarm tutorial. Do not invent a complete stack file in this page.</p>
+<p>The Swarm teammate owns cluster init, node labels, service scaling, and <code>--with-registry-auth</code> on service updates. Your roles only need the <strong>contract</strong> Jenkins passes in: <code>target</code>, <code>api_image</code>, <code>frontend_image</code>.</p>
+<pre><code class="language-bash">your scope              Swarm teammate scope         Jenkins teammate scope
+----------------        ----------------------       -------------------------
+inventory + deploy.yml  swarm join / node labels       Jenkinsfile.pr / .production
+group_vars + vault      stack / service update         docker build + push
+migrate step            rolling update strategy        lock(resource: 'staging')
+registry login (migrate) --with-registry-auth          credentials + notify.groovy</code></pre>
+<p class="command-purpose"><strong>Registry auth is shared.</strong> The migration host must pull the private API image before migrate runs. Swarm workers need auth for the service update too. Jenkins mounts Docker Hub username/token as Secret Files; Ansible reads them via file paths and <code>no_log: true</code> — see Step 5 and Step 6.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> you can draw the five-box diagram. Swarm is a prerequisite, not your task. Jenkins calls one playbook with three extra vars. Next section audits what already exists on <code>origin/feature/ansible</code>.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="ans-baseline">
+<h2 class="collapsible-header">📋 Step 1 — Audit the current <code>ansible/</code> baseline<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>1.1 · Inspected branch and SHA</h3>
+<p>All facts below come from <code>git show origin/feature/ansible:&lt;path&gt;</code> on the working tree (currently on <code>feature/Jenkins</code>).</p>
+<pre><code class="language-bash">branch: origin/feature/ansible
+SHA:    66ea54d7326d6b437497356a7411d72e0698e3aa</code></pre>
+<p class="command-purpose"><strong>Re-verify before you demo.</strong> Run <code>git fetch origin feature/ansible</code> and repeat the show commands if the branch moved.</p>
+</div>
+<div class="card">
+<h3>1.2 · Layout on that branch</h3>
+<pre><code class="language-bash">ansible/
+├── site.yml                         # 3 plays (see 1.3)
+├── ansible.cfg                      # inventory=inventory/aws_ec2.yml; host_key_checking=False
+├── inventory/
+│   ├── aws_ec2.yml                  # dynamic EC2 inventory plugin
+│   └── ../inventory.ini             # static test host + empty [staging]/[production]
+├── group_vars/
+│   ├── all/vars.yml                 # repo_url, git_branch, api_image placeholder
+│   ├── all/vault.yml                # encrypted, committed ($ANSIBLE_VAULT header)
+│   └── test.yml                     # test overrides (database_url, cookie_secure)
+├── requirements.yml                 # amazon.aws, community.docker, community.postgresql
+├── roles/
+│   ├── app_config/                  # API: pull api_image, docker_container :8000
+│   ├── web_server/                  # frontend: pull frontend_image, docker_container :80
+│   └── db_config/                   # local PostgreSQL on role_db hosts
+└── README.md</code></pre>
+<p class="command-purpose"><strong>No <code>deploy.yml</code> yet.</strong> No staging/production plays. Jenkins integration in README uses <code>site.yml --limit role_api</code> and a single <code>api_image</code> extra var.</p>
+</div>
+<div class="card">
+<h3>1.3 · <code>site.yml</code> — three plays</h3>
+<pre><code class="language-yaml">- name: Configure API servers
+  hosts: role_api
+  roles: [app_config]
+
+- name: Configure frontend servers
+  hosts: role_frontend
+  roles: [web_server]
+
+- name: Configure database servers
+  hosts: role_db
+  roles: [db_config]</code></pre>
+<p>Host groups come from the dynamic inventory's <code>keyed_groups</code> on EC2 tag <code>Role</code> → <code>role_api</code>, <code>role_frontend</code>, <code>role_db</code>.</p>
+</div>
+<div class="card">
+<h3>1.4 · Dynamic inventory (<code>inventory/aws_ec2.yml</code>)</h3>
+<pre><code class="language-yaml">plugin: amazon.aws.aws_ec2
+regions: [us-east-1]
+filters:
+  tag:Environment: [dev]
+  instance-state-name: [running]
+hostnames: [private-ip-address]
+compose:
+  ansible_host: private_ip_address
+keyed_groups:
+  - key: tags.Role
+    prefix: role</code></pre>
+<p>At SHA <code>66ea54d</code> the filter is <code>Environment=dev</code> and groups are <code>role_api</code>, <code>role_frontend</code>, <code>role_db</code>. SSH targets use private IPs. Jenkins must reach those IPs inside the VPC.</p>
+<p class="command-purpose"><strong>Pipeline work extends this same file</strong> — swap the <code>dev</code> filter for <code>staging</code>/<code>production</code> tags and add composite keyed groups (Step 2). Do not invent a hidden static inventory for Jenkins.</p>
+</div>
+<div class="card">
+<h3>1.5 · Role <code>app_config</code> — registry pull, not compose build</h3>
+<p>Installs Python Docker SDK, pulls <code>{{ api_image }}</code> with <code>community.docker.docker_image</code>, starts <code>rmit-store-api</code> on port 8000 with env vars from vault (<code>django_secret_key</code>, <code>database_url</code>).</p>
+<p>Templates <code>env.j2</code> and <code>rmit-api.service.j2</code> exist but the current tasks use <code>docker_container</code> directly — not systemd.</p>
+<p class="command-purpose"><strong>Good news:</strong> this role already deploys a registry image tag. <strong>Gap for CI/CD:</strong> no explicit migration step before container recreate, no <code>target</code> / staging-production split, and README only passes <code>api_image</code> (not <code>frontend_image</code> or <code>target</code>).</p>
+</div>
+<div class="card">
+<h3>1.6 · Role <code>web_server</code></h3>
+<p>Pulls <code>{{ frontend_image }}</code> and runs <code>rmit-store-frontend</code> on port 80. Same pattern as <code>app_config</code>: registry pull + <code>community.docker.docker_container</code>.</p>
+<p>An <code>nginx.conf.j2</code> template exists (proxy <code>/api</code>, <code>/healthz</code>, <code>/readyz</code> to localhost:8000) but current tasks do not template it — the container image is expected to serve the SPA itself.</p>
+</div>
+<div class="card">
+<h3>1.7 · Role <code>db_config</code> — local Postgres</h3>
+<p>Installs and initializes PostgreSQL on <code>role_db</code> hosts. Creates user <code>rmit</code> and database <code>rmit_store</code>. This differs from the team's agreed RDS plan (shared RDS instance, two database <em>names</em>).</p>
+<p class="command-purpose"><strong>For the five-box design,</strong> staging and production API boxes talk to RDS — not a local <code>role_db</code> box. Treat <code>db_config</code> as early/teammate-local testing unless the team still runs a dedicated DB EC2.</p>
+</div>
+<div class="card">
+<h3>1.8 · Variables and vault paths</h3>
+<pre><code class="language-yaml"># group_vars/all/vars.yml (plaintext, committed)
+repo_url: "https://{{ github_token }}@github.com/.../2026b-cosc2767-a2-sg-mother-duckers.git"
+git_branch: main
+api_image: "PLACEHOLDER-update-once-docker-owner-confirms-registry"
+
+# group_vars/all/vault.yml (encrypted, committed — starts with $ANSIBLE_VAULT;1.1;AES256)
+# holds django_secret_key, db_password, database_url, github_token, etc.
+
+# group_vars/test.yml — overrides for inventory.ini [test] host</code></pre>
+<p class="command-purpose"><strong>Convention to adopt:</strong> use explicit <code>changed_when</code> / <code>failed_when</code> on <code>command</code> tasks where the default "changed every run" would lie. Current roles do not do this everywhere yet — add it in new tasks.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> you have read the real tree at SHA <code>66ea54d</code>. Three roles, dynamic EC2 inventory, registry-pull deploy for API and frontend, no <code>deploy.yml</code>, no migration gate. Next: staging/production inventory for the shared five-machine set.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="ans-inventory">
+<h2 class="collapsible-header">🗺️ Step 2 — Staging and production inventory<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>2.1 · Dynamic inventory — committed, non-secret</h3>
+<p>The team runs <strong>one</strong> shared five-box set. Inventory is the committed file <code>ansible/inventory/aws_ec2.yml</code> (same path <code>ansible.cfg</code> already points at). It lives in the git checkout Jenkins mounts — no hidden copy on the server.</p>
+<p>Extend the SHA <code>66ea54d</code> baseline: replace the <code>dev</code> filter with staging and production. Group hosts by EC2 tags so <code>deploy.yml</code> can target <code>{{ target }}_api:{{ target }}_frontend</code>.</p>
+<pre><code class="language-yaml"># ansible/inventory/aws_ec2.yml  (extend the committed file)
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+filters:
+  tag:Environment:
+    - staging
+    - production
+  instance-state-name:
+    - running
+hostnames:
+  - private-ip-address
+compose:
+  ansible_host: private_ip_address
+leading_separator: false
+keyed_groups:
+  # Environment=staging Role=api  →  staging_api  (NOT _staging_api)
+  - key: tags.Environment + '_' + tags.Role
+    prefix: ''
+    separator: ''
+  - key: tags.Environment
+    prefix: env</code></pre>
+<p>With <code>leading_separator: false</code>, an empty prefix does not add a leading underscore. You should see exactly four groups: <code>staging_api</code>, <code>staging_frontend</code>, <code>production_api</code>, <code>production_frontend</code>.</p>
+<p>Tag each of the four app EC2 instances in the AWS console (or CloudFormation):</p>
+<pre><code class="language-bash">staging-api box:       Environment=staging   Role=api
+staging-frontend box:  Environment=staging   Role=frontend
+production-api box:    Environment=production Role=api
+production-frontend:   Environment=production Role=frontend</code></pre>
+<p class="command-purpose"><strong>Jenkins passes <code>-e target=staging</code> or <code>production</code>.</strong> <code>deploy.yml</code> limits to <code>{{ target }}_api:{{ target }}_frontend</code> — groups produced by the plugin from tags, not hand-edited IPs.</p>
+</div>
+<div class="card">
+<h3>2.2 · How the runner discovers hosts (LabRole + IMDS)</h3>
+<p>The <code>jenkins-server</code> EC2 instance wears Learner Lab <code>LabRole</code> (or equivalent). That role needs read-only EC2 API access — at minimum <code>ec2:DescribeInstances</code> — so the <code>amazon.aws.aws_ec2</code> plugin can list tagged instances.</p>
+<p>The ephemeral runner uses <code>--network host</code> so boto3 can reach the instance metadata service (IMDS) on the Jenkins EC2 host. No AWS keys in git or Jenkins argv.</p>
+<p><strong>Jenkins EC2 prerequisite (one-time):</strong> set IMDSv2 and verify hop limit ≥ 2 so containerized processes can assume the instance role. AWS console → EC2 → instance → Actions → Modify instance metadata options:</p>
+<pre><code class="language-bash">IMDSv2: Required (recommended)
+Metadata response hop limit: 2    # 1 = host only; 2 = reachable from containers on host network</code></pre>
+<p><strong>Runner-side smoke test</strong> (pinned image, host network — run on jenkins-server after tagging all four app boxes):</p>
+<pre><code class="language-bash">docker run --rm --network host rmit-store-ansible-runner:1.0.0 python3 -c "
+import boto3
+identity = boto3.client('sts').get_caller_identity()
+print('caller:', identity['Arn'])
+ec2 = boto3.client('ec2', region_name='us-east-1')
+reservations = ec2.describe_instances(
+    Filters=[
+        {'Name': 'tag:Environment', 'Values': ['staging', 'production']},
+        {'Name': 'instance-state-name', 'Values': ['running']},
+    ]
+)['Reservations']
+print('running staging/production instances:', sum(len(r['Instances']) for r in reservations))
+"
+
+# then confirm inventory groups (from mounted workspace path):
+docker run --rm --network host \
+  -v /var/jenkins_home/workspace/&lt;job&gt;:/work:ro \
+  rmit-store-ansible-runner:1.0.0 \
+  ansible-inventory -i /work/ansible/inventory/aws_ec2.yml --graph \
+  | grep -E 'staging_api|staging_frontend|production_api|production_frontend'</code></pre>
+<p class="command-purpose"><strong>Every pipeline and doc command uses this inventory path.</strong> From repo root: <code>-i ansible/inventory/aws_ec2.yml</code>. From <code>app/ansible/</code>: <code>-i inventory/aws_ec2.yml</code>. Runner invocations add <code>--network host</code>.</p>
+</div>
+<div class="card">
+<h3>2.3 · Local-only static fallback (<code>inventory.ini</code>)</h3>
+<p>The branch also commits <code>ansible/inventory.ini</code> with a <code>[test]</code> host and empty <code>[staging]</code>/<code>[production]</code> sections. That file is for <strong>laptop debugging only</strong> — one box, no AWS API call.</p>
+<pre><code class="language-bash"># LOCAL ONLY — do not pass to Jenkins:
+ansible-playbook -i inventory.ini site.yml --limit test --ask-vault-pass</code></pre>
+<p class="command-purpose"><strong>Jenkins never uses <code>inventory.ini</code>.</strong> CI/CD always uses <code>inventory/aws_ec2.yml</code> from the mounted workspace.</p>
+</div>
+<div class="card">
+<h3>2.4 · Security groups (console — agreed project design)</h3>
+<pre><code class="language-bash">staging-api-sg / production-api-sg:
+  SSH   TCP 22     Source: team IP(s) + jenkins-server-sg
+  API   TCP 8000   Source: 0.0.0.0/0              # backend public — team design
+
+staging-frontend-sg / production-frontend-sg:
+  SSH   TCP 22     Source: team IP(s) + jenkins-server-sg
+  HTTP  TCP 80     Source: 0.0.0.0/0              # frontend public — team design
+
+jenkins-server-sg:
+  SSH   TCP 22     Source: team IP(s)
+  HTTP  TCP 8080   Source: 0.0.0.0/0              # UI + GitHub webhook</code></pre>
+<p class="command-purpose"><strong>API boxes do not expose port 80.</strong> Frontend boxes do not expose port 8000. Jenkins must reach all four app boxes on SSH — that is why <code>jenkins-server-sg</code> is an inbound source on every app security group.</p>
+</div>
+<div class="card">
+<h3>2.5 · Per-environment <code>group_vars/</code></h3>
+<pre><code class="language-bash">ansible/group_vars/
+├── all/vars.yml                     # shared non-secrets (keep existing path or flatten — be consistent)
+├── staging.yml                      # db_name, s3 bucket, computed IPs
+├── production.yml
+├── vault-staging.yml.example        # plaintext template only
+├── vault-staging.yml                # encrypted, committed to private repo
+├── vault-production.yml.example
+└── vault-production.yml             # encrypted, committed to private repo</code></pre>
+<pre><code class="language-yaml"># group_vars/staging.yml
+environment: staging
+db_name: rmit_store_staging
+s3_bucket_name: rmit-store-media-staging-PLACEHOLDER
+staging_api_ip: "{{ hostvars[groups['staging_api'][0]].ansible_host }}"
+
+# group_vars/production.yml
+environment: production
+db_name: rmit_store
+s3_bucket_name: rmit-store-media-production-PLACEHOLDER
+production_api_ip: "{{ hostvars[groups['production_api'][0]].ansible_host }}"</code></pre>
+<p class="command-purpose"><strong><code>db_name</code> is non-secret.</strong> It lives in <code>staging.yml</code> / <code>production.yml</code> only — not duplicated inside vault. Same RDS instance, two databases: run <code>CREATE DATABASE rmit_store_staging;</code> once on the team RDS.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> dynamic <code>inventory/aws_ec2.yml</code> extended for staging/production tags, LabRole read EC2, <code>inventory.ini</code> marked local-only. Vault split is next.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="ans-vault">
+<h2 class="collapsible-header">🔐 Step 3 — Secrets: encrypted vault files in the private repo<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>3.1 · Two vault files, committed encrypted</h3>
+<p>Staging and production must not share Django secret keys or DB passwords. Non-secrets stay in <code>staging.yml</code> / <code>production.yml</code>. Secrets go in separate vault files.</p>
+<p>Encrypted vault files <strong>are committed</strong> to the private GitHub repo. They start with the <code>$ANSIBLE_VAULT</code> header. Only <code>.example</code> files stay plaintext placeholders.</p>
+<pre><code class="language-yaml"># group_vars/vault-staging.yml.example  (plaintext template — safe to commit)
+vault_django_secret_key: CHANGE_ME_staging
+vault_admin_password: CHANGE_ME
+vault_db_password: CHANGE_ME
+vault_db_host: your-rds-endpoint.region.rds.amazonaws.com
+vault_db_user: rmit
+# db_name is in group_vars/staging.yml — not here
+
+# group_vars/vault-production.yml.example
+vault_django_secret_key: CHANGE_ME_production_different
+vault_admin_password: CHANGE_ME
+vault_db_password: CHANGE_ME
+vault_db_host: your-rds-endpoint.region.rds.amazonaws.com
+vault_db_user: rmit</code></pre>
+<p class="command-purpose"><strong>Jenkins never stores vault file contents.</strong> Jenkins stores only the vault <em>passphrase</em> as a file credential. The encrypted YAML travels in the git checkout inside the workspace mount.</p>
+</div>
+<div class="card">
+<h3>3.2 · Create, encrypt, edit</h3>
+<pre><code class="language-bash">cd app/ansible
+
+cp group_vars/vault-staging.yml.example group_vars/vault-staging.yml
+cp group_vars/vault-production.yml.example group_vars/vault-production.yml
+# edit both with real secrets on your laptop
+
+ansible-vault encrypt group_vars/vault-staging.yml
+ansible-vault encrypt group_vars/vault-production.yml
+git add group_vars/vault-staging.yml group_vars/vault-production.yml
+git commit -m "Add encrypted staging and production vault files"
+
+# rotate a secret later:
+ansible-vault edit group_vars/vault-staging.yml</code></pre>
+<p class="command-purpose"><strong>Never commit plaintext vault YAML.</strong> If you accidentally encrypt the wrong file, decrypt with <code>ansible-vault decrypt</code>, fix, re-encrypt.</p>
+</div>
+<div class="card">
+<h3>3.3 · Verify encryption (not git grep)</h3>
+<pre><code class="language-bash">head -1 group_vars/vault-staging.yml
+# must print: $ANSIBLE_VAULT;1.1;AES256
+
+head -1 group_vars/vault-production.yml
+# same header
+
+ansible-vault view group_vars/vault-staging.yml   # prompts for passphrase; shows YAML</code></pre>
+<p class="command-purpose"><strong>The header proves encryption.</strong> Do not rely on <code>git grep password</code> or <code>git status</code> alone — a badly named plaintext file can slip through. Open the file and confirm the vault header before every PR.</p>
+</div>
+<div class="card">
+<h3>3.4 · Load vault in <code>deploy.yml</code></h3>
+<pre><code class="language-yaml"># sketch — you implement deploy.yml
+- name: Deploy to {{ target }}
+  hosts: "{{ target }}_api:{{ target }}_frontend"
+  vars_files:
+    - "group_vars/{{ target }}.yml"
+    - "group_vars/vault-{{ target }}.yml"</code></pre>
+<p class="command-purpose"><strong><code>target</code> must be exactly</strong> <code>staging</code> or <code>production</code>. Validate early with an <code>assert</code> task for a friendly error.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> encrypted vaults committed with <code>$ANSIBLE_VAULT</code> header, <code>db_name</code> only in env yml, Jenkins holds passphrase only. Next: the stable deploy command.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="ans-deploy-contract">
+<h2 class="collapsible-header">📦 Step 4 — The stable deploy contract (Jenkins → Ansible)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>4.1 · Command from repo root</h3>
+<p>Image tags change every build. The command shape does not.</p>
+<pre><code class="language-bash"># from app/ repo root:
+ansible-playbook -i ansible/inventory/aws_ec2.yml ansible/deploy.yml \
+  -e target=staging \
+  -e api_image=DOCKER_USER/rmit-store-api:pr-42-a1b2c3d4 \
+  -e frontend_image=DOCKER_USER/rmit-store-frontend:pr-42-a1b2c3d4 \
+  --vault-password-file /path/to/vault-pass \
+  --private-key /path/to/deploy-key
+
+# production (after merge to main):
+ansible-playbook -i ansible/inventory/aws_ec2.yml ansible/deploy.yml \
+  -e target=production \
+  -e api_image=DOCKER_USER/rmit-store-api:a1b2c3d4 \
+  -e frontend_image=DOCKER_USER/rmit-store-frontend:a1b2c3d4 \
+  --vault-password-file /path/to/vault-pass \
+  --private-key /path/to/deploy-key</code></pre>
+<p class="command-purpose"><strong>From <code>app/ansible/</code>:</strong> use <code>-i inventory/aws_ec2.yml deploy.yml</code> (same inventory file, shorter paths). Never substitute <code>inventory.ini</code> in Jenkins.</p>
+</div>
+<div class="card">
+<h3>4.2 · Immutable image tags and one staging slot</h3>
+<pre><code class="language-bash">PR pipeline tag:         pr-&lt;PR_NUMBER&gt;-&lt;8-char-SHA&gt;   e.g. pr-42-a1b2c3d4
+Production pipeline tag: &lt;8-char-SHA&gt;                 e.g. a1b2c3d4</code></pre>
+<p>Tags are <strong>immutable</strong> — Jenkins never overwrites an existing tag on Docker Hub. Each build pushes a new tag string.</p>
+<p>All open PRs share <strong>one</strong> staging environment (two boxes). A successful PR deploy <strong>replaces</strong> whatever was running on staging before. Tags do not stop that — they only preserve old images in the registry for rollback.</p>
+<p><code>lock(resource: 'staging')</code> prevents two PR jobs deploying at the same time. It does <strong>not</strong> give each PR its own staging copy. Wait for the lock, deploy, release — the next merged PR wins staging again.</p>
+</div>
+<div class="card">
+<h3>4.3 · Private registry auth — shared ownership</h3>
+<p>Images live in private Docker Hub repos. Jenkins stores the username and token as <strong>Secret File</strong> credentials (same pattern as SSH key and vault passphrase). Mount them read-only into the runner — never export secret values into the runner environment.</p>
+<pre><code class="language-bash">1. Jenkins push stage        — separate push credentials (Jenkins page); console masked
+2. Deploy runner mounts      — /run/secrets/dockerhub_user + /run/secrets/dockerhub_token
+3. Runner env (paths only)   — DOCKERHUB_USER_FILE / DOCKERHUB_TOKEN_FILE
+4. Ansible docker_login      — lookup('file', lookup('env', '..._FILE')) | trim ; no_log: true
+5. Migration host            — login + pull api_image before migrate
+6. Swarm service update      — --with-registry-auth on workers (Swarm teammate)</code></pre>
+<p>Do not duplicate Docker Hub credentials in Ansible vault. Do not pass <code>-e DOCKERHUB_TOKEN=...</code> or export token values into <code>docker run -e</code>.</p>
+<p class="command-purpose"><strong>Not solely the Swarm teammate's problem.</strong> If migrate cannot pull the image, the play must fail before any service update runs.</p>
+</div>
+<div class="card">
+<h3>4.4 · What <code>deploy.yml</code> must do</h3>
+<pre><code class="language-bash">1. assert target in [staging, production]
+2. docker_login via DOCKERHUB_*_FILE paths + pull api_image (no_log)
+3. run migrations (Step 5) — fail immediately on non-zero exit
+4. only if migrate succeeded: Swarm service update with api_image + frontend_image
+5. verify /healthz/, /readyz/, /api/version/ (Step 7)</code></pre>
+<p class="command-purpose"><strong><code>site.yml</code> stays for bootstrap / dev EC2 discovery.</strong> <code>deploy.yml</code> is the CI/CD entry point Jenkins calls every pipeline run.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> three <code>-e</code> vars, every command uses <code>-i ansible/inventory/aws_ec2.yml</code>, staging is one shared slot with a lock. Next: migrations.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="ans-migrations">
+<h2 class="collapsible-header">🗄️ Step 5 — Migrations before backend update<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>5.1 · Why the API entrypoint is not enough</h3>
+<p>The API image's <code>entrypoint.sh</code> runs <code>python manage.py migrate --noinput</code> then starts gunicorn. Every container start migrates.</p>
+<p>That was fine for manual deploys. For CI/CD you need one explicit migrate <em>before</em> the Swarm service update. If migrate fails, the old API image must keep serving traffic.</p>
+<p class="command-purpose"><strong>A plain <code>docker run {{ api_image }} python manage.py migrate</code> never finishes</strong> — the entrypoint ignores your command and starts gunicorn anyway. You must override the entrypoint.</p>
+</div>
+<div class="card">
+<h3>5.2 · Explicit migration task</h3>
+<p>Run once per deploy against the target environment's database. Use the <strong>new</strong> API image so migration code matches the code about to go live.</p>
+<p>Service updates happen <strong>only after</strong> this task succeeds (<code>failed_when: rc != 0</code> stops the play).</p>
+<pre><code class="language-yaml"># inside deploy.yml, before any Swarm update — pattern; you implement
+# DOCKERHUB_USER_FILE and DOCKERHUB_TOKEN_FILE are path-only env vars from Jenkins (Step 6)
+
+- name: Log in to Docker Hub on API host (private pull for migrate)
+  community.docker.docker_login:
+    username: "{{ lookup('file', lookup('env', 'DOCKERHUB_USER_FILE')) | trim }}"
+    password: "{{ lookup('file', lookup('env', 'DOCKERHUB_TOKEN_FILE')) | trim }}"
+  delegate_to: "{{ groups[target + '_api'][0] }}"
+  no_log: true
+
+- name: Pull API image on migration host
+  community.docker.docker_image:
+    name: "{{ api_image }}"
+    source: pull
+  delegate_to: "{{ groups[target + '_api'][0] }}"
+  no_log: true
+
+- name: Run database migrations for {{ target }}
+  ansible.builtin.command:
+    cmd: &gt;
+      docker run --rm
+      --env-file /path/to/rendered/.env
+      --entrypoint python
+      {{ api_image }}
+      manage.py migrate --noinput
+  delegate_to: "{{ groups[target + '_api'][0] }}"
+  run_once: true
+  register: migrate_result
+  changed_when: "'Applying' in migrate_result.stdout"
+  failed_when: migrate_result.rc != 0
+
+# subsequent tasks: update API service, then frontend — only reached if migrate succeeded</code></pre>
+<p class="command-purpose"><strong>Login and pull happen before migrate.</strong> <code>community.docker</code> is in <code>requirements.yml</code> — the pinned runner image must install it. <code>no_log: true</code> on login and pull. Credentials are read from mounted Secret Files, not vault and not runner env values.</p>
+</div>
+<div class="card">
+<h3>5.3 · Order of operations</h3>
+<pre><code class="language-bash">pull + login  →  migrate (run_once, entrypoint override)  →  update API service  →  update frontend</code></pre>
+<p>A failed migration leaves the previous API container running. Staging uses <code>rmit_store_staging</code>; production uses <code>rmit_store</code> — a bad staging migrate cannot touch production data, but still fail fast on both.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> migrate uses <code>--entrypoint python</code>, <code>run_once: true</code>, fail-fast before service update. Next: Jenkins runner handoff.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="ans-jenkins-runner">
+<h2 class="collapsible-header">🐳 Step 6 — Ephemeral Ansible runner from Jenkins<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>6.1 · Persistent Jenkins, throwaway runner</h3>
+<p>Jenkins runs in Docker on the shared <code>jenkins-server</code> (<code>t3.medium</code>). The Jenkins teammate owns the server image (see the Jenkins tutorial page for the Dockerfile under <code>jenkins/server/</code>).</p>
+<p>Each deploy stage starts an ephemeral <strong>Ansible runner</strong> container. It mounts the workspace (including <code>inventory/aws_ec2.yml</code> and committed encrypted vaults), mounts SSH key, vault passphrase, and <code>known_hosts</code> as files, runs <code>ansible-playbook</code>, then exits. Cleanup runs in <code>post { always { ... } }</code>.</p>
+<p class="command-purpose"><strong>Container Jenkins + host Docker socket resolves paths on the host.</strong> Use the same absolute bind for Jenkins home on both containers, e.g. <code>/var/jenkins_home:/var/jenkins_home</code>. Then <code>WORKSPACE</code>, <code>withCredentials</code> file paths, and inventory paths match inside the runner.</p>
+</div>
+<div class="card">
+<h3>6.2 · One-time <code>known_hosts</code> on jenkins-server</h3>
+<p>Run once on the Jenkins EC2 host (SSH as <code>ec2-user</code>). Replace placeholders with the four app private or public IPs your team uses for SSH.</p>
+<p>The official Jenkins image runs as UID/GID <strong>1000:1000</strong>. Use that numeric owner — not a host <code>jenkins</code> account that may not exist on Amazon Linux.</p>
+<pre><code class="language-bash"># on jenkins-server — compare fingerprints with teammates over a trusted channel first
+sudo mkdir -p /var/jenkins_home/.ssh
+sudo touch /var/jenkins_home/.ssh/known_hosts
+
+for IP in STAGING_API_IP STAGING_FRONTEND_IP PRODUCTION_API_IP PRODUCTION_FRONTEND_IP; do
+  ssh-keyscan -H "$IP" | sudo tee -a /var/jenkins_home/.ssh/known_hosts
+done
+
+sudo chown 1000:1000 /var/jenkins_home/.ssh/known_hosts
+sudo chmod 600 /var/jenkins_home/.ssh/known_hosts
+
+# validate each host is present (repeat per IP):
+ssh-keygen -F STAGING_API_IP -f /var/jenkins_home/.ssh/known_hosts &amp;&amp; echo "staging-api ok"</code></pre>
+<p>Before first use, have a teammate read the fingerprint from a direct SSH session. Match it to what <code>ssh-keyscan</code> stored. Wrong fingerprint = stop and investigate.</p>
+<p class="command-purpose"><strong>Override the branch's <code>host_key_checking = False</code>.</strong> Pass <code>ANSIBLE_HOST_KEY_CHECKING=True</code> and <code>StrictHostKeyChecking=yes</code> with the mounted <code>known_hosts</code> path. Mount the file read-only at <code>/var/jenkins_home/.ssh/known_hosts</code> (mode 600 on the host).</p>
+</div>
+<div class="card">
+<h3>6.3 · Runner image (pinned tag)</h3>
+<pre><code class="language-bash"># built from jenkins/ansible-runner/Dockerfile  (defined in Jenkins tutorial page)
+# example tag — pin a version, do not use :latest in production pipelines
+rmit-store-ansible-runner:1.0.0</code></pre>
+<p>Commit the runner's Python dependencies in <code>jenkins/ansible-runner/requirements.txt</code>. Listing both AWS SDK packages lets the runner execute the boto3 IMDS smoke test and gives pip a chance to resolve a compatible boto3/botocore pair.</p>
+<pre><code class="language-text">ansible-core
+boto3
+botocore</code></pre>
+<p>Build from the repository root. The Dockerfile installs that committed requirements file and the required Ansible collections:</p>
+<pre><code class="language-dockerfile"># jenkins/ansible-runner/Dockerfile excerpt
+COPY jenkins/ansible-runner/requirements.txt /tmp/python-requirements.txt
+COPY ansible/requirements.yml /tmp/collection-requirements.yml
+
+RUN python3 -m pip install --no-cache-dir -r /tmp/python-requirements.txt \
+    &amp;&amp; ansible-galaxy collection install -r /tmp/collection-requirements.yml</code></pre>
+<p>The image tag <code>rmit-store-ansible-runner:1.0.0</code> is pinned. It contains <code>ansible-core</code>, <code>boto3</code>, <code>botocore</code>, and collections from <code>ansible/requirements.yml</code> (<code>amazon.aws</code>, <code>community.docker</code>, <code>community.postgresql</code>).</p>
+</div>
+<div class="card">
+<h3>6.4 · Conceptual pipeline stage</h3>
+<pre><code class="language-groovy">stage('Deploy staging') {
+  options { lock(resource: 'staging') }   // one staging slot; serializes multibranch PR jobs
+  steps {
+    withCredentials([
+      file(credentialsId: 'deploy-ssh-key', variable: 'SSH_KEY'),
+      file(credentialsId: 'ansible-vault-pass', variable: 'VAULT_PASS_FILE'),
+      file(credentialsId: 'dockerhub-user-file', variable: 'DOCKERHUB_USER_FILE'),
+      file(credentialsId: 'dockerhub-token-file', variable: 'DOCKERHUB_TOKEN_FILE')
+    ]) {
+      sh '''
+        SHORT_SHA="$(git rev-parse --short=8 HEAD)"
+        API_TAG="pr-${CHANGE_ID}-${SHORT_SHA}"
+        DOCKER_USER="$(tr -d '\n' < "$DOCKERHUB_USER_FILE")"
+
+        docker run --rm --network host \
+          -v /var/jenkins_home:/var/jenkins_home:ro \
+          -v "${WORKSPACE}:/var/jenkins_home/workspace/${JOB_NAME}":ro \
+          -v "${SSH_KEY}:/run/secrets/ssh_key:ro" \
+          -v "${VAULT_PASS_FILE}:/run/secrets/vault_pass:ro" \
+          -v "${DOCKERHUB_USER_FILE}:/run/secrets/dockerhub_user:ro" \
+          -v "${DOCKERHUB_TOKEN_FILE}:/run/secrets/dockerhub_token:ro" \
+          -v /var/jenkins_home/.ssh/known_hosts:/var/jenkins_home/.ssh/known_hosts:ro \
+          -e ANSIBLE_HOST_KEY_CHECKING=True \
+          -e DOCKERHUB_USER_FILE=/run/secrets/dockerhub_user \
+          -e DOCKERHUB_TOKEN_FILE=/run/secrets/dockerhub_token \
+          rmit-store-ansible-runner:1.0.0 \
+          ansible-playbook \
+            -i /var/jenkins_home/workspace/${JOB_NAME}/ansible/inventory/aws_ec2.yml \
+            /var/jenkins_home/workspace/${JOB_NAME}/ansible/deploy.yml \
+            --vault-password-file /run/secrets/vault_pass \
+            --private-key /run/secrets/ssh_key \
+            -e ansible_ssh_common_args=-o\ StrictHostKeyChecking=yes\ -o\ UserKnownHostsFile=/var/jenkins_home/.ssh/known_hosts \
+            -e target=staging \
+            -e api_image=${DOCKER_USER}/rmit-store-api:${API_TAG} \
+            -e frontend_image=${DOCKER_USER}/rmit-store-frontend:${API_TAG}
+      '''
+    }
+  }
+}
+post {
+  always {
+    sh 'docker image prune -f || true'
+  }
+}</code></pre>
+<p class="command-purpose"><strong>Secret Files only — no secret values in runner env.</strong> <code>DOCKERHUB_*_FILE</code> vars hold paths, not passwords. Ansible reads file contents with <code>lookup('file', ...) | trim</code>. <code>ANSIBLE_HOST_KEY_CHECKING=True</code> overrides <code>ansible.cfg</code>. Runner uses <code>--network host</code> for IMDS/LabRole access.</p>
+</div>
+<div class="card">
+<h3>6.5 · Credential IDs (names only)</h3>
+<pre><code class="language-bash">deploy-ssh-key         Secret file → SSH private key for ec2-user on all four app boxes
+ansible-vault-pass     Secret file → one-line vault passphrase (NOT the vault YAML files)
+dockerhub-user-file    Secret file → Docker Hub username (first line only)
+dockerhub-token-file   Secret file → Docker Hub access token (first line only)
+github-token           GitHub PAT for PR status (Jenkins page)
+gmail-smtp             failure email via notify.groovy (Jenkins page)</code></pre>
+<p class="command-purpose"><strong><code>lock(resource: 'staging')</code></strong> stops simultaneous PR deploys. Each successful run still replaces the previous staging deployment — the lock is not a per-PR environment.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> <code>known_hosts</code> owned 1000:1000 mode 600, runner uses <code>--network host</code> + IMDS hop limit 2, inventory groups verified, Docker Hub Secret Files mounted by path only, host key checking explicitly enabled. Next: verification.</p>
+</div>
+</section>
+
+
+<section class="cheatsheet-section" id="ans-verification">
+<h2 class="collapsible-header">✅ Step 7 — Verification and handoff checklist<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>7.1 · HTTP checks after every deploy</h3>
+<pre><code class="language-bash">curl -sf http://STAGING_API_IP:8000/healthz/
+curl -sf http://STAGING_API_IP:8000/readyz/       # 503 = DB or S3 not ready
+curl -sf http://STAGING_API_IP:8000/api/version/
+
+curl -sfI http://STAGING_FRONTEND_IP/           # HTTP/1.1 200
+
+# repeat with production IPs after production deploy</code></pre>
+<p class="command-purpose"><strong>Agreed project design:</strong> backend on port <strong>8000</strong>, frontend on port <strong>80</strong>. API hosts expose 8000 only; frontend hosts expose 80 only.</p>
+</div>
+<div class="card">
+<h3>7.2 · Environment isolation</h3>
+<pre><code class="language-bash">staging /readyz/ → rmit_store_staging DB
+production /readyz/ → rmit_store DB
+staging images tagged pr-N-SHA ; each PR deploy replaces prior staging (lock serializes, not isolates)
+deploy -e target=staging limits to staging_api:staging_frontend from aws_ec2.yml tags</code></pre>
+</div>
+<div class="card">
+<h3>7.3 · Dry-run caveat</h3>
+<p><code>ansible-playbook ... --check --diff</code> helps templates and copy tasks. It does <strong>not</strong> dry-run <code>command</code> or <code>community.docker</code> tasks reliably (pull, migrate, service update). Use check mode for file previews; prove deploys with a real staging run.</p>
+</div>
+<div class="card">
+<h3>7.4 · Secrets evidence</h3>
+<pre><code class="language-bash">head -1 ansible/group_vars/vault-staging.yml     # $ANSIBLE_VAULT;1.1;AES256
+head -1 ansible/group_vars/vault-production.yml    # same
+
+ansible-vault view ansible/group_vars/vault-staging.yml   # local only; never screenshot plaintext
+
+screenshots: Jenkins log shows image tags, not passwords; vault editor blurred</code></pre>
+</div>
+<div class="card">
+<h3>7.5 · Handoff summary</h3>
+<pre><code class="language-bash">To Jenkins owner:   Step 4 command; Step 6 runner + lock(resource:'staging'); runner Dockerfile in jenkins/
+To Swarm owner:     service update behind deploy.yml; --with-registry-auth on workers
+To monitoring owner: port 9100 from monitoring-sg (monitoring page); deploy contract unchanged</code></pre>
+<p>Update <code>ansible/README.md</code> when <code>deploy.yml</code> lands. Link this guide page from the PR.</p>
+</div>
+</div>
+<p class="callout"><strong>Checkpoint:</strong> baseline at <code>66ea54d</code>, deploy contract uses <code>inventory/aws_ec2.yml</code> with <code>leading_separator: false</code>, migration gate with file-based registry auth, <code>known_hosts</code> at 1000:1000. Implement <code>deploy.yml</code> on <code>feature/ansible</code> and coordinate with Swarm before the first live pipeline run.</p>
+</div>
+</section>
+
+</main>
+</body>
+</html>

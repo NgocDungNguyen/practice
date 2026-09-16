@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/main.css?v=4e8671e0c7">
+<link rel="stylesheet" href="css/main.css?v=d76616befb">
 <script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
 <script type="module" src="js/main.js?v=93ddf335e0"></script>
 </head>
@@ -160,7 +160,12 @@
 <section class="home-section" aria-labelledby="resources-title">
 <p class="home-section__eyebrow">Reference shelf</p>
 <h2 class="home-section__title" id="resources-title">Course reference library</h2>
-<div class="week-grid"><a class="week-card" data-stage="resources" href="sub_pages/devops-cheatsheet.html">
+<div class="week-grid"><a class="week-card" data-stage="resources" href="sub_pages/rmit-store-e2e-pipeline.html">
+<span class="week-card__top"><span class="week-card__num">E2E</span><span class="week-card__emoji" aria-hidden="true">🧭</span></span>
+<h3>RMIT Store: End-to-End CI/CD</h3>
+<p>The Assignment 2 master runbook: see the whole delivery path, follow Jenkins from checkout and unit test through Ansible build, push and deployment, then run E2E and publish the final result.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/devops-cheatsheet.html">
 <span class="week-card__top"><span class="week-card__num">CS</span><span class="week-card__emoji" aria-hidden="true">📘</span></span>
 <h3>DevOps Cheatsheet</h3>
 <p>Quickly recall course commands and configuration patterns for Linux, Git, AWS, Maven, Tomcat, Jenkins, Docker, Ansible, Compose, Swarm, Kubernetes, and EKS.</p>
@@ -195,10 +200,25 @@
 <h3>RMIT Store: Manual Deploy (A–E)</h3>
 <p>The Assignment 2 store, deployed by hand before any pipeline — following the repo README's own Plan A–E: run it locally, ship it to one EC2 box, split it across servers with S3 and RDS, containerise with Docker, then Docker Compose. Stops before Plan F, the automation pipeline.</p>
 <span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/rmit-store-ansible-swarm.html">
+<span class="week-card__top"><span class="week-card__num">AN</span><span class="week-card__emoji" aria-hidden="true">🐝</span></span>
+<h3>RMIT Store: Ansible & Docker Swarm</h3>
+<p>Use Ansible to build and push immutable images, then migrate and deploy the exact pair to separate staging and production Docker Swarms before Jenkins runs end-to-end tests.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/rmit-store-jenkins-pipeline.html">
+<span class="week-card__top"><span class="week-card__num">JE</span><span class="week-card__emoji" aria-hidden="true">🔧</span></span>
+<h3>RMIT Store: Jenkins Pipelines</h3>
+<p>Jenkins pulls code, runs unit tests, calls Ansible to build, push, and deploy, runs E2E against the deployment, then publishes the result and sends failure email.</p>
+<span class="go-to-link">Open reference</span>
 </a><a class="week-card" data-stage="resources" href="sub_pages/rmit-store-alerting.html">
 <span class="week-card__top"><span class="week-card__num">AL</span><span class="week-card__emoji" aria-hidden="true">🚨</span></span>
 <h3>RMIT Store: Automated Alerting</h3>
 <p>Assignment 2 core requirement 8, built as a drop-in module: a Groovy notify script plus Jenkins Configuration as Code that emails the team on build, test and deploy failures — proven on a throwaway Jenkins in Docker, then handed to the pipeline owner as three lines to paste.</p>
+<span class="go-to-link">Open reference</span>
+</a><a class="week-card" data-stage="resources" href="sub_pages/rmit-store-monitoring.html">
+<span class="week-card__top"><span class="week-card__num">MO</span><span class="week-card__emoji" aria-hidden="true">📈</span></span>
+<h3>RMIT Store: Monitoring & Grafana</h3>
+<p>Assignment 2 monitoring and alerting: Prometheus and Grafana on a third EC2 box probing /healthz/, /readyz/ and the website, host metrics from node_exporter, Jenkins metrics later — dashboards and six email alerts provisioned as files, proven by stopping the API, then handed to the Ansible owner as two small roles.</p>
 <span class="go-to-link">Open reference</span>
 </a></div>
 </section>

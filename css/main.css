@@ -413,7 +413,7 @@ kbd {
 
 .sidenav__list { list-style: none; margin: 0; padding: 0; }
 
-/* Collapsible sidebar group (Assignment 1 archive) */
+/* Collapsible sidebar group (Archive) */
 .sidenav__group--collapsible > summary { cursor: pointer; list-style: none; user-select: none; }
 .sidenav__group--collapsible > summary::-webkit-details-marker { display: none; }
 .sidenav__group--collapsible > summary:hover { color: var(--ink); }
@@ -910,19 +910,23 @@ ol.tutorial-list { list-style: decimal; }
     padding: 10px 14px;
 }
 
+/* Block, not flex: a flex row split inline <code> into its own column and
+   squished the text (visible on the alerting + monitoring pages). */
 .command-purpose {
-    display: flex;
-    gap: 8px;
-    align-items: baseline;
+    display: block;
+    position: relative;
+    padding-left: 1.05em;
     font-size: 0.86rem;
     color: var(--muted);
     margin: 0 0 -0.35em;
 }
 .command-purpose::before {
     content: "▸";
+    position: absolute;
+    left: 0;
+    top: 0;
     color: var(--stage-accent, var(--accent));
     font-weight: 700;
-    flex: none;
 }
 
 .placeholder-key {
@@ -1976,10 +1980,7 @@ a.card:hover .go-to-link::after { transform: translateX(4px); }
 .brief__cell h3 { font-size: 1.02rem; }
 .brief__cell > p { color: var(--muted); font-size: 0.93rem; }
 
-/* command-purpose is a flex row site-wide, which splits inline <code> into
-   its own column; in the runbook let it flow as normal text */
-.runbook .command-purpose { display: block; position: relative; padding-left: 1.05em; }
-.runbook .command-purpose::before { position: absolute; left: 0; top: 0; }
+/* .command-purpose is block site-wide now (see its main rule above). */
 
 /* badge legend */
 .legend {
@@ -2284,4 +2285,11 @@ a.card:hover .go-to-link::after { transform: translateX(4px); }
 @media print {
     .step-list::before { display: none; }
     .step__main, .done-when, .plan-brief { break-inside: avoid-page; }
+}
+
+/* Monitoring page: config blocks carry a comment on almost every line, so let
+   long lines wrap instead of hiding the comments behind a horizontal scroll. */
+body[data-page="rmit-monitoring"] pre code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
