@@ -36,7 +36,7 @@ STAGES = {
     "automation": {"label": "Automation", "weeks": "Weeks 6, 8–9"},
     "orchestration": {"label": "Operations", "weeks": "Weeks 10–11"},
     "resources": {"label": "Reference", "weeks": ""},
-    "archive": {"label": "Assignment 1 archive", "weeks": ""},
+    "archive": {"label": "Archive", "weeks": ""},
 }
 # Sidebar groups rendered closed unless they hold the active page.
 COLLAPSED_STAGES = {"archive"}
@@ -53,19 +53,20 @@ PAGES = [
     ("week-9", "week-9-docker-compose-swarm-lab.html", "automation", "09", "Docker Compose and Swarm"),
     ("week-10", "week-10-kubernetes-lab.html", "orchestration", "10", "Kubernetes"),
     ("week-11", "week-11-eks-aws-lab.html", "orchestration", "11", "EKS on AWS"),
-    ("rmit-e2e-pipeline", "rmit-store-e2e-pipeline.html", "resources", "E2E", "RMIT Store: End-to-End CI/CD"),
-    ("rmit-manual-deploy", "rmit-store-manual-deploy.html", "resources", "A2", "RMIT Store: Manual Deploy (A–E)"),
-    ("rmit-ansible-swarm", "rmit-store-ansible-swarm.html", "resources", "AN", "RMIT Store: Ansible & Docker Swarm"),
-    ("rmit-jenkins-pipeline", "rmit-store-jenkins-pipeline.html", "resources", "JE", "RMIT Store: Jenkins Pipelines"),
-    ("rmit-alerting", "rmit-store-alerting.html", "resources", "AL", "RMIT Store: Automated Alerting"),
-    ("rmit-monitoring", "rmit-store-monitoring.html", "resources", "MO", "RMIT Store: Monitoring & Grafana"),
     ("sshkeys", "ssh-keys-github.html", "resources", "SK", "SSH Keys & GitHub Access"),
     ("cheatsheet", "devops-cheatsheet.html", "resources", "CS", "DevOps Cheatsheet"),
     ("resources", "useful-resources.html", "resources", "RX", "Useful Resources"),
-    # Assignment 1 (Java / Maven / Tomcat / Jenkins) material, kept but shelved.
+    # Finished assignment material, kept but shelved: Assignment 1
+    # (Java / Maven / Tomcat / Jenkins) then Assignment 2 (RMIT Store).
     ("setup", "setup.html", "archive", "SU", "Practice Environment Setup"),
     ("challenge6", "challenge-6-setup-script.html", "archive", "C6", "Challenge 6 Setup Script"),
     ("sshagent-debug", "debug-jenkins-ssh-agent.html", "archive", "DL", "Debug Log: Jenkins SSH Agent"),
+    ("rmit-e2e-pipeline", "rmit-store-e2e-pipeline.html", "archive", "E2E", "RMIT Store: End-to-End CI/CD"),
+    ("rmit-manual-deploy", "rmit-store-manual-deploy.html", "archive", "A2", "RMIT Store: Manual Deploy (A–E)"),
+    ("rmit-ansible-swarm", "rmit-store-ansible-swarm.html", "archive", "AN", "RMIT Store: Ansible & Docker Swarm"),
+    ("rmit-jenkins-pipeline", "rmit-store-jenkins-pipeline.html", "archive", "JE", "RMIT Store: Jenkins Pipelines"),
+    ("rmit-alerting", "rmit-store-alerting.html", "archive", "AL", "RMIT Store: Automated Alerting"),
+    ("rmit-monitoring", "rmit-store-monitoring.html", "archive", "MO", "RMIT Store: Monitoring & Grafana"),
 ]
 
 PAGE_BY_KEY = {p[0]: p for p in PAGES}

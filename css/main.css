@@ -413,7 +413,7 @@ kbd {
 
 .sidenav__list { list-style: none; margin: 0; padding: 0; }
 
-/* Collapsible sidebar group (Assignment 1 archive) */
+/* Collapsible sidebar group (Archive) */
 .sidenav__group--collapsible > summary { cursor: pointer; list-style: none; user-select: none; }
 .sidenav__group--collapsible > summary::-webkit-details-marker { display: none; }
 .sidenav__group--collapsible > summary:hover { color: var(--ink); }
