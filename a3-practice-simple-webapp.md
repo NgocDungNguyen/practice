@@ -68,26 +68,81 @@ Public DNS changes every time the lab stops and starts. Copy it again each sessi
 
 ## Step 2. Connect from PowerShell
 
-Move the key and lock its permissions (once):
+Rules for this step:
+
+- Copy and run **one block at a time**. Wait for the prompt to come back before the next block.
+- `$KEY` and `$HOST_` are forgotten when you close the PowerShell window. In a new window, run 2.2 and 2.6 again.
+- Always connect with `-i $KEY` (the full path). Never write just `devops_project_key.pem`.
+
+### 2.1 Go to your home folder
+
+```powershell
+cd $HOME
+```
+Expect: the prompt ends with `PS C:\Users\LucyS>`.
+
+### 2.2 Set the key path
 
 ```powershell
 $KEY = "$HOME\.ssh\devops_project_key.pem"
-Move-Item "$HOME\Downloads\devops_project_key.pem" $KEY
-icacls $KEY /reset
-icacls $KEY /inheritance:r
-icacls $KEY /grant:r "$($env:USERNAME):(R)"
 ```
 
-Connect:
+### 2.3 Find the key file
+
+```powershell
+Get-ChildItem "$HOME\Downloads\*.pem", "$HOME\.ssh\*.pem" | Select-Object FullName
+```
+Expect: one path listed.
+
+- Listed under `Downloads`: do 2.4.
+- Listed under `.ssh` as `devops_project_key.pem`: it is already in place, skip 2.4.
+- File name differs (for example `devops_project_key (1).pem`): use that exact name in 2.4.
+- Nothing listed: AWS only lets you download a `.pem` once, at creation. Launch a new instance with a new key pair (Step 1).
+
+### 2.4 Move the key into `.ssh` (once)
+
+```powershell
+Move-Item "$HOME\Downloads\devops_project_key.pem" $KEY
+```
+Error `Cannot find path ... Downloads`: if 2.3 showed the file under `.ssh`, it is already moved. Continue.
+
+### 2.5 Lock the key permissions (one command, do not split it)
+
+```powershell
+icacls $KEY /inheritance:r /grant:r "$($env:USERNAME):(R)"
+```
+Expect: `Successfully processed 1 files; Failed processing 0 files`.
+
+Check it:
+
+```powershell
+icacls $KEY
+```
+Expect: exactly one entry, your user with `(R)`. Anything else: run the 2.5 command again.
+
+### 2.6 Connect
+
+Copy the **Public IPv4 DNS** from the EC2 console (it changes every lab session) and paste it between the quotes, replacing `<PUBLIC-IPV4-DNS>` including the angle brackets:
 
 ```powershell
 $HOST_ = "<PUBLIC-IPV4-DNS>"
+```
+
+```powershell
 ssh -o ServerAliveInterval=60 -i $KEY ec2-user@$HOST_
 ```
 Type `yes` at the first prompt. Expect: `[ec2-user@ip-... ~]$`.
 
-Error `REMOTE HOST IDENTIFICATION HAS CHANGED`: run `ssh-keygen -R $HOST_` and connect again.
-Error `UNPROTECTED PRIVATE KEY FILE`: repeat the three `icacls` lines.
+### If it fails
+
+| Message | Fix |
+|---|---|
+| `Identity file ... not accessible` | `$KEY` is empty or wrong. Run 2.2 again, then `Test-Path $KEY` must print `True`. |
+| `UNPROTECTED PRIVATE KEY FILE` | Run the 2.5 command again. |
+| `Permission denied (publickey...)` | The `.pem` is not the key this instance was launched with. EC2 console > your instance > Details > **Key pair name** must match the `.pem` you use. The user must be `ec2-user`. |
+| `REMOTE HOST IDENTIFICATION HAS CHANGED` | Run `ssh-keygen -R $HOST_`, then connect again. |
+| `Connection timed out` | Wrong DNS (it changed), instance not `Running`, or the port 22 rule is missing from the security group. |
+| `Invalid parameter` or two commands on one line | Two blocks were pasted together. Run one block at a time. |
 
 ---
 

@@ -188,20 +188,97 @@ question-2/dockerHubLink.txt
 <div class="collapsible-content">
 <div class="grid-container grid-container--wide">
 <div class="card">
-<p>Move the key and lock its permissions (once):</p>
-<pre><code class="language-powershell">$KEY = "$HOME\.ssh\devops_project_key.pem"
-Move-Item "$HOME\Downloads\devops_project_key.pem" $KEY
-icacls $KEY /reset
-icacls $KEY /inheritance:r
-icacls $KEY /grant:r "$($env:USERNAME):(R)"
+<p>Rules for this step:</p>
+<ul>
+<li>Copy and run <strong>one block at a time</strong>. Wait for the prompt to come back before the next block.</li>
+<li><code>$KEY</code> and <code>$HOST_</code> are forgotten when you close the PowerShell window. In a new window, run 2.2 and 2.6 again.</li>
+<li>Always connect with <code>-i $KEY</code> (the full path). Never write just <code>devops_project_key.pem</code>.</li>
+</ul>
+</div>
+<div class="card">
+<h3>2.1 Go to your home folder</h3>
+<pre><code class="language-powershell">cd $HOME
 </code></pre>
-<p>Connect:</p>
+<p>Expect: the prompt ends with <code>PS C:\Users\LucyS&gt;</code>.</p>
+</div>
+<div class="card">
+<h3>2.2 Set the key path</h3>
+<pre><code class="language-powershell">$KEY = "$HOME\.ssh\devops_project_key.pem"
+</code></pre>
+</div>
+<div class="card">
+<h3>2.3 Find the key file</h3>
+<pre><code class="language-powershell">Get-ChildItem "$HOME\Downloads\*.pem", "$HOME\.ssh\*.pem" | Select-Object FullName
+</code></pre>
+<p>Expect: one path listed.</p>
+<ul>
+<li>Listed under <code>Downloads</code>: do 2.4.</li>
+<li>Listed under <code>.ssh</code> as <code>devops_project_key.pem</code>: it is already in place, skip 2.4.</li>
+<li>File name differs (for example <code>devops_project_key (1).pem</code>): use that exact name in 2.4.</li>
+<li>Nothing listed: AWS only lets you download a <code>.pem</code> once, at creation. Launch a new instance with a new key pair (Step 1).</li>
+</ul>
+</div>
+<div class="card">
+<h3>2.4 Move the key into <code>.ssh</code> (once)</h3>
+<pre><code class="language-powershell">Move-Item "$HOME\Downloads\devops_project_key.pem" $KEY
+</code></pre>
+<p>Error <code>Cannot find path ... Downloads</code>: if 2.3 showed the file under <code>.ssh</code>, it is already moved. Continue.</p>
+</div>
+<div class="card">
+<h3>2.5 Lock the key permissions (one command, do not split it)</h3>
+<pre><code class="language-powershell">icacls $KEY /inheritance:r /grant:r "$($env:USERNAME):(R)"
+</code></pre>
+<p>Expect: <code>Successfully processed 1 files; Failed processing 0 files</code>.</p>
+<p>Check it:</p>
+<pre><code class="language-powershell">icacls $KEY
+</code></pre>
+<p>Expect: exactly one entry, your user with <code>(R)</code>. Anything else: run the 2.5 command again.</p>
+</div>
+<div class="card">
+<h3>2.6 Connect</h3>
+<p>Copy the <strong>Public IPv4 DNS</strong> from the EC2 console (it changes every lab session) and paste it between the quotes, replacing <code>&lt;PUBLIC-IPV4-DNS&gt;</code> including the angle brackets:</p>
 <pre><code class="language-powershell">$HOST_ = "&lt;PUBLIC-IPV4-DNS&gt;"
-ssh -o ServerAliveInterval=60 -i $KEY ec2-user@$HOST_
+</code></pre>
+<pre><code class="language-powershell">ssh -o ServerAliveInterval=60 -i $KEY ec2-user@$HOST_
 </code></pre>
 <p>Type <code>yes</code> at the first prompt. Expect: <code>[ec2-user@ip-... ~]$</code>.</p>
-<p>Error <code>REMOTE HOST IDENTIFICATION HAS CHANGED</code>: run <code>ssh-keygen -R $HOST_</code> and connect again.
-Error <code>UNPROTECTED PRIVATE KEY FILE</code>: repeat the three <code>icacls</code> lines.</p>
+</div>
+<div class="card">
+<h3>If it fails</h3>
+<div style="overflow-x:auto"><table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Identity file ... not accessible</code></td>
+<td><code>$KEY</code> is empty or wrong. Run 2.2 again, then <code>Test-Path $KEY</code> must print <code>True</code>.</td>
+</tr>
+<tr>
+<td><code>UNPROTECTED PRIVATE KEY FILE</code></td>
+<td>Run the 2.5 command again.</td>
+</tr>
+<tr>
+<td><code>Permission denied (publickey...)</code></td>
+<td>The <code>.pem</code> is not the key this instance was launched with. EC2 console &gt; your instance &gt; Details &gt; <strong>Key pair name</strong> must match the <code>.pem</code> you use. The user must be <code>ec2-user</code>.</td>
+</tr>
+<tr>
+<td><code>REMOTE HOST IDENTIFICATION HAS CHANGED</code></td>
+<td>Run <code>ssh-keygen -R $HOST_</code>, then connect again.</td>
+</tr>
+<tr>
+<td><code>Connection timed out</code></td>
+<td>Wrong DNS (it changed), instance not <code>Running</code>, or the port 22 rule is missing from the security group.</td>
+</tr>
+<tr>
+<td><code>Invalid parameter</code> or two commands on one line</td>
+<td>Two blocks were pasted together. Run one block at a time.</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 </div>
 </div>
