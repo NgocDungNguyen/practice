@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Practice guide for Assignment 3: AWS Learner Lab EC2, PowerShell and EC2 access, GitHub SSH keys, cloning the classroom repo, tool installs, Q1 and Q2, and a symptom-to-fix table.">
+<title>Practice: A3 Setup Guide - COSC2767</title>
+<link rel="icon" type="image/png" href="../assets/images/rmit-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css?v=d76616befb">
+<script>(function(){try{var t=localStorage.getItem('cosc27-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script type="module" src="../js/main.js?v=93ddf335e0"></script>
+</head>
+<body data-page="practice-a3-setup" data-stage="archive" data-root="../" style="--stage-accent: var(--stage-archive)">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="progress-rail" aria-hidden="true"><div class="progress-rail__fill"></div></div>
+<header class="topbar">
+<button class="tb-btn tb-btn--icon topbar__menu" type="button" data-action="toggle-sidebar" aria-expanded="false" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<a class="topbar__brand" href="../index.html">
+<img src="../assets/images/rmit-logo.png" alt="RMIT University logo">
+<span>Systems Deployment<br>and Operations</span>
+<span class="topbar__course">COSC2767</span>
+</a>
+<div class="topbar__crumb"><span>Archive</span><span class="crumb-sep">/</span><span>Practice: A3 Setup</span></div>
+<div class="topbar__actions">
+<button class="tb-btn tb-btn--search" type="button" data-action="open-search" aria-label="Search the guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><span class="tb-search-label">Search labs…</span><kbd>⌘K</kbd></button>
+<button class="tb-btn tb-btn--icon" type="button" data-action="print-page" aria-label="Print or save as PDF" title="Print / save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+<button class="tb-btn tb-btn--icon tb-btn--theme" type="button" data-action="toggle-theme" aria-label="Toggle dark mode"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg></button>
+</div>
+</header>
+<div class="layout">
+<div class="sidebar__overlay"></div><nav class="sidebar" id="site-nav" aria-label="Course navigation"><div class="sidenav__group" style="--group-accent: var(--stage-foundations, var(--rmit-red))"><div class="sidenav__stage-label">Foundations<small>Weeks 1–3</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-1-tools-environment-setup-lab.html" data-page-key="week-1" data-sections="7"><span class="sidenav__num">01</span><span>Tools & Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-2-linux-cli-lab.html" data-page-key="week-2" data-sections="14"><span class="sidenav__num">02</span><span>Linux and CLI Commands</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-3-git-aws-lab.html" data-page-key="week-3" data-sections="11"><span class="sidenav__num">03</span><span>Git and AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-delivery, var(--rmit-red))"><div class="sidenav__stage-label">Delivery<small>Weeks 4–5</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-4-java-maven-tomcat-lab.html" data-page-key="week-4" data-sections="20"><span class="sidenav__num">04</span><span>Java, Maven and Tomcat</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-5-jenkins-ci-cd-lab.html" data-page-key="week-5" data-sections="11"><span class="sidenav__num">05</span><span>Jenkins for CI and CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-automation, var(--rmit-red))"><div class="sidenav__stage-label">Automation<small>Weeks 6, 8–9</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-6-docker-lab.html" data-page-key="week-6" data-sections="16"><span class="sidenav__num">06</span><span>Docker</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-8-ansible-lab.html" data-page-key="week-8" data-sections="11"><span class="sidenav__num">08</span><span>Ansible</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-9-docker-compose-swarm-lab.html" data-page-key="week-9" data-sections="6"><span class="sidenav__num">09</span><span>Docker Compose and Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-orchestration, var(--rmit-red))"><div class="sidenav__stage-label">Operations<small>Weeks 10–11</small></div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/week-10-kubernetes-lab.html" data-page-key="week-10" data-sections="8"><span class="sidenav__num">10</span><span>Kubernetes</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/week-11-eks-aws-lab.html" data-page-key="week-11" data-sections="7"><span class="sidenav__num">11</span><span>EKS on AWS</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><div class="sidenav__group" style="--group-accent: var(--stage-resources, var(--rmit-red))"><div class="sidenav__stage-label">Reference</div><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/ssh-keys-github.html" data-page-key="sshkeys" data-sections="7"><span class="sidenav__num">SK</span><span>SSH Keys & GitHub Access</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/devops-cheatsheet.html" data-page-key="cheatsheet" data-sections="8"><span class="sidenav__num">CS</span><span>DevOps Cheatsheet</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/useful-resources.html" data-page-key="resources" data-sections="5"><span class="sidenav__num">RX</span><span>Useful Resources</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></div><details class="sidenav__group sidenav__group--collapsible" style="--group-accent: var(--stage-archive, var(--rmit-red))" open><summary class="sidenav__stage-label">Archive<span class="sidenav__chevron" aria-hidden="true"></span></summary><ul class="sidenav__list"><li><a class="sidenav__link" href="../sub_pages/setup.html" data-page-key="setup" data-sections="11"><span class="sidenav__num">SU</span><span>Practice Environment Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/challenge-6-setup-script.html" data-page-key="challenge6" data-sections="4"><span class="sidenav__num">C6</span><span>Challenge 6 Setup Script</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/debug-jenkins-ssh-agent.html" data-page-key="sshagent-debug" data-sections="4"><span class="sidenav__num">DL</span><span>Debug Log: Jenkins SSH Agent</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-e2e-pipeline.html" data-page-key="rmit-e2e-pipeline" data-sections="6"><span class="sidenav__num">E2E</span><span>RMIT Store: End-to-End CI/CD</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-manual-deploy.html" data-page-key="rmit-manual-deploy" data-sections="7"><span class="sidenav__num">A2</span><span>RMIT Store: Manual Deploy (A–E)</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-ansible-swarm.html" data-page-key="rmit-ansible-swarm" data-sections="10"><span class="sidenav__num">AN</span><span>RMIT Store: Ansible & Docker Swarm</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-jenkins-pipeline.html" data-page-key="rmit-jenkins-pipeline" data-sections="12"><span class="sidenav__num">JE</span><span>RMIT Store: Jenkins Pipelines</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-alerting.html" data-page-key="rmit-alerting" data-sections="8"><span class="sidenav__num">AL</span><span>RMIT Store: Automated Alerting</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/rmit-store-monitoring.html" data-page-key="rmit-monitoring" data-sections="9"><span class="sidenav__num">MO</span><span>RMIT Store: Monitoring & Grafana</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link sidenav__link--active" aria-current="page" href="../sub_pages/practice-a3-setup.html" data-page-key="practice-a3-setup" data-sections="13"><span class="sidenav__num">P1</span><span>Practice: A3 Setup</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li><a class="sidenav__link" href="../sub_pages/practice-simple-webapp.html" data-page-key="practice-simple-webapp" data-sections="16"><span class="sidenav__num">P2</span><span>Practice: Simple Webapp</span><span class="sidenav__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul></details></nav>
+<main class="content" id="main-content">
+<div class="page-hero">
+<div class="page-hero__tags">
+<span class="chip chip--stage">Archive</span><span class="chip">Reference</span>
+</div>
+<h1><span class="hero-emoji" aria-hidden="true">🧭</span>Practice: A3 Setup Guide</h1>
+<p class="page-hero__intro">Blocks marked <code>powershell</code> run on your Windows PC. Blocks marked <code>bash</code> run on the EC2 instance (Amazon Linux, as root, same as the guide).
+Anything in <code>&lt;ANGLE_BRACKETS&gt;</code> is a value you fill in. Anything in CAPITALS at the top of a block is a variable you set once.</p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>13</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>28</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>22</strong>&nbsp;min</span></div>
+</div>
+
+<section class="cheatsheet-section" id="0-your-profile-and-fixed-values">
+<h2 class="collapsible-header start-open">0. Your profile and fixed values<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<div style="overflow-x:auto"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full name (README, index.jsp, reports)</td>
+<td>Nguyen Ngoc Dung</td>
+</tr>
+<tr>
+<td>Student ID</td>
+<td>s3978535</td>
+</tr>
+<tr>
+<td>Email</td>
+<td>s3978535@rmit.edu.vn</td>
+</tr>
+<tr>
+<td>Repo (SSH URL, use this)</td>
+<td><code>git@github.com:rmit-vietnam-computing-technologies/2026b-cosc2767-a3-hn-ngocdungnguyen-s3978535.git</code></td>
+</tr>
+<tr>
+<td>Repo (HTTPS URL, fallback only)</td>
+<td><code>https://github.com/rmit-vietnam-computing-technologies/2026b-cosc2767-a3-hn-ngocdungnguyen-s3978535.git</code></td>
+</tr>
+<tr>
+<td>Git author on your PC today</td>
+<td><code>NgocDungNguyen</code> / <code>s3978535@rmit.edu.vn</code> (already in <code>git config --global</code>)</td>
+</tr>
+<tr>
+<td>EC2 login user</td>
+<td><code>ec2-user</code>, then <code>sudo su -</code> to become root</td>
+</tr>
+<tr>
+<td>Default password for anything you create</td>
+<td><code>abc123</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>State of your PC when this was written (checked, nothing was changed):</p>
+<ul>
+<li><code>~/.ssh</code> has only <code>known_hosts</code>. No key pair exists, so GitHub cannot recognise this PC yet.</li>
+<li>The <code>ssh-agent</code> service is Disabled. Do not rely on it; section 2 uses a config file instead.</li>
+<li>The GitHub CLI (<code>gh</code>) is not installed. You do not need it.</li>
+<li>No <code>.pem</code> file was found in your home, Downloads or <code>.ssh</code> folders. You will need the AWS key from the Learner Lab (section 3).</li>
+<li>PowerShell is 5.1, which has two quirks that are handled below: an empty ssh passphrase and file encoding.</li>
+</ul>
+<p>Read this before starting: <strong>GitHub does not accept your account password (or <code>abc123</code>) for git over HTTPS</strong>, and it has not since 2021. Git only works through an SSH key or a personal access token. Everything in this guide uses SSH because it never expires and there is nothing to paste into a screenshot by accident.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="1-understand-the-three-separate-keys-this-is-wha">
+<h2 class="collapsible-header">1. Understand the three separate keys (this is what cost you time in A1)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<div style="overflow-x:auto"><table>
+<thead>
+<tr>
+<th>From</th>
+<th>To</th>
+<th>Credential</th>
+<th>Where it lives</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Your PC</td>
+<td>EC2</td>
+<td>AWS<code>.pem</code> key</td>
+<td>Downloaded once from AWS</td>
+</tr>
+<tr>
+<td>Your PC</td>
+<td>GitHub</td>
+<td>key pair#1</td>
+<td><code>~/.ssh/id_rsa_a3</code> on the PC (optional, only if you use git on the PC)</td>
+</tr>
+<tr>
+<td>EC2</td>
+<td>GitHub</td>
+<td>key pair#2</td>
+<td><code>/root/.ssh/id_rsa</code> on the EC2</td>
+</tr>
+</tbody>
+</table></div>
+<p>Each key pair's <strong>public</strong> half (<code>.pub</code>) is added to GitHub under Settings &gt; SSH and GPG keys. The <strong>private</strong> half never leaves the machine that made it. GitHub keys belong to your account, so one account can hold many keys at once.</p>
+<p>The most likely reason for A1 pain: generating the key on one machine but running <code>git</code> as a different user (for example key made as <code>ec2-user</code>, <code>git clone</code> run as root). Keys are per user. Stay root on the EC2 for the whole assignment.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="2-windows-powershell-prepare-your-pc-do-once-10-">
+<h2 class="collapsible-header">2. Windows PowerShell: prepare your PC (do once, 10 minutes)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>2.1 Put the AWS key somewhere safe and fix its permissions</h3>
+<p>Windows refuses to use a <code>.pem</code> that other users can read (<code>UNPROTECTED PRIVATE KEY FILE</code>). The guide's fix uses <code>icacls</code>.</p>
+<pre><code class="language-powershell">$KEY = "$HOME\.ssh\devops_project_key.pem" 
+Move-Item "$HOME\Downloads\&lt;YOUR_PEM_FILE&gt;.pem" $KEY
+icacls $KEY /reset
+icacls $KEY /inheritance:r
+icacls $KEY /grant:r "$($env:USERNAME):(R)"
+icacls $KEY                                     # should list only your user with (R)
+</code></pre>
+</div>
+<div class="card">
+<h3>2.2 Confirm your Git identity</h3>
+<pre><code class="language-powershell">git config --global user.name
+git config --global user.email
+</code></pre>
+<p>You should see <code>NgocDungNguyen</code> and <code>s3978535@rmit.edu.vn</code>. Leave them. The EC2 gets its own identity in section 5.</p>
+</div>
+<div class="card">
+<h3>2.3 Optional: a GitHub key for the PC</h3>
+<p>Only needed if you want to <code>git clone</code> or push from Windows. The assignment itself can be done entirely on the EC2. If you skip this, skip 2.3 and 2.4.</p>
+<pre><code class="language-powershell">ssh-keygen -t rsa -b 4096 -C "s3978535@rmit.edu.vn" -f "$HOME\.ssh\id_rsa_a3" -N '""'
+</code></pre>
+<p>The odd <code>'""'</code> is the PowerShell 5.1 way to say "no passphrase". Without it the command may prompt or fail.</p>
+<p>Tell ssh which key to use for GitHub. Use <code>-Encoding ascii</code>: PowerShell 5.1 otherwise writes a BOM/UTF-16 file and ssh fails with <code>Bad configuration option</code>.</p>
+<pre><code class="language-powershell">@"
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_rsa_a3
+  IdentitiesOnly yes
+"@ | Set-Content -Encoding ascii "$HOME\.ssh\config"
+</code></pre>
+<p>(There is no <code>config</code> file today, so this creates it. If you add more hosts later, use <code>Add-Content</code>, not <code>Set-Content</code>.)</p>
+</div>
+<div class="card">
+<h3>2.4 Add the PC key to GitHub, then test</h3>
+<pre><code class="language-powershell">Get-Content "$HOME\.ssh\id_rsa_a3.pub" | Set-Clipboard
+</code></pre>
+<p>Browser: <a href="https://github.com/settings/ssh/new" rel="noopener" target="_blank">https://github.com/settings/ssh/new</a>, Title <code>a3-laptop</code>, Key type <code>Authentication Key</code>, paste, Add SSH key.</p>
+<pre><code class="language-powershell">ssh -T git@github.com
+</code></pre>
+<p>First time it asks <code>Are you sure you want to continue connecting</code>. Type <code>yes</code>. Expected reply:</p>
+<pre><code>Hi &lt;your-github-username&gt;! You've successfully authenticated, but GitHub does not provide shell access.
+</code></pre>
+<p>That reply also tells you your exact GitHub username. Write it down: only the HTTPS/token fallback needs it.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="3-aws-learner-lab-and-launching-the-ec2">
+<h2 class="collapsible-header">3. AWS Learner Lab and launching the EC2<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<p>A1 started with a clean-up. Expect the same here, but read the A3 spec for the exact list and names.</p>
+<ol>
+<li>Start the Learner Lab. Wait for the AWS dot to turn green, then open the console.</li>
+<li>Clean up before launching (EC2 &gt; Instances, AMIs, Snapshots): terminate instances, deregister AMIs, delete snapshots. Take the "no resources" screenshots the spec asks for.</li>
+<li>Launch the instance:</li>
+<li>Name: whatever A3 specifies (A1 used <code>DevOps-Midterm-Exam-2026B</code>).</li>
+<li>Image: Amazon Linux (the guide labs use it, login user <code>ec2-user</code>).</li>
+<li>Size: 2 GB RAM or more if Jenkins may be needed later; <code>t3.small</code> is a safe default.</li>
+<li>Key pair: create or reuse; download the <code>.pem</code> and use it in section 2.1.</li>
+<li>Security group inbound rules, add them now so you do not forget: SSH 22 from your IP, Custom TCP 8080, and Custom TCP 8086. Add the assigned 9xxx-style port only if A3 asks for one.</li>
+<li>Copy the <strong>Public IPv4 DNS</strong> of the instance. Learner Lab changes the public address every time the lab stops and restarts, so recopy it each session.</li>
+</ol>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="4-windows-powershell-connect-to-the-ec2">
+<h2 class="collapsible-header">4. Windows PowerShell: connect to the EC2<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-powershell">$KEY  = "$HOME\.ssh\devops_project_key.pem"
+$HOST_ = "ec2-&lt;A-B-C-D&gt;.compute-1.amazonaws.com"     # paste the Public IPv4 DNS
+ssh -i $KEY ec2-user@$HOST_
+</code></pre>
+<p>First connection asks to trust the host: type <code>yes</code>.</p>
+<p>If the address changed and you reuse an old entry, ssh shouts <code>REMOTE HOST IDENTIFICATION HAS CHANGED</code>. Fix:</p>
+<pre><code class="language-powershell">ssh-keygen -R $HOST_
+</code></pre>
+<p>Copy files between PC and EC2 (only when you really need to, for example a screenshot or a prepared file):</p>
+<pre><code class="language-powershell">scp -i $KEY .\file.txt ec2-user@${HOST_}:~/
+</code></pre>
+</div>
+<div class="card">
+<h3>4.1 Become root and set the hostname (do this first, before any screenshot)</h3>
+<p>A1 gave zero if the prompt did not show the required hostname. Use the exact text the A3 spec gives. Placeholder below follows the A1 pattern.</p>
+<pre><code class="language-bash">sudo su -
+HN=s3978535-final-exam-2026b          # REPLACE with the exact hostname A3 requires
+hostnamectl set-hostname $HN
+reboot
+</code></pre>
+<p>The SSH session drops. Wait about a minute, then reconnect from PowerShell and run <code>sudo su -</code> again. The prompt must read like:</p>
+<pre><code>[root@s3978535-final-exam-2026b ~]#
+</code></pre>
+<p>If it still shows <code>ip-172-...</code> after the reboot, the name did not persist. Run:</p>
+<pre><code class="language-bash">echo "preserve_hostname: true" &gt;&gt; /etc/cloud/cloud.cfg
+hostnamectl set-hostname s3978535-final-exam-2026b
+reboot
+</code></pre>
+<p>Tip so a dropped connection does not lose the session: add <code>-o ServerAliveInterval=60</code> to the ssh command.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="5-ec2-bash-as-root-git-key-clone">
+<h2 class="collapsible-header">5. EC2 (bash, as root): Git, key, clone<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">dnf install -y git
+git config --global user.name  "Nguyen Ngoc Dung"
+git config --global user.email "s3978535@rmit.edu.vn"
+git config --global init.defaultBranch main
+git config --global core.autocrlf input
+git config --global --list
+</code></pre>
+</div>
+<div class="card">
+<h3>5.1 Make the EC2's own GitHub key</h3>
+<pre><code class="language-bash">ssh-keygen -t rsa -b 4096 -C "s3978535@rmit.edu.vn" -N "" -f ~/.ssh/id_rsa
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub
+</code></pre>
+<p>This output is screenshot 1a-style evidence in A1 (terminal showing the key pair generated). Show the <code>ssh-keygen</code> command and its result, not the private key.</p>
+<p>Copy the public key to GitHub one of two ways:</p>
+<ul>
+<li>Select the <code>cat</code> output in the terminal, copy, and paste it at <a href="https://github.com/settings/ssh/new" rel="noopener" target="_blank">https://github.com/settings/ssh/new</a> (Title <code>a3-ec2</code>).</li>
+<li>Or from a <strong>second PowerShell window</strong> (no manual selecting):
+  <code>powershell
+  ssh -i $KEY ec2-user@$HOST_ "sudo cat /root/.ssh/id_rsa.pub" | Set-Clipboard</code></li>
+</ul>
+</div>
+<div class="card">
+<h3>5.2 Test, then clone</h3>
+<pre><code class="language-bash">ssh -T git@github.com
+</code></pre>
+<p>Type <code>yes</code> at the first prompt. You must see <code>Hi &lt;username&gt;! You've successfully authenticated...</code>.</p>
+<pre><code class="language-bash">cd ~
+git clone git@github.com:rmit-vietnam-computing-technologies/2026b-cosc2767-a3-hn-ngocdungnguyen-s3978535.git
+cd 2026b-cosc2767-a3-hn-ngocdungnguyen-s3978535
+ls -la
+cat .gitignore
+cat README.md
+git remote -v            # must show git@github.com:..., not https://...
+</code></pre>
+</div>
+<div class="card">
+<h3>5.3 The placeholder README and the .gitignore</h3>
+<ul>
+<li>The README is a placeholder. When A3 gives the real content, replace it (<code>nano README.md</code>), filling every bracketed placeholder with: Nguyen Ngoc Dung, s3978535, your GitHub username, plus the course/assessment wording A3 gives.</li>
+<li>Open <code>.gitignore</code> and look for <code>*.war</code>, <code>*.jar</code> and <code>target/</code>. GitHub's Java template ignores <code>*.war</code>/<code>*.jar</code> and its Maven template ignores <code>target/</code>. If A3 requires committing a WAR (the sample did), <code>git add</code> will silently skip it. Check with:
+  <code>bash
+  git check-ignore -v question-1/hello/target/hello.war
+  git add -f question-2/hello.war         # force-add only if the spec wants it committed</code></li>
+</ul>
+<p>Do not edit <code>.gitignore</code> unless the spec says so.</p>
+</div>
+<div class="card">
+<h3>5.4 First commit on main, then the develop branch</h3>
+<p>Use the commit messages A3 specifies. A1's were the following, so expect similar:</p>
+<pre><code class="language-bash">nano README.md
+git add README.md
+git commit -m "Edit the README file"
+git push origin main
+
+git checkout -b develop
+mkdir question-1
+cp README.md question-1/
+git add .
+git commit -m "Add question-1 README"
+git push -u origin develop
+</code></pre>
+<p>Git does not store empty folders. A <code>question-2</code> directory with nothing in it vanishes from GitHub, so always put a file in it before committing.</p>
+<p>Check who you committed as: <code>git log -1 --format='%an &lt;%ae&gt;'</code> must print <code>Nguyen Ngoc Dung &lt;s3978535@rmit.edu.vn&gt;</code>.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="6-tools-on-the-ec2-as-root-based-on-the-guide">
+<h2 class="collapsible-header">6. Tools on the EC2 (as root), based on the guide<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>6.1 Java and Maven (Week 4)</h3>
+<pre><code class="language-bash">dnf install -y java-21-amazon-corretto-devel
+java -version
+
+cd /opt
+wget https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz
+tar -xvzf apache-maven-3.9.11-bin.tar.gz
+mv apache-maven-3.9.11 maven
+
+cat &gt;&gt; ~/.bash_profile &lt;&lt;'EOF'
+M2_HOME=/opt/maven
+M2=$M2_HOME/bin
+JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto
+PATH=$PATH:$HOME/bin:$JAVA_HOME/bin:$M2
+export M2_HOME M2 JAVA_HOME PATH
+EOF
+source ~/.bash_profile
+mvn -version
+</code></pre>
+<p>If <code>ls /usr/lib/jvm</code> shows a different folder name, use that for <code>JAVA_HOME</code>. (<code>archive.apache.org</code> is used because <code>dlcdn</code> only keeps the newest version and the link breaks.)</p>
+</div>
+<div class="card">
+<h3>6.2 Tomcat (Week 4), only if the spec asks</h3>
+<pre><code class="language-bash">cd /opt
+wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.97/bin/apache-tomcat-9.0.97.tar.gz
+tar -xvzf apache-tomcat-9.0.97.tar.gz
+mv apache-tomcat-9.0.97 tomcat
+ln -s /opt/tomcat/bin/startup.sh  /usr/local/bin/tomcatup
+ln -s /opt/tomcat/bin/shutdown.sh /usr/local/bin/tomcatdown
+tomcatup
+</code></pre>
+<p>Then open <code>http://&lt;EC2-PUBLIC-IP&gt;:8080</code> (security group must allow 8080).</p>
+</div>
+<div class="card">
+<h3>6.3 Docker (Week 6)</h3>
+<pre><code class="language-bash">dnf install -y docker
+systemctl enable --now docker
+usermod -aG docker ec2-user
+docker version
+systemctl status docker --no-pager
+</code></pre>
+<p>That output is what a "Docker version and running service" screenshot needs.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="7-question-1-and-question-2-from-the-sample">
+<h2 class="collapsible-header">7. Question 1 and Question 2 (from the sample)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>Q1: Maven web app (tested on your PC with Maven 3.9.11)</h3>
+<pre><code class="language-bash">cd ~/2026b-cosc2767-a3-hn-ngocdungnguyen-s3978535
+git checkout develop
+mkdir -p question-1 &amp;&amp; cd question-1
+mvn archetype:generate -DgroupId=vn.edu.rmit -DartifactId=hello \
+  -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false
+cd hello
+nano src/main/webapp/index.jsp
+</code></pre>
+<p>Set <code>index.jsp</code> to (follow the exact wording of A3, this is the sample's pattern):</p>
+<pre><code class="language-html">&lt;html&gt;
+&lt;body&gt;
+&lt;h2&gt;[2026B] I am Nguyen Ngoc Dung - s3978535 from the DevOps final exam&lt;/h2&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<pre><code class="language-bash">mvn package
+ls -l target/hello.war
+cd ~/2026b-cosc2767-a3-hn-ngocdungnguyen-s3978535
+git add question-1
+git commit -m "Set up Maven web application"
+git push
+</code></pre>
+</div>
+<div class="card">
+<h3>Q2: Docker image and Docker Hub</h3>
+<pre><code class="language-bash">cd ~/2026b-cosc2767-a3-hn-ngocdungnguyen-s3978535
+mkdir -p question-2 &amp;&amp; cd question-2
+cp ../question-1/hello/target/hello.war .
+cat &gt; Dockerfile &lt;&lt;'EOF'
+FROM tomcat:latest
+RUN cp -R /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps
+COPY ./*.war /usr/local/tomcat/webapps
+EOF
+docker build -t &lt;DOCKERHUB_USER&gt;/hello:latest .
+docker run -d --name hello-container -p 8086:8080 &lt;DOCKERHUB_USER&gt;/hello:latest
+docker ps
+</code></pre>
+<p>Open <code>http://&lt;EC2-PUBLIC-IP&gt;:8086/hello/</code>. Then publish:</p>
+<pre><code class="language-bash">docker login -u &lt;DOCKERHUB_USER&gt;
+docker push &lt;DOCKERHUB_USER&gt;/hello:latest
+echo "https://hub.docker.com/r/&lt;DOCKERHUB_USER&gt;/hello" &gt; dockerHubLink.txt
+git add Dockerfile dockerHubLink.txt
+git add -f hello.war             # only if A3 wants the WAR committed
+git commit -m "Add Dockerfile and Docker Hub link"
+git push
+</code></pre>
+<p>Clean up if the spec asks: <code>docker stop hello-container &amp;&amp; docker rm hello-container</code>.</p>
+<p>Names, ports and the image name in A3 will differ. Copy them from the spec, not from here.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="8-usernames-and-passwords-all-abc123">
+<h2 class="collapsible-header">8. Usernames and passwords (all <code>abc123</code>)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<div style="overflow-x:auto"><table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Username</th>
+<th>Password</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jenkins first admin user</td>
+<td><code>admin</code></td>
+<td><code>abc123</code></td>
+<td>Full name Nguyen Ngoc Dung, email s3978535@rmit.edu.vn</td>
+</tr>
+<tr>
+<td>Tomcat manager (<code>/opt/tomcat/conf/tomcat-users.xml</code>)</td>
+<td><code>admin</code></td>
+<td><code>abc123</code></td>
+<td><code>&lt;user username="admin" password="abc123" roles="manager-gui,admin-gui,manager-script,manager-jmx,manager-status"/&gt;</code></td>
+</tr>
+<tr>
+<td>Extra Linux users (Docker/Ansible labs)</td>
+<td><code>dockeradmin</code>, <code>ansadmin</code></td>
+<td><code>abc123</code></td>
+<td><code>useradd dockeradmin</code> then <code>echo "dockeradmin:abc123" \| chpasswd</code></td>
+</tr>
+<tr>
+<td>Docker Hub</td>
+<td>your existing username</td>
+<td>see note</td>
+<td>Docker Hub demands at least 9 characters, so<code>abc123</code> is rejected. Use <code>abc123abc</code> for the Docker Hub account and note it. Better: create an access token at hub.docker.com/settings/security and use it as the password for <code>docker login</code>.</td>
+</tr>
+<tr>
+<td>GitHub</td>
+<td>existing account</td>
+<td>do not change</td>
+<td>GitHub does not accept this for git. Use SSH.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Two cautions. Tomcat manager and Jenkins sit on a public IP, so a guessable password gets probed quickly. Restrict the security group to your IP when you can, and terminate the instance after the assignment. Also, EC2 SSH password login is off by default on Amazon Linux, so if a lab step needs password ssh you must turn it on in <code>/etc/ssh/sshd_config</code> (<code>PasswordAuthentication yes</code>, then <code>systemctl restart sshd</code>); otherwise rely on keys.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="9-fallbacks-if-ssh-to-github-does-not-work">
+<h2 class="collapsible-header">9. Fallbacks if SSH to GitHub does not work<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<h3>9.1 SSH blocked (port 22, campus Wi-Fi, "Connection timed out")</h3>
+<p>GitHub also listens on port 443. On the machine that fails, add to <code>~/.ssh/config</code>:</p>
+<pre><code>Host github.com
+  HostName ssh.github.com
+  Port 443
+  User git
+  IdentityFile ~/.ssh/id_rsa
+</code></pre>
+<p>Then <code>ssh -T git@github.com</code> again.</p>
+</div>
+<div class="card">
+<h3>9.2 Use a personal access token (HTTPS)</h3>
+<ol>
+<li><a href="https://github.com/settings/tokens/new" rel="noopener" target="_blank">https://github.com/settings/tokens/new</a> (a classic token), tick only <code>repo</code>, Expiration 7 days, Generate. Copy it immediately; it is shown once.</li>
+<li>On the EC2:
+   <code>bash
+   git config --global credential.helper store
+   git clone https://github.com/rmit-vietnam-computing-technologies/2026b-cosc2767-a3-hn-ngocdungnguyen-s3978535.git</code></li>
+</ol>
+<p>Username: your GitHub username (from the <code>Hi &lt;username&gt;!</code> line). Password: the token, not <code>abc123</code>.
+3. Never screenshot the token. If the org blocks classic tokens, you will get <code>Repository not found</code>; go back to SSH.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="10-when-something-breaks-symptom-cause-fix">
+<h2 class="collapsible-header">10. When something breaks (symptom, cause, fix)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<div style="overflow-x:auto"><table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Permission denied (publickey)</code> on <code>ssh -T git@github.com</code></td>
+<td>Public key not on GitHub, wrong key, or wrong user</td>
+<td><code>ssh -vT git@github.com</code> and see which key is offered. Re-add the <code>.pub</code> file. Make sure you are the same user that made the key.</td>
+</tr>
+<tr>
+<td><code>Repository not found</code> on clone</td>
+<td>Wrong GitHub account, invite not accepted, or org SSO not authorised</td>
+<td>Open the repo URL in your browser while logged in. If you see 404, accept the Classroom invite. If the key page shows<code>Configure SSO</code>, click it and authorise.</td>
+</tr>
+<tr>
+<td><code>UNPROTECTED PRIVATE KEY FILE</code></td>
+<td><code>.pem</code> permissions too open</td>
+<td>Redo section 2.1.</td>
+</tr>
+<tr>
+<td><code>Bad configuration option</code> in ssh config</td>
+<td>File saved with BOM/UTF-16</td>
+<td>Recreate it with<code>Set-Content -Encoding ascii</code>.</td>
+</tr>
+<tr>
+<td>Git asks for a username and password on push</td>
+<td>Remote is HTTPS</td>
+<td><code>git remote set-url origin git@github.com:rmit-vietnam-computing-technologies/2026b-cosc2767-a3-hn-ngocdungnguyen-s3978535.git</code></td>
+</tr>
+<tr>
+<td><code>REMOTE HOST IDENTIFICATION HAS CHANGED</code></td>
+<td>New instance reused an old address</td>
+<td><code>ssh-keygen -R &lt;host&gt;</code> on the PC.</td>
+</tr>
+<tr>
+<td>Cannot reach EC2 (timeout)</td>
+<td>Instance stopped, IP changed, or security group missing your IP</td>
+<td>Recopy the Public DNS; check the security group's SSH rule.</td>
+</tr>
+<tr>
+<td>Prompt has no<code>s3978535</code> hostname</td>
+<td>Hostname not persisted</td>
+<td>Section 4.1 fallback. Never take the screenshot until the prompt is right.</td>
+</tr>
+<tr>
+<td><code>mvn: command not found</code></td>
+<td>New shell did not load the profile</td>
+<td><code>source ~/.bash_profile</code> or use <code>sudo su -</code> (a login shell).</td>
+</tr>
+<tr>
+<td><code>rejected ... non-fast-forward</code> on push</td>
+<td>The remote has a commit you lack</td>
+<td><code>git pull --rebase origin &lt;branch&gt;</code>, then push again.</td>
+</tr>
+<tr>
+<td>A file you<code>git add</code>ed is missing on GitHub</td>
+<td><code>.gitignore</code> ignored it</td>
+<td><code>git check-ignore -v &lt;path&gt;</code>, then <code>git add -f &lt;path&gt;</code> if allowed.</td>
+</tr>
+<tr>
+<td>Script fails with<code>bad interpreter</code> or <code>^M</code></td>
+<td>Windows line endings</td>
+<td>Write scripts on the EC2 with<code>nano</code>, or run <code>dos2unix</code>.</td>
+</tr>
+<tr>
+<td>File you wrote from PowerShell is garbage</td>
+<td>PowerShell<code>&gt;</code> writes UTF-16 in 5.1</td>
+<td>Do file editing on the EC2. If you must, use<code>Set-Content -Encoding ascii</code>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="11-final-merge-last-step-in-a1-worth-1-mark">
+<h2 class="collapsible-header">11. Final merge (last step in A1, worth 1 mark)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">git checkout main
+git pull origin main
+git merge develop
+git push origin main
+git log --graph --oneline --decorate --all
+</code></pre>
+<p>Screenshot both the merge and the <code>git log</code> output. Confirm on GitHub that <code>main</code> shows all question folders.</p>
+</div>
+</div>
+</div></div>
+</section>
+<section class="cheatsheet-section" id="12-screenshot-checklist">
+<h2 class="collapsible-header">12. Screenshot checklist<span class="collapse-icon"></span></h2>
+<div class="collapsible-content"><div class="collapse-glue">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<ul>
+<li>Every terminal screenshot shows the required hostname in the prompt.</li>
+<li>Do not show private keys, tokens or the <code>abc123</code> passwords.</li>
+<li>Do the work on <code>develop</code> unless told otherwise, and re-check with <code>git branch</code> before each commit.</li>
+<li>Test everything before committing; A1 said "Test submission code carefully before submitting".</li>
+</ul>
+</div>
+</div>
+</div></div>
+</section>
+
+<nav class="pager" aria-label="Adjacent labs"><a class="pager__link pager__link--prev" style="--pager-accent: var(--stage-archive)" href="../sub_pages/rmit-store-monitoring.html"><span class="pager__dir">← Previous</span><span class="pager__title">RMIT Store: Monitoring & Grafana</span></a><a class="pager__link pager__link--next" style="--pager-accent: var(--stage-archive)" href="../sub_pages/practice-simple-webapp.html"><span class="pager__dir">Next →</span><span class="pager__title">Practice: Simple Webapp</span></a></nav>
+</main>
+<aside class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<div class="toc__tools">
+<button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
+<button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
+</div>
+<ul class="toc__list"><li class="toc__item" data-toc-id="0-your-profile-and-fixed-values"><a class="toc__link" href="#0-your-profile-and-fixed-values"><span>0. Your profile and fixed values</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="1-understand-the-three-separate-keys-this-is-wha"><a class="toc__link" href="#1-understand-the-three-separate-keys-this-is-wha"><span>1. Understand the three separate keys (this is what cost you time in A1)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="2-windows-powershell-prepare-your-pc-do-once-10-"><a class="toc__link" href="#2-windows-powershell-prepare-your-pc-do-once-10-"><span>2. Windows PowerShell: prepare your PC (do once, 10 minutes)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="3-aws-learner-lab-and-launching-the-ec2"><a class="toc__link" href="#3-aws-learner-lab-and-launching-the-ec2"><span>3. AWS Learner Lab and launching the EC2</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="4-windows-powershell-connect-to-the-ec2"><a class="toc__link" href="#4-windows-powershell-connect-to-the-ec2"><span>4. Windows PowerShell: connect to the EC2</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="5-ec2-bash-as-root-git-key-clone"><a class="toc__link" href="#5-ec2-bash-as-root-git-key-clone"><span>5. EC2 (bash, as root): Git, key, clone</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="6-tools-on-the-ec2-as-root-based-on-the-guide"><a class="toc__link" href="#6-tools-on-the-ec2-as-root-based-on-the-guide"><span>6. Tools on the EC2 (as root), based on the guide</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="7-question-1-and-question-2-from-the-sample"><a class="toc__link" href="#7-question-1-and-question-2-from-the-sample"><span>7. Question 1 and Question 2 (from the sample)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="8-usernames-and-passwords-all-abc123"><a class="toc__link" href="#8-usernames-and-passwords-all-abc123"><span>8. Usernames and passwords (all abc123 )</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="9-fallbacks-if-ssh-to-github-does-not-work"><a class="toc__link" href="#9-fallbacks-if-ssh-to-github-does-not-work"><span>9. Fallbacks if SSH to GitHub does not work</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="10-when-something-breaks-symptom-cause-fix"><a class="toc__link" href="#10-when-something-breaks-symptom-cause-fix"><span>10. When something breaks (symptom, cause, fix)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="11-final-merge-last-step-in-a1-worth-1-mark"><a class="toc__link" href="#11-final-merge-last-step-in-a1-worth-1-mark"><span>11. Final merge (last step in A1, worth 1 mark)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="12-screenshot-checklist"><a class="toc__link" href="#12-screenshot-checklist"><span>12. Screenshot checklist</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<div class="toc__progress">
+<span data-progress-label>0 of 13 sections done</span>
+<div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>
+</div>
+</aside>
+</div>
+<footer class="site-footer"><p>© Created by Tom Huynh with love ❤️ · COSC2767 Systems Deployment and Operations · RMIT University</p></footer>
+</body>
+</html>

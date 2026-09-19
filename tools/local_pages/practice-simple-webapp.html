@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Step-by-step practice run for Assignment 3 Q1 and Q2 on a personal repo: create the EC2 and security group, install tools, build the Maven WAR, Dockerize it, and merge to main.">
+<title>Practice: Simple Webapp Run - COSC2767</title>
+</head>
+<body>
+<header>
+<div class="container">
+<h1>🧪 Practice: Simple Webapp Run</h1>
+<p class="intro">Repo: <code>git@github.com:NgocDungNguyen/Simple-Webapp-COSC2767.git</code>
+<code>powershell</code> = run on your PC. <code>bash</code> = run on the EC2 as root. <code>&lt;...&gt;</code> = fill in.</p>
+</div>
+</header>
+<main class="container">
+
+<section class="cheatsheet-section" id="target-repo-layout">
+<h2 class="collapsible-header start-open">Target repo layout<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<p>Final repo layout (same as <code>sample/</code>):</p>
+<pre><code>README.md
+question-1/hello/pom.xml
+question-1/hello/src/main/webapp/index.jsp
+question-1/hello/src/main/webapp/WEB-INF/web.xml
+question-1/hello/target/hello.war
+question-1/hello/target/hello/index.jsp
+question-1/hello/target/hello/WEB-INF/web.xml
+question-1/hello/target/maven-archiver/pom.properties
+question-2/Dockerfile
+question-2/hello.war
+question-2/dockerHubLink.txt
+</code></pre>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="step-1-create-the-ec2-instance">
+<h2 class="collapsible-header">Step 1. Create the EC2 instance<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<ol>
+<li>Learner Lab: click <strong>Start Lab</strong>. Wait until the AWS dot is green. Click <strong>AWS</strong>.</li>
+<li>Top-right region: <strong>US East (N. Virginia) us-east-1</strong>.</li>
+<li><strong>EC2</strong> &gt; <strong>Instances</strong> &gt; <strong>Launch instances</strong>.</li>
+<li>Fill the form exactly:</li>
+</ol>
+<div style="overflow-x:auto"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td><code>DevOps-Practice</code></td>
+</tr>
+<tr>
+<td>Application and OS Images</td>
+<td>Quick Start &gt; <strong>Amazon Linux</strong> &gt; <strong>Amazon Linux 2023 AMI</strong>, 64-bit (x86)</td>
+</tr>
+<tr>
+<td>Instance type</td>
+<td><strong>t3.medium</strong></td>
+</tr>
+<tr>
+<td>Key pair</td>
+<td>Existing: <code>devops_project_key</code>. If none: <strong>Create new key pair</strong>, name <code>devops_project_key</code>, type <strong>RSA</strong>, format <strong>.pem</strong>, Create (file downloads)</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>1 volume, <strong>20 GiB</strong>, <strong>gp3</strong></td>
+</tr>
+</tbody>
+</table></div>
+<ol>
+<li><strong>Network settings</strong> &gt; click <strong>Edit</strong>, then set:</li>
+</ol>
+<div style="overflow-x:auto"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VPC</td>
+<td>default</td>
+</tr>
+<tr>
+<td>Subnet</td>
+<td>No preference</td>
+</tr>
+<tr>
+<td>Auto-assign public IP</td>
+<td><strong>Enable</strong></td>
+</tr>
+<tr>
+<td>Firewall (security groups)</td>
+<td><strong>Create security group</strong></td>
+</tr>
+<tr>
+<td>Security group name</td>
+<td><code>Practice_Security_Group</code></td>
+</tr>
+<tr>
+<td>Description</td>
+<td><code>Practice SG</code></td>
+</tr>
+</tbody>
+</table></div>
+<ol>
+<li><strong>Inbound security group rules</strong>: keep the SSH row, then click <strong>Add security group rule</strong> three times. End result must be exactly:</li>
+</ol>
+<div style="overflow-x:auto"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Type</th>
+<th>Protocol</th>
+<th>Port range</th>
+<th>Source type</th>
+<th>Source</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>SSH</td>
+<td>TCP</td>
+<td>22</td>
+<td>Anywhere</td>
+<td>0.0.0.0/0</td>
+<td>SSH</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Custom TCP</td>
+<td>TCP</td>
+<td>8080</td>
+<td>Anywhere</td>
+<td>0.0.0.0/0</td>
+<td>Jenkins</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Custom TCP</td>
+<td>TCP</td>
+<td>9535</td>
+<td>Anywhere</td>
+<td>0.0.0.0/0</td>
+<td>Tomcat</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Custom TCP</td>
+<td>TCP</td>
+<td>8086</td>
+<td>Anywhere</td>
+<td>0.0.0.0/0</td>
+<td>Docker container</td>
+</tr>
+</tbody>
+</table></div>
+<ol>
+<li>Leave <strong>Advanced details</strong> as default. Click <strong>Launch instance</strong>.</li>
+<li><strong>Instances</strong> &gt; wait for <strong>Instance state = Running</strong> and <strong>Status check = 2/2 checks passed</strong>.</li>
+<li>Click the instance &gt; copy <strong>Public IPv4 DNS</strong> (looks like <code>ec2-1-2-3-4.compute-1.amazonaws.com</code>).</li>
+</ol>
+<p>Edit rules later: instance &gt; <strong>Security</strong> tab &gt; click the security group &gt; <strong>Edit inbound rules</strong> &gt; <strong>Add rule</strong> &gt; <strong>Save rules</strong>.</p>
+<p>Public DNS changes every time the lab stops and starts. Copy it again each session.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="step-2-connect-from-powershell">
+<h2 class="collapsible-header">Step 2. Connect from PowerShell<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<p>Move the key and lock its permissions (once):</p>
+<pre><code class="language-powershell">$KEY = "$HOME\.ssh\devops_project_key.pem"
+Move-Item "$HOME\Downloads\devops_project_key.pem" $KEY
+icacls $KEY /reset
+icacls $KEY /inheritance:r
+icacls $KEY /grant:r "$($env:USERNAME):(R)"
+</code></pre>
+<p>Connect:</p>
+<pre><code class="language-powershell">$HOST_ = "&lt;PUBLIC-IPV4-DNS&gt;"
+ssh -o ServerAliveInterval=60 -i $KEY ec2-user@$HOST_
+</code></pre>
+<p>Type <code>yes</code> at the first prompt. Expect: <code>[ec2-user@ip-... ~]$</code>.</p>
+<p>Error <code>REMOTE HOST IDENTIFICATION HAS CHANGED</code>: run <code>ssh-keygen -R $HOST_</code> and connect again.
+Error <code>UNPROTECTED PRIVATE KEY FILE</code>: repeat the three <code>icacls</code> lines.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="step-3-root-and-hostname">
+<h2 class="collapsible-header">Step 3. Root and hostname<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">sudo su -
+hostnamectl set-hostname s3978535-practice-2026b
+reboot
+</code></pre>
+<p>Wait 1 minute. Reconnect (Step 2 <code>ssh</code> line), then:</p>
+<pre><code class="language-bash">sudo su -
+</code></pre>
+<p>Expect: <code>[root@s3978535-practice-2026b ~]#</code></p>
+<p>Prompt still shows <code>ip-...</code>:</p>
+<pre><code class="language-bash">echo "preserve_hostname: true" &gt;&gt; /etc/cloud/cloud.cfg
+hostnamectl set-hostname s3978535-practice-2026b
+reboot
+</code></pre>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="step-4-git-ssh-key-clone">
+<h2 class="collapsible-header">Step 4. Git, SSH key, clone<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">dnf install -y git
+git config --global user.name "Nguyen Ngoc Dung"
+git config --global user.email "s3978535@rmit.edu.vn"
+git config --global init.defaultBranch main
+ssh-keygen -t rsa -b 4096 -C "s3978535@rmit.edu.vn" -N "" -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub
+</code></pre>
+<p>Add the key to GitHub (signed in as <code>NgocDungNguyen</code>):
+1. Open <a href="https://github.com/settings/ssh/new" rel="noopener" target="_blank">https://github.com/settings/ssh/new</a>
+2. Title: <code>practice-ec2</code>. Key type: <strong>Authentication Key</strong>.
+3. Paste the <code>cat</code> output. Click <strong>Add SSH key</strong>.</p>
+<p>Shortcut: run this in a second PowerShell window, then paste in GitHub:</p>
+<pre><code class="language-powershell">ssh -i $KEY ec2-user@$HOST_ "sudo cat /root/.ssh/id_rsa.pub" | Set-Clipboard
+</code></pre>
+<p>Test and clone:</p>
+<pre><code class="language-bash">ssh -T git@github.com
+</code></pre>
+<p>Type <code>yes</code>. Expect: <code>Hi NgocDungNguyen! You've successfully authenticated, but GitHub does not provide shell access.</code></p>
+<pre><code class="language-bash">cd ~
+git clone git@github.com:NgocDungNguyen/Simple-Webapp-COSC2767.git
+cd Simple-Webapp-COSC2767
+git remote -v
+</code></pre>
+<p>Expect: both lines start with <code>git@github.com:</code>.</p>
+<p><code>Permission denied (publickey)</code>: key not saved on GitHub, or you are not root. Run <code>ssh -vT git@github.com</code>.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="step-5-install-java-maven-docker">
+<h2 class="collapsible-header">Step 5. Install Java, Maven, Docker<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">dnf install -y java-21-amazon-corretto-devel docker
+java -version
+</code></pre>
+<pre><code class="language-bash">cd /opt
+wget https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz
+tar -xvzf apache-maven-3.9.11-bin.tar.gz
+mv apache-maven-3.9.11 maven
+cat &gt;&gt; ~/.bash_profile &lt;&lt;'EOF'
+M2_HOME=/opt/maven
+M2=$M2_HOME/bin
+JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto
+PATH=$PATH:$HOME/bin:$JAVA_HOME/bin:$M2
+export M2_HOME M2 JAVA_HOME PATH
+EOF
+source ~/.bash_profile
+mvn -version
+</code></pre>
+<pre><code class="language-bash">systemctl enable --now docker
+docker version
+systemctl status docker --no-pager
+cd ~/Simple-Webapp-COSC2767
+</code></pre>
+<p>Expect: <code>java -version</code> shows 21, <code>mvn -version</code> shows 3.9.11, <code>docker version</code> shows Client and Server, Docker status <code>active (running)</code>.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="step-6-create-develop-and-clear-the-old-files">
+<h2 class="collapsible-header">Step 6. Create develop and clear the old files<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">git checkout -b develop
+git rm -r pom.xml src
+git commit -m "Remove old root-level webapp"
+git push -u origin develop
+</code></pre>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="step-7-question-1-maven-web-app">
+<h2 class="collapsible-header">Step 7. Question 1 (Maven web app)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">mkdir question-1
+cd question-1
+mvn archetype:generate -DgroupId=vn.edu.rmit -DartifactId=hello -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false
+cd hello
+nano src/main/webapp/index.jsp
+</code></pre>
+<p>Replace the whole file with:</p>
+<pre><code class="language-html">&lt;html&gt;
+&lt;body&gt;
+&lt;h2&gt;[2026B] I am Nguyen Ngoc Dung - s3978535 from the DevOps final exam&lt;/h2&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Save: <code>Ctrl+O</code>, <code>Enter</code>, <code>Ctrl+X</code>.</p>
+<pre><code class="language-bash">mvn package
+find target -type f | sort
+</code></pre>
+<p>Expect: <code>BUILD SUCCESS</code> and exactly these 4 files:</p>
+<pre><code>target/hello.war
+target/hello/WEB-INF/web.xml
+target/hello/index.jsp
+target/maven-archiver/pom.properties
+</code></pre>
+<pre><code class="language-bash">cd ~/Simple-Webapp-COSC2767
+git add question-1
+git status --short
+git commit -m "Set up Maven web application"
+git push
+</code></pre>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="step-8-question-2-docker">
+<h2 class="collapsible-header">Step 8. Question 2 (Docker)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">mkdir question-2
+cd question-2
+cp ../question-1/hello/target/hello.war .
+nano Dockerfile
+</code></pre>
+<p>File content:</p>
+<pre><code>FROM tomcat:latest
+RUN cp -R /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps
+COPY ./*.war /usr/local/tomcat/webapps
+</code></pre>
+<pre><code class="language-bash">docker build -t &lt;DOCKERHUB_USER&gt;/hello:latest .
+docker run -d --name hello-container -p 8086:8080 &lt;DOCKERHUB_USER&gt;/hello:latest
+docker ps
+</code></pre>
+<p>Wait 10 seconds, then:</p>
+<pre><code class="language-bash">curl -s http://localhost:8086/hello/
+</code></pre>
+<p>Expect: output contains <code>I am Nguyen Ngoc Dung</code>.
+Browser: <code>http://&lt;EC2-PUBLIC-IP&gt;:8086/hello/</code> shows the same heading.</p>
+<p>Push the image and record the link:</p>
+<pre><code class="language-bash">docker login -u &lt;DOCKERHUB_USER&gt;
+docker push &lt;DOCKERHUB_USER&gt;/hello:latest
+echo "https://hub.docker.com/r/&lt;DOCKERHUB_USER&gt;/hello" &gt; dockerHubLink.txt
+</code></pre>
+<p>Commit:</p>
+<pre><code class="language-bash">cd ~/Simple-Webapp-COSC2767
+git add question-2
+git commit -m "Add Dockerfile and Docker Hub link"
+git push
+</code></pre>
+<p>Stop the container:</p>
+<pre><code class="language-bash">docker stop hello-container
+docker rm hello-container
+docker ps -a
+</code></pre>
+<p>Expect: no <code>hello-container</code> row.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="step-9-readme-and-merge-to-main">
+<h2 class="collapsible-header">Step 9. README and merge to main<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">nano README.md
+</code></pre>
+<p>Replace with:</p>
+<pre><code># Simple-Webapp-COSC2767
+COSC2767 Systems Deployment and Operations
+Nguyen Ngoc Dung - s3978535 - GitHub: NgocDungNguyen
+</code></pre>
+<pre><code class="language-bash">git add README.md
+git commit -m "Edit the README file"
+git push
+git checkout main
+git pull origin main
+git merge develop
+git push origin main
+git log --graph --oneline --decorate --all
+</code></pre>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="step-10-check-the-result">
+<h2 class="collapsible-header">Step 10. Check the result<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">git ls-files | sort
+</code></pre>
+<p>Expect: the 11 files listed at the top of this page, nothing else.</p>
+<p>Then open <code>https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767</code> and confirm <code>main</code> shows <code>question-1</code>, <code>question-2</code>, <code>README.md</code>.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="add-on-a-tomcat-on-port-9535">
+<h2 class="collapsible-header">Add-on A. Tomcat on port 9535<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<p>Security rule needed: TCP 9535 (already in Step 1).</p>
+<pre><code class="language-bash">cd /opt
+wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.97/bin/apache-tomcat-9.0.97.tar.gz
+tar -xvzf apache-tomcat-9.0.97.tar.gz
+mv apache-tomcat-9.0.97 tomcat
+ln -s /opt/tomcat/bin/startup.sh /usr/local/bin/tomcatup
+ln -s /opt/tomcat/bin/shutdown.sh /usr/local/bin/tomcatdown
+sed -i 's/port="8080"/port="9535"/' /opt/tomcat/conf/server.xml
+grep -n 'port="9535"' /opt/tomcat/conf/server.xml
+tomcatup
+cp ~/Simple-Webapp-COSC2767/question-1/hello/target/hello.war /opt/tomcat/webapps/
+</code></pre>
+<p>Browser: <code>http://&lt;EC2-PUBLIC-IP&gt;:9535/hello/</code></p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="add-on-b-jenkins-on-port-8080">
+<h2 class="collapsible-header">Add-on B. Jenkins on port 8080<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<p>Security rule needed: TCP 8080 from Anywhere (already in Step 1). GitHub webhooks need it open.</p>
+<pre><code class="language-bash">wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/rpm-stable/jenkins.repo
+dnf install -y fontconfig jenkins
+service jenkins start
+cat /var/lib/jenkins/secrets/initialAdminPassword
+</code></pre>
+<ol>
+<li>Browser: <code>http://&lt;EC2-PUBLIC-IP&gt;:8080</code>. Paste the password.</li>
+<li><strong>Install suggested plugins</strong>.</li>
+<li><strong>Create First Admin User</strong>: username <code>admin</code>, full name <code>Nguyen Ngoc Dung</code>, email <code>s3978535@rmit.edu.vn</code>.</li>
+<li><strong>Manage Jenkins</strong> &gt; <strong>Tools</strong>:</li>
+<li>JDK: name <code>jdk21</code>, uncheck install automatically, JAVA_HOME <code>/usr/lib/jvm/java-21-amazon-corretto</code>.</li>
+<li>Maven: name <code>maven</code>, uncheck install automatically, MAVEN_HOME <code>/opt/maven</code>.</li>
+<li><strong>New Item</strong> &gt; name <code>devops-ci-s3978535</code> &gt; <strong>Freestyle project</strong>.</li>
+<li>Source Code Management: <strong>Git</strong>, Repository URL <code>https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767.git</code>, Branch <code>*/develop</code>.</li>
+<li>Build Steps &gt; <strong>Invoke top-level Maven targets</strong>: Maven <code>maven</code>, Goals <code>clean package</code>, Advanced &gt; POM <code>question-1/hello/pom.xml</code>.</li>
+<li><strong>Save</strong> &gt; <strong>Build Now</strong>. Expect: <code>Finished: SUCCESS</code>.</li>
+</ol>
+<p>Webhook:
+1. GitHub repo &gt; <strong>Settings</strong> &gt; <strong>Webhooks</strong> &gt; <strong>Add webhook</strong>.
+2. Payload URL <code>http://&lt;EC2-PUBLIC-IP&gt;:8080/github-webhook/</code>, Content type <code>application/json</code>, event <strong>Just the push event</strong>. Add webhook.
+3. Jenkins job &gt; <strong>Configure</strong> &gt; Triggers &gt; tick <strong>GitHub hook trigger for GITScm polling</strong> &gt; Save.
+4. Push any change to <code>develop</code>. Expect: a new build starts by itself.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="add-on-c-ansible-single-server">
+<h2 class="collapsible-header">Add-on C. Ansible (single server)<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<p>Security rule needed: none for one server. For several servers: TCP 22 from the shared security group.</p>
+<pre><code class="language-bash">yum install -y ansible
+ansible --version
+useradd ansibleadmin
+usermod -aG docker ansibleadmin
+echo "ansibleadmin ALL=(ALL) NOPASSWD: ALL" &gt; /etc/sudoers.d/ansibleadmin
+echo "localhost ansible_connection=local" &gt;&gt; /etc/ansible/hosts
+su - ansibleadmin -c "ansible all -m ping"
+</code></pre>
+<p>Expect: <code>pong</code>. If <code>yum install ansible</code> finds no package: <code>dnf install -y python3-pip &amp;&amp; pip3 install ansible</code>.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="add-on-d-extra-security-rules-per-tool">
+<h2 class="collapsible-header">Add-on D. Extra security rules per tool<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<div style="overflow-x:auto"><table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Add these inbound rules (TCP unless noted)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tomcat</td>
+<td>9535 (or 8080 when Jenkins is not on the same server)</td>
+</tr>
+<tr>
+<td>Jenkins</td>
+<td>8080</td>
+</tr>
+<tr>
+<td>Docker containers</td>
+<td>8086, or 8080-8090 for many containers</td>
+</tr>
+<tr>
+<td>Ansible (several servers)</td>
+<td>22 from the shared security group</td>
+</tr>
+<tr>
+<td>Docker Swarm</td>
+<td>2376, 2377, 7946 TCP, 7946 UDP, 4789 UDP, 8080-8090</td>
+</tr>
+<tr>
+<td>Minikube</td>
+<td>30000-32767</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="cheatsheet-section" id="clean-up">
+<h2 class="collapsible-header">Clean up<span class="collapse-icon"></span></h2>
+<div class="collapsible-content">
+<div class="grid-container grid-container--wide">
+<div class="card">
+<pre><code class="language-bash">docker system prune -a
+</code></pre>
+<p>AWS: <strong>EC2</strong> &gt; <strong>Instances</strong> &gt; select &gt; <strong>Instance state</strong> &gt; <strong>Terminate instance</strong>. Delete leftover volumes and snapshots.
+GitHub: remove the <code>practice-ec2</code> key at <a href="https://github.com/settings/keys" rel="noopener" target="_blank">https://github.com/settings/keys</a>.</p>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+</body>
+</html>

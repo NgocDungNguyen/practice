@@ -67,6 +67,8 @@ PAGES = [
     ("rmit-jenkins-pipeline", "rmit-store-jenkins-pipeline.html", "archive", "JE", "RMIT Store: Jenkins Pipelines"),
     ("rmit-alerting", "rmit-store-alerting.html", "archive", "AL", "RMIT Store: Automated Alerting"),
     ("rmit-monitoring", "rmit-store-monitoring.html", "archive", "MO", "RMIT Store: Monitoring & Grafana"),
+    ("practice-a3-setup", "practice-a3-setup.html", "archive", "P1", "Practice: A3 Setup"),
+    ("practice-simple-webapp", "practice-simple-webapp.html", "archive", "P2", "Practice: Simple Webapp"),
 ]
 
 PAGE_BY_KEY = {p[0]: p for p in PAGES}
@@ -126,6 +128,16 @@ LOCAL_PAGES = {
                 "emails the team on build, test and deploy failures — proven on "
                 "a throwaway Jenkins in Docker, then handed to the pipeline owner "
                 "as three lines to paste.",
+    },
+    "practice-a3-setup": {
+        "card": "Practice setup for Assignment 3: the EC2 and its security group, "
+                "PowerShell access with the .pem key, GitHub SSH keys, cloning the "
+                "classroom repo, tool installs, and a symptom-to-fix table.",
+    },
+    "practice-simple-webapp": {
+        "card": "A step-by-step dry run of Assignment 3 Q1 and Q2 on a personal repo: "
+                "launch the EC2, build the Maven WAR, Dockerize it, push to Docker Hub "
+                "and merge to main, plus Tomcat, Jenkins and Ansible add-ons.",
     },
     "rmit-monitoring": {
         "card": "Assignment 2 monitoring and alerting: Prometheus and Grafana on a "
