@@ -1,0 +1,400 @@
+
+COSC2767|COSC2805 Assignment 1 — Full Extracted Spec
+Header Requirement (all files)
+RMIT University Vietnam
+Course: COSC2767|COSC2805 Systems Deployment and Operations
+Semester: 2026B
+Assessment: Assignment 1
+Author: Nguyen Ngoc Dung
+ID: s3978535
+Created date: 19/9/2026
+Last modified: 19/9/2026
+Acknowledgement: Acknowledge the resources that you use here.
+
+Test submission code carefully before submitting.
+
+Question 1: Setting Up SSH Key Authentication and Cloning GitHub Classroom Repository
+
+Objective: Set up SSH key-based authentication with GitHub and clone your GitHub Classroom repository onto your EC2 instance.
+
+Deliverables — Screenshots:
+
+ec2-cleanup.png: EC2 Instances page showing no running or pending instances.
+ami-cleanup.png: AMIs page showing no custom AMIs.
+snapshots-cleanup.png: Snapshots page showing no snapshots.
+1a.png: Terminal showing the generation of SSH key pair.
+1b.png: GitHub settings page with the new SSH key added.
+1c.png: Terminal showing successful authentication message.
+1d.png: Terminal showing successful cloning of the repository via SSH.
+1e.png: Terminal showing the successful commit and push of README.md to the main branch.
+1f.png: Terminal showing the creation of the develop branch, copying README.md into question-1, and pushing to develop.
+
+Note:
+
+All subsequent questions will be worked on the develop branch.
+All terminal screenshots in all questions must display the required hostname ...@s123456-midterm-exam-2026b.
+
+Tasks:
+
+AWS Learner Lab Clean-Up:
+Log into AWS Learner Lab account.
+Clean up any existing infrastructure (old servers, containers, snapshots, instances) before starting to ensure a clean environment.
+Delete/Terminate all existing EC2 instances (if any exist)
+Delete/deregister all existing EC2 custom AMIs (if any exist)
+Delete all existing EC2 snapshots (if any exist)
+Launch your EC2 instance:
+EC2 Name: DevOps-Midterm-Exam-2026B
+When launching the instance, select an EC2 key pair for SSH authentication.
+You may reuse the existing .pem key used during course tutorials/labs.
+Alternatively, create and download a new EC2 key when launching the instance.
+You are responsible for ensuring you have access to the corresponding .pem private key.
+Change the EC2 hostname:
+Update hostname of EC2 instance to match student ID (e.g., s123456) and test name.
+Example: root@s123456-midterm-exam-2026b
+Restart the EC2 instance to apply the changes.
+After the instance restarts, SSH into it again.
+Ensure the terminal's command prompt displays the hostname in the above format. This is critical to confirm the authenticity of your work. Otherwise, you will receive Zero for your exam.
+Generate SSH Key Pair on EC2 Instance:
+On EC2 instance, generate SSH key pair using ssh-keygen.
+Add Public Key to GitHub:
+Copy contents of public key file.
+Log into GitHub account, navigate to Settings > SSH and GPG keys.
+Click New SSH key, paste the public key.
+Test SSH Connection to GitHub:
+On EC2 instance, test SSH connection to GitHub with ssh -T git@GitHub.com
+Ensure you receive a message confirming successful authentication.
+Clone GitHub Repository:
+Clone your private GitHub repository into your current user's home directory using its SSH URL.
+Edit README.md and Push to GitHub:
+Navigate to your cloned repository directory.
+Modify existing README.md in the repo (still on main branch)
+Replace the project title and every bracketed placeholder with the course code, Assignment 1 - Mid-term Exam, your full name, your student ID, your GitHub username.
+Add, commit, and push this change to the main branch.
+Commit Message: "Edit the README file"
+Branch Setup for the Entire Lab:
+Create and switch to a develop branch from main.
+In the develop branch, create a folder named question-1.
+Copy the README.md file from the root directory into the newly created question-1 folder.
+Commit and push these changes to the develop branch.
+Question 2: Bash Scripting for Automation
+
+Objective: Demonstrate proficiency with Bash scripting for file and directory automation.
+
+Deliverables — Code:
+
+The my_script_q2.sh script committed to the question-2/ directory.
+All generated files and directories (my_app/, my_app/src/hello.txt, my_app/logs/report.log) must also be committed.
+
+Deliverables — Screenshots:
+
+2a.png: Terminal showing execution of the script, followed by the output of "ls -laR my_app/" to show generated directory structure with file permissions.
+2b.png: Terminal showing contents of generated my_app/logs/report.log file (using cat).
+
+Note: Ensure all commits for this question are made on the develop branch.
+
+Tasks:
+
+Initial Setup:
+On develop branch, create a folder named question-2.
+Navigate into the question-2 directory.
+Create the Bash Script:
+Inside question-2 directory, create a Bash script named my_script_q2.sh.
+
+When executed, script should produce the following directory structure/files inside question-2 folder:
+
+my_app/
+├── src/
+│   └── hello.txt
+└── logs/
+    └── report.log
+Script must perform the following actions in order:
+Create a new directory named my_app.
+Inside my_app, create two more directories: src and logs.
+Create an empty file named hello.txt inside my_app/src/ directory.
+Create a report file named report.log inside my_app/logs/ directory.
+Set permissions for hello.txt to 640.
+Set permissions for report.log so that:
+Owner: read, write, execute
+Group: read, execute
+Others: no permissions
+The report.log must contain the following text:
+Replace [Your Name] with your actual name.
+Make sure [Current Date and Time] show date/time of server at time script runs (not hard-coded fixed string).
+Make sure [Current branch name] show the current branch you are on (not hard-coded).
+
+Content template for report.log:
+
+Project Initialized by: [Your Name]
+...
+Setup completed on: [Current Date and Time]
+Branch name: [Current branch name]
+Execute the Script:
+Make my_script_q2.sh executable.
+Run the script from the question-2 directory.
+Question 3: Log File Analysis with Bash
+
+Objective: Analyze a provided application server log file to extract key metrics using Bash commands and pipelines.
+
+Background:
+The company's main application server has been generating logs in a custom comma-separated value (CSV) format. A senior engineer has provided you with a log file, app_server_2026.log, and tasked you with extracting information to identify access-control issues and user activity patterns.
+
+Log format:
+
+Timestamp,IP_Address,UserID,HTTP_Status,HTTP_Method,User_Agent,Request_URI,Response_Size
+
+Deliverables — Code:
+
+The authentication_errors.log file committed to the question-3/ directory.
+
+Deliverables — Screenshots:
+
+3a.png: Terminal showing command and output for Task 2.
+3b.png: Terminal showing command and output for Task 3.
+3c.png: Terminal showing command and output for Task 4.
+
+Note: Ensure all commits for this question are made on develop branch.
+
+Tasks:
+
+Setup:
+On develop branch, create a folder named question-3.
+Navigate into question-3 directory.
+Download the log file using linux command (choose option 1 or 2):
+Option 1: https://raw.GitHubusercontent.com/TomHuynhSG/public_datasets/refs/heads/master/app_server_2026.log
+Option 2: https://cosc2767-systems-deployment-and-opertations-guide.pages.dev/public_data/app_server_2026.log Short links (copy & paste to browser first to get full URL, then download on EC2 with full URL):
+Option 1: https://shorturl.at/WhGTk
+Option 2: https://tinyurl.com/5xs2p28e
+Authentication and Authorization Error Analysis:
+Using Linux commands, find all log entries with HTTP status code 401 or 403.
+Save only those entries to a file named authentication_errors.log.
+Most active client identification:
+Using a single command-line pipeline, find the top three IP addresses by request count.
+Output count followed by IP address. Example format:
+Top 3 IP addresses:
+32   205.123.61.43
+12   141.134.100.23
+7    152.124.232.12
+
+(values illustrate required output format only; results must be calculated from supplied log file)
+
+Most requested resources:
+Using a single command-line pipeline, find the five most frequently requested URIs.
+Output count followed by URI. Example format:
+Top 5 request URIs:
+20   /
+15   /homepage
+14   /api/advertisement
+8    /dashboard
+3    /api/sales
+
+(values illustrate required output format only; results must be calculated from supplied log file)
+
+Question 4: Setting Up Java and Maven
+
+Objective: Install Java and Maven on your EC2 instance, and set up a Maven web application.
+
+Deliverables — Code:
+
+Maven project in question-4 folder.
+
+Deliverables — Screenshots:
+
+4a.png: Terminal showing the Java version output.
+4b.png: Terminal showing the Maven version output.
+4c.png: Terminal showing the successful Maven build process.
+4d.png: Terminal showing your modified index.jsp contents.
+4e.png: Terminal showing your modified about.jsp contents.
+4f.png: Terminal showing your Maven war file after build.
+
+Note: Ensure all commits for this question are made on develop branch.
+
+Tasks:
+
+On develop branch, create a question-4 folder.
+Install Java:
+Install Java (e.g., Amazon Corretto) on EC2 instance.
+Verify the installation by checking Java version.
+Install Maven:
+Download and install Maven on EC2 instance.
+Configure the necessary environment variables to run maven "mvn" directly in the terminal.
+Verify installation by checking Maven version.
+Create Maven Web Application:
+In question-4/my_project/, generate a Maven web application using maven-archetype-webapp.
+Configure your maven project so that war file name will be "mywebsite-<student-id>.war" like "mywebsite-s123456.war"
+Modify the src/main/webapp/index.jsp file to display "[2026] Welcome to [Your Name]'s Web App" and with some website content which is up to you. Also add a hyperlink to go to the "about.jsp" page below.
+Create a second JSP page "about.jsp", containing your full name and a hyperlink back to index.jsp.
+Ensure that the project builds successfully to create a war file.
+Commit and Push:
+Commit your Maven project files to GitHub.
+Commit Message: "Set up Maven web application"
+Push the code to GitHub.
+Question 5: Deploying to Tomcat and Accessing the Web Application
+
+Objective: Deploy your web application to Tomcat and access it via a web browser.
+
+Deliverables — Code:
+
+In the question-5 folder, provide the modified server.xml file.
+
+Deliverables — Screenshots:
+
+5a.png: Browser screenshot showing your web application running on port 8080.
+5b.png: Browser screenshot showing your web application running on the new port 9xxx.
+5c.png: Show the inbound rules of the AWS Security Group at the end of the question.
+
+Note: Ensure all commits for this question are made on develop branch.
+
+Tasks:
+
+Install Tomcat:
+Download and install Tomcat on EC2 instance.
+Configure Tomcat to run on default port 8080.
+Start Tomcat server and verify it is running.
+Deploy the .war file to Tomcat webapps/ directory.
+Configure Security Groups:
+Update EC2 instance's security group to allow inbound traffic on port 8080.
+Access the Application:
+Access web application using EC2 instance's public IP at http://[EC2-Public-IP]:8080/mywebsite-<student-id>/ and verify it displays the custom message of the website.
+Challenging Part: Port Configuration
+Use this new port which is 9xxx with the final three digits of your student ID. Example: s123456 uses 9456.
+Update EC2 security group to allow inbound TCP traffic on your assigned 9xxx port.
+Configure Tomcat to run on the new port number 9xxx instead of 8080.
+Access the application at http://<EC2-Public-IP>:9xxx/mywebsite-<student-id>/ and verify it works on the new port.
+Commit and Push:
+After modifying the server.xml file, copy it into the question-5 folder. Commit this copied file to your develop branch.
+Commit Message: "Configure Tomcat to run on the port 9xxx"
+Push the code to GitHub.
+Question 6: Setting Up Jenkins for Continuous Integration
+
+Note: Install Jenkins on the same EC2 instance used in Questions 1-5 because Tomcat has moved to 9xxx, Jenkins can use its default port 8080.
+
+Objective: Install Jenkins and configure it to build your Maven project from GitHub.
+
+Deliverables — Screenshots:
+
+6a.png: Configure the required JDK and Maven installations under Jenkins Global Tool Configuration/Tools.
+6b.png: Jenkins job configuration showing source code management settings (SCM config).
+6c.png: Jenkins job configuration showing build steps.
+6d.png: Jenkins build history showing a successful build.
+6e.png: GitHub webhook configuration.
+6f.png: The evidence of automated build triggering with GitHub webhook.
+
+Note: Ensure all commits for this question are made on develop branch.
+
+Tasks:
+
+Install Jenkins on the existing EC2 instance.
+Start the Jenkins service and configure it to start automatically at boot.
+Install Necessary Tools:
+Install Git, JDK and Maven to be ready for Jenkins if needed.
+Configure Maven in Jenkins under Global Tool Configuration.
+Create Jenkins Job:
+Create a new job named devops-ci-<student-id>.
+Configure the job to:
+Pull code from your GitHub repository (remember to set up credentials as the repository is private).
+Configure the Jenkins job to build the develop branch.
+You might need to specify the exact Maven POM path for Jenkins to detect the location of the Maven project.
+Build the project using Maven.
+Run the build and ensure it completes successfully.
+Challenging Part: Automated Builds
+Configure Jenkins to trigger a build automatically when changes are pushed to GitHub.
+Set up a GitHub webhook pointing to your Jenkins server.
+Configure the Jenkins job to respond to the webhook.
+Automatic trigger:
+Create or modify question-6/build-trigger.txt, commit it on the develop branch, and push it to GitHub.
+Show that the webhook initiated the build.
+Commit and Push:
+Commit any configuration files or scripts used in this question in the question-6 directory.
+Commit Message: Appropriate to the changes made.
+Push the code to GitHub.
+Question 7: Continuous Deployment to Tomcat with Deployment Validation
+
+Objective: Configure Jenkins to:
+
+Automatically deploy the built .war file to your Tomcat server after a successful build.
+Implement a validation step to ensure the application is running correctly.
+
+Deliverables — Code:
+
+The validation script (e.g., deployment_validation.sh) in question-7 folder.
+
+Deliverables — Screenshots:
+
+7a.png: Jenkins job configuration showing the deployment and validation shell commands.
+7b.png: Jenkins console output showing successful validation.
+7c.png: Jenkins build history showing a successful deployment and validation.
+7d.png: Jenkins console output showing failed validation.
+7e.png: Jenkins build history showing the intentional failure scenario with the build failing.
+
+Note: Ensure all commits for this question are made on develop branch.
+
+Tasks:
+
+Set Up Post-Build Actions:
+In your Jenkins job, add an Execute shell build step after the Maven build.
+Copy the generated WAR file from the Jenkins workspace into Tomcat's webapps directory.
+Implement Deployment Validation:
+Create a Bash script (deployment_validation.sh) that performs the following:
+Use a tool like curl to fetch the page content at the deployed website at URL http://<Tomcat-Server-IP>:9xxx/mywebsite-<student-id>/
+Check if the text exists, for example "Welcome to [Your Name]'s Web App".
+Print a success message and exit with status code 0 when the expected text is found.
+Print a failure message and exit with a non-zero status code, such as 1, when the expected text is not found or the page cannot be retrieved.
+Integrate the script into Jenkins as a post-build step:
+Run the deployment and deployment_validation.sh script in an Execute shell build step after the Maven build. Jenkins must use the script's exit status to determine whether the job succeeds or fails.
+Testing Validation Success and Failure:
+Success Scenario:
+Ensure the web application displays the correct message and the validation script succeeds.
+Verify that the Jenkins job completes successfully.
+Failure Scenario:
+Temporarily change the expected message in index.jsp to Incorrect Message.
+Commit and push the change to the develop branch, then run or trigger the Jenkins job.
+Confirm:
+The validation script detects the issue.
+The Jenkins job fails as expected.
+Commit and Push:
+Commit the validation script (e.g., deployment_validation.sh) and any configuration changes.
+Commit Message: "Add deployment validation script".
+Push the code to GitHub.
+Question 8: Dockerizing and Running the Web Application
+
+Objective: Build a Docker image for the Maven web application, run it as a Docker container, access it through a browser, and practise basic container-management commands.
+
+Deliverables — Code:
+
+The question-8/Dockerfile is committed in the question-8 folder.
+
+Deliverables — Screenshots:
+
+8a.png: Docker version and running service.
+8b.png: Dockerfile contents.
+8c.png: Successful image build.
+8d.png: Running container shown by docker ps.
+8e.png: Application running in a browser on port 8086.
+8f.png: Container stopped, removed, and no longer present in docker ps -a.
+
+Tasks:
+
+Install Docker, start the Docker service, and configure it to start automatically at boot.
+Build the Maven application and confirm that mywebsite-<student-id>.war exists.
+Create the question-8 folder.
+Copy the generated WAR into question-8. The WAR is used for the Docker build but does not need to be committed.
+Create question-8/Dockerfile.
+Use an official Tomcat image.
+Copy the WAR into webapps in the docker image.
+Build an image named mywebsite-<student-id>-image.
+Run a detached container named mywebsite-<student-id>-container.
+Map host port 8086 to container port 8080.
+Add inbound TCP port 8086 to the security group.
+Access http://<EC2-Public-IP>:8086/mywebsite-<student-id>/.
+Stop and remove the container.
+Commit and push the Dockerfile.
+Final Step: Merging the Develop Branch into Main (1 mark)
+
+Objective: Merge the develop branch into main to prepare the final submission.
+
+Deliverables — Screenshots:
+
+final-merge.png: Terminal showing the merge process and, if applicable, any conflict resolution.
+final-history.png: Run git log --graph --oneline --decorate --all on the main branch and screenshot the output.
+
+Note: Ensure the main branch on GitHub reflects all your work.
