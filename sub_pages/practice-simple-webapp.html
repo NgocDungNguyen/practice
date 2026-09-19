@@ -38,29 +38,42 @@
 <span class="chip chip--stage">Archive</span><span class="chip">Reference</span>
 </div>
 <h1><span class="hero-emoji" aria-hidden="true">🧪</span>Practice: Simple Webapp Run</h1>
-<p class="page-hero__intro">Repo: <code>git@github.com:NgocDungNguyen/Simple-Webapp-COSC2767.git</code>
-<code>powershell</code> = run on your PC. <code>bash</code> = run on the EC2 as root. <code>&lt;...&gt;</code> = fill in.</p>
-<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>16</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>40</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>20</strong>&nbsp;min</span></div>
+<p class="page-hero__intro">Repo for all the EC2 work: <a href="https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767" rel="noopener" target="_blank">https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767</a>
+Clone address (SSH): <code>git@github.com:NgocDungNguyen/Simple-Webapp-COSC2767.git</code></p>
+<div class="page-hero__meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><strong>16</strong>&nbsp;sections</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></svg><strong>38</strong>&nbsp;code blocks</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg>~<strong>21</strong>&nbsp;min</span></div>
 </div>
 
-<section class="cheatsheet-section" id="target-repo-layout">
-<h2 class="collapsible-header start-open">Target repo layout<span class="collapse-icon"></span></h2>
+<section class="cheatsheet-section" id="read-this-first">
+<h2 class="collapsible-header start-open">Read this first<span class="collapse-icon"></span></h2>
 <div class="collapsible-content"><div class="collapse-glue">
 <div class="grid-container grid-container--wide">
 <div class="card">
-<p>Final repo layout (same as <code>sample/</code>):</p>
-<pre><code>README.md
-question-1/hello/pom.xml
-question-1/hello/src/main/webapp/index.jsp
-question-1/hello/src/main/webapp/WEB-INF/web.xml
-question-1/hello/target/hello.war
-question-1/hello/target/hello/index.jsp
-question-1/hello/target/hello/WEB-INF/web.xml
-question-1/hello/target/maven-archiver/pom.properties
-question-2/Dockerfile
-question-2/hello.war
-question-2/dockerHubLink.txt
-</code></pre>
+<p>How to read this page:</p>
+<ul>
+<li>A code block is something to copy and run, or file content to paste. Every code block has a Copy button.</li>
+<li>What you should see is written as plain text after the word <strong>Expect</strong>. Never paste it into the terminal.</li>
+<li><code>powershell</code> blocks run on your PC. <code>bash</code> blocks run on the EC2 as root. <code>&lt;...&gt;</code> means fill in your own value.</li>
+</ul>
+<p>Two different repos, do not mix them up:</p>
+<ul>
+<li><code>Simple-Webapp-COSC2767</code> is where your EC2 work goes. Look here for <code>question-1</code> and <code>question-2</code>.</li>
+<li><code>practice</code> is only this guide website. Nothing from the EC2 ever appears there.</li>
+<li>On GitHub, <code>question-1</code> and <code>question-2</code> appear on branch <code>develop</code> first. They appear on <code>main</code> only after Step 9. Switch branches with the branch dropdown at the top left of the file list.</li>
+</ul>
+<p>Final layout on <code>main</code> (same as <code>sample/</code>):</p>
+<ul>
+<li><code>README.md</code></li>
+<li><code>question-1/hello/pom.xml</code></li>
+<li><code>question-1/hello/src/main/webapp/index.jsp</code></li>
+<li><code>question-1/hello/src/main/webapp/WEB-INF/web.xml</code></li>
+<li><code>question-1/hello/target/hello.war</code></li>
+<li><code>question-1/hello/target/hello/index.jsp</code></li>
+<li><code>question-1/hello/target/hello/WEB-INF/web.xml</code></li>
+<li><code>question-1/hello/target/maven-archiver/pom.properties</code></li>
+<li><code>question-2/Dockerfile</code></li>
+<li><code>question-2/hello.war</code></li>
+<li><code>question-2/dockerHubLink.txt</code></li>
+</ul>
 </div>
 </div>
 </div></div>
@@ -406,6 +419,8 @@ git rm -r pom.xml src
 git commit -m "Remove old root-level webapp"
 git push -u origin develop
 </code></pre>
+<p>Check on GitHub: <a href="https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop" rel="noopener" target="_blank">https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop</a>
+The branch dropdown must say <code>develop</code>. Expect: only <code>README.md</code> in the list (<code>pom.xml</code> and <code>src</code> are gone).</p>
 </div>
 </div>
 </div></div>
@@ -432,18 +447,21 @@ nano src/main/webapp/index.jsp
 <pre><code class="language-bash">mvn package
 find target -type f | sort
 </code></pre>
-<p>Expect: <code>BUILD SUCCESS</code> and exactly these 4 files:</p>
-<pre><code>target/hello.war
-target/hello/WEB-INF/web.xml
-target/hello/index.jsp
-target/maven-archiver/pom.properties
-</code></pre>
+<p>Expect: <code>BUILD SUCCESS</code>, then these 4 lines as output (do not paste them):</p>
+<ul>
+<li><code>target/hello.war</code></li>
+<li><code>target/hello/WEB-INF/web.xml</code></li>
+<li><code>target/hello/index.jsp</code></li>
+<li><code>target/maven-archiver/pom.properties</code></li>
+</ul>
 <pre><code class="language-bash">cd ~/Simple-Webapp-COSC2767
 git add question-1
 git status --short
 git commit -m "Set up Maven web application"
 git push
 </code></pre>
+<p>Check on GitHub: <a href="https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop/question-1" rel="noopener" target="_blank">https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop/question-1</a>
+The branch dropdown must say <code>develop</code>. Expect: a folder <code>hello</code>.</p>
 </div>
 </div>
 </div></div>
@@ -483,6 +501,8 @@ git add question-2
 git commit -m "Add Dockerfile and Docker Hub link"
 git push
 </code></pre>
+<p>Check on GitHub: <a href="https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop/question-2" rel="noopener" target="_blank">https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop/question-2</a>
+The branch dropdown must say <code>develop</code>. Expect: <code>Dockerfile</code>, <code>dockerHubLink.txt</code>, <code>hello.war</code>.</p>
 <p>Stop the container:</p>
 <pre><code class="language-bash">docker stop hello-container
 docker rm hello-container
@@ -526,7 +546,8 @@ git log --graph --oneline --decorate --all
 <pre><code class="language-bash">git ls-files | sort
 </code></pre>
 <p>Expect: the 11 files listed at the top of this page, nothing else.</p>
-<p>Then open <code>https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767</code> and confirm <code>main</code> shows <code>question-1</code>, <code>question-2</code>, <code>README.md</code>.</p>
+<p>Then open <a href="https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767" rel="noopener" target="_blank">https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767</a>
+The branch dropdown must say <code>main</code>. Expect: <code>question-1</code>, <code>question-2</code>, <code>README.md</code>.</p>
 </div>
 </div>
 </div></div>
@@ -669,7 +690,7 @@ GitHub: remove the <code>practice-ec2</code> key at <a href="https://github.com/
 <button class="toc__tool" type="button" data-action="expand-all">Expand all</button>
 <button class="toc__tool" type="button" data-action="collapse-all">Collapse all</button>
 </div>
-<ul class="toc__list"><li class="toc__item" data-toc-id="target-repo-layout"><a class="toc__link" href="#target-repo-layout"><span>Target repo layout</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-1-create-the-ec2-instance"><a class="toc__link" href="#step-1-create-the-ec2-instance"><span>Step 1. Create the EC2 instance</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-2-connect-from-powershell"><a class="toc__link" href="#step-2-connect-from-powershell"><span>Step 2. Connect from PowerShell</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-3-root-and-hostname"><a class="toc__link" href="#step-3-root-and-hostname"><span>Step 3. Root and hostname</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-4-git-ssh-key-clone"><a class="toc__link" href="#step-4-git-ssh-key-clone"><span>Step 4. Git, SSH key, clone</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-5-install-java-maven-docker"><a class="toc__link" href="#step-5-install-java-maven-docker"><span>Step 5. Install Java, Maven, Docker</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-6-create-develop-and-clear-the-old-files"><a class="toc__link" href="#step-6-create-develop-and-clear-the-old-files"><span>Step 6. Create develop and clear the old files</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-7-question-1-maven-web-app"><a class="toc__link" href="#step-7-question-1-maven-web-app"><span>Step 7. Question 1 (Maven web app)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-8-question-2-docker"><a class="toc__link" href="#step-8-question-2-docker"><span>Step 8. Question 2 (Docker)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-9-readme-and-merge-to-main"><a class="toc__link" href="#step-9-readme-and-merge-to-main"><span>Step 9. README and merge to main</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-10-check-the-result"><a class="toc__link" href="#step-10-check-the-result"><span>Step 10. Check the result</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="add-on-a-tomcat-on-port-9535"><a class="toc__link" href="#add-on-a-tomcat-on-port-9535"><span>Add-on A. Tomcat on port 9535</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="add-on-b-jenkins-on-port-8080"><a class="toc__link" href="#add-on-b-jenkins-on-port-8080"><span>Add-on B. Jenkins on port 8080</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="add-on-c-ansible-single-server"><a class="toc__link" href="#add-on-c-ansible-single-server"><span>Add-on C. Ansible (single server)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="add-on-d-extra-security-rules-per-tool"><a class="toc__link" href="#add-on-d-extra-security-rules-per-tool"><span>Add-on D. Extra security rules per tool</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="clean-up"><a class="toc__link" href="#clean-up"><span>Clean up</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
+<ul class="toc__list"><li class="toc__item" data-toc-id="read-this-first"><a class="toc__link" href="#read-this-first"><span>Read this first</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-1-create-the-ec2-instance"><a class="toc__link" href="#step-1-create-the-ec2-instance"><span>Step 1. Create the EC2 instance</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-2-connect-from-powershell"><a class="toc__link" href="#step-2-connect-from-powershell"><span>Step 2. Connect from PowerShell</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-3-root-and-hostname"><a class="toc__link" href="#step-3-root-and-hostname"><span>Step 3. Root and hostname</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-4-git-ssh-key-clone"><a class="toc__link" href="#step-4-git-ssh-key-clone"><span>Step 4. Git, SSH key, clone</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-5-install-java-maven-docker"><a class="toc__link" href="#step-5-install-java-maven-docker"><span>Step 5. Install Java, Maven, Docker</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-6-create-develop-and-clear-the-old-files"><a class="toc__link" href="#step-6-create-develop-and-clear-the-old-files"><span>Step 6. Create develop and clear the old files</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-7-question-1-maven-web-app"><a class="toc__link" href="#step-7-question-1-maven-web-app"><span>Step 7. Question 1 (Maven web app)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-8-question-2-docker"><a class="toc__link" href="#step-8-question-2-docker"><span>Step 8. Question 2 (Docker)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-9-readme-and-merge-to-main"><a class="toc__link" href="#step-9-readme-and-merge-to-main"><span>Step 9. README and merge to main</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="step-10-check-the-result"><a class="toc__link" href="#step-10-check-the-result"><span>Step 10. Check the result</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="add-on-a-tomcat-on-port-9535"><a class="toc__link" href="#add-on-a-tomcat-on-port-9535"><span>Add-on A. Tomcat on port 9535</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="add-on-b-jenkins-on-port-8080"><a class="toc__link" href="#add-on-b-jenkins-on-port-8080"><span>Add-on B. Jenkins on port 8080</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="add-on-c-ansible-single-server"><a class="toc__link" href="#add-on-c-ansible-single-server"><span>Add-on C. Ansible (single server)</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="add-on-d-extra-security-rules-per-tool"><a class="toc__link" href="#add-on-d-extra-security-rules-per-tool"><span>Add-on D. Extra security rules per tool</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li><li class="toc__item" data-toc-id="clean-up"><a class="toc__link" href="#clean-up"><span>Clean up</span><span class="toc__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></span></a></li></ul>
 <div class="toc__progress">
 <span data-progress-label>0 of 16 sections done</span>
 <div class="toc__progress-bar"><div class="toc__progress-fill"></div></div>

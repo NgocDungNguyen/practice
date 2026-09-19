@@ -10,30 +10,43 @@
 <header>
 <div class="container">
 <h1>🧪 Practice: Simple Webapp Run</h1>
-<p class="intro">Repo: <code>git@github.com:NgocDungNguyen/Simple-Webapp-COSC2767.git</code>
-<code>powershell</code> = run on your PC. <code>bash</code> = run on the EC2 as root. <code>&lt;...&gt;</code> = fill in.</p>
+<p class="intro">Repo for all the EC2 work: <a href="https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767" rel="noopener" target="_blank">https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767</a>
+Clone address (SSH): <code>git@github.com:NgocDungNguyen/Simple-Webapp-COSC2767.git</code></p>
 </div>
 </header>
 <main class="container">
 
-<section class="cheatsheet-section" id="target-repo-layout">
-<h2 class="collapsible-header start-open">Target repo layout<span class="collapse-icon"></span></h2>
+<section class="cheatsheet-section" id="read-this-first">
+<h2 class="collapsible-header start-open">Read this first<span class="collapse-icon"></span></h2>
 <div class="collapsible-content">
 <div class="grid-container grid-container--wide">
 <div class="card">
-<p>Final repo layout (same as <code>sample/</code>):</p>
-<pre><code>README.md
-question-1/hello/pom.xml
-question-1/hello/src/main/webapp/index.jsp
-question-1/hello/src/main/webapp/WEB-INF/web.xml
-question-1/hello/target/hello.war
-question-1/hello/target/hello/index.jsp
-question-1/hello/target/hello/WEB-INF/web.xml
-question-1/hello/target/maven-archiver/pom.properties
-question-2/Dockerfile
-question-2/hello.war
-question-2/dockerHubLink.txt
-</code></pre>
+<p>How to read this page:</p>
+<ul>
+<li>A code block is something to copy and run, or file content to paste. Every code block has a Copy button.</li>
+<li>What you should see is written as plain text after the word <strong>Expect</strong>. Never paste it into the terminal.</li>
+<li><code>powershell</code> blocks run on your PC. <code>bash</code> blocks run on the EC2 as root. <code>&lt;...&gt;</code> means fill in your own value.</li>
+</ul>
+<p>Two different repos, do not mix them up:</p>
+<ul>
+<li><code>Simple-Webapp-COSC2767</code> is where your EC2 work goes. Look here for <code>question-1</code> and <code>question-2</code>.</li>
+<li><code>practice</code> is only this guide website. Nothing from the EC2 ever appears there.</li>
+<li>On GitHub, <code>question-1</code> and <code>question-2</code> appear on branch <code>develop</code> first. They appear on <code>main</code> only after Step 9. Switch branches with the branch dropdown at the top left of the file list.</li>
+</ul>
+<p>Final layout on <code>main</code> (same as <code>sample/</code>):</p>
+<ul>
+<li><code>README.md</code></li>
+<li><code>question-1/hello/pom.xml</code></li>
+<li><code>question-1/hello/src/main/webapp/index.jsp</code></li>
+<li><code>question-1/hello/src/main/webapp/WEB-INF/web.xml</code></li>
+<li><code>question-1/hello/target/hello.war</code></li>
+<li><code>question-1/hello/target/hello/index.jsp</code></li>
+<li><code>question-1/hello/target/hello/WEB-INF/web.xml</code></li>
+<li><code>question-1/hello/target/maven-archiver/pom.properties</code></li>
+<li><code>question-2/Dockerfile</code></li>
+<li><code>question-2/hello.war</code></li>
+<li><code>question-2/dockerHubLink.txt</code></li>
+</ul>
 </div>
 </div>
 </div>
@@ -385,6 +398,8 @@ git rm -r pom.xml src
 git commit -m "Remove old root-level webapp"
 git push -u origin develop
 </code></pre>
+<p>Check on GitHub: <a href="https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop" rel="noopener" target="_blank">https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop</a>
+The branch dropdown must say <code>develop</code>. Expect: only <code>README.md</code> in the list (<code>pom.xml</code> and <code>src</code> are gone).</p>
 </div>
 </div>
 </div>
@@ -412,18 +427,21 @@ nano src/main/webapp/index.jsp
 <pre><code class="language-bash">mvn package
 find target -type f | sort
 </code></pre>
-<p>Expect: <code>BUILD SUCCESS</code> and exactly these 4 files:</p>
-<pre><code>target/hello.war
-target/hello/WEB-INF/web.xml
-target/hello/index.jsp
-target/maven-archiver/pom.properties
-</code></pre>
+<p>Expect: <code>BUILD SUCCESS</code>, then these 4 lines as output (do not paste them):</p>
+<ul>
+<li><code>target/hello.war</code></li>
+<li><code>target/hello/WEB-INF/web.xml</code></li>
+<li><code>target/hello/index.jsp</code></li>
+<li><code>target/maven-archiver/pom.properties</code></li>
+</ul>
 <pre><code class="language-bash">cd ~/Simple-Webapp-COSC2767
 git add question-1
 git status --short
 git commit -m "Set up Maven web application"
 git push
 </code></pre>
+<p>Check on GitHub: <a href="https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop/question-1" rel="noopener" target="_blank">https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop/question-1</a>
+The branch dropdown must say <code>develop</code>. Expect: a folder <code>hello</code>.</p>
 </div>
 </div>
 </div>
@@ -464,6 +482,8 @@ git add question-2
 git commit -m "Add Dockerfile and Docker Hub link"
 git push
 </code></pre>
+<p>Check on GitHub: <a href="https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop/question-2" rel="noopener" target="_blank">https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop/question-2</a>
+The branch dropdown must say <code>develop</code>. Expect: <code>Dockerfile</code>, <code>dockerHubLink.txt</code>, <code>hello.war</code>.</p>
 <p>Stop the container:</p>
 <pre><code class="language-bash">docker stop hello-container
 docker rm hello-container
@@ -509,7 +529,8 @@ git log --graph --oneline --decorate --all
 <pre><code class="language-bash">git ls-files | sort
 </code></pre>
 <p>Expect: the 11 files listed at the top of this page, nothing else.</p>
-<p>Then open <code>https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767</code> and confirm <code>main</code> shows <code>question-1</code>, <code>question-2</code>, <code>README.md</code>.</p>
+<p>Then open <a href="https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767" rel="noopener" target="_blank">https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767</a>
+The branch dropdown must say <code>main</code>. Expect: <code>question-1</code>, <code>question-2</code>, <code>README.md</code>.</p>
 </div>
 </div>
 </div>

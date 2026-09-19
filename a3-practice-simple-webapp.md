@@ -1,23 +1,33 @@
 # Practice: Simple-Webapp-COSC2767 (Q1 + Q2)
 
-Repo: `git@github.com:NgocDungNguyen/Simple-Webapp-COSC2767.git`
-`powershell` = run on your PC. `bash` = run on the EC2 as root. `<...>` = fill in.
+Repo for all the EC2 work: https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767
+Clone address (SSH): `git@github.com:NgocDungNguyen/Simple-Webapp-COSC2767.git`
 
-Final repo layout (same as `sample/`):
+How to read this page:
 
-```
-README.md
-question-1/hello/pom.xml
-question-1/hello/src/main/webapp/index.jsp
-question-1/hello/src/main/webapp/WEB-INF/web.xml
-question-1/hello/target/hello.war
-question-1/hello/target/hello/index.jsp
-question-1/hello/target/hello/WEB-INF/web.xml
-question-1/hello/target/maven-archiver/pom.properties
-question-2/Dockerfile
-question-2/hello.war
-question-2/dockerHubLink.txt
-```
+- A code block is something to copy and run, or file content to paste. Every code block has a Copy button.
+- What you should see is written as plain text after the word **Expect**. Never paste it into the terminal.
+- `powershell` blocks run on your PC. `bash` blocks run on the EC2 as root. `<...>` means fill in your own value.
+
+Two different repos, do not mix them up:
+
+- `Simple-Webapp-COSC2767` is where your EC2 work goes. Look here for `question-1` and `question-2`.
+- `practice` is only this guide website. Nothing from the EC2 ever appears there.
+- On GitHub, `question-1` and `question-2` appear on branch `develop` first. They appear on `main` only after Step 9. Switch branches with the branch dropdown at the top left of the file list.
+
+Final layout on `main` (same as `sample/`):
+
+- `README.md`
+- `question-1/hello/pom.xml`
+- `question-1/hello/src/main/webapp/index.jsp`
+- `question-1/hello/src/main/webapp/WEB-INF/web.xml`
+- `question-1/hello/target/hello.war`
+- `question-1/hello/target/hello/index.jsp`
+- `question-1/hello/target/hello/WEB-INF/web.xml`
+- `question-1/hello/target/maven-archiver/pom.properties`
+- `question-2/Dockerfile`
+- `question-2/hello.war`
+- `question-2/dockerHubLink.txt`
 
 ---
 
@@ -253,6 +263,9 @@ git commit -m "Remove old root-level webapp"
 git push -u origin develop
 ```
 
+Check on GitHub: https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop
+The branch dropdown must say `develop`. Expect: only `README.md` in the list (`pom.xml` and `src` are gone).
+
 ---
 
 ## Step 7. Question 1 (Maven web app)
@@ -280,13 +293,12 @@ Save: `Ctrl+O`, `Enter`, `Ctrl+X`.
 mvn package
 find target -type f | sort
 ```
-Expect: `BUILD SUCCESS` and exactly these 4 files:
-```
-target/hello.war
-target/hello/WEB-INF/web.xml
-target/hello/index.jsp
-target/maven-archiver/pom.properties
-```
+Expect: `BUILD SUCCESS`, then these 4 lines as output (do not paste them):
+
+- `target/hello.war`
+- `target/hello/WEB-INF/web.xml`
+- `target/hello/index.jsp`
+- `target/maven-archiver/pom.properties`
 
 ```bash
 cd ~/Simple-Webapp-COSC2767
@@ -295,6 +307,9 @@ git status --short
 git commit -m "Set up Maven web application"
 git push
 ```
+
+Check on GitHub: https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop/question-1
+The branch dropdown must say `develop`. Expect: a folder `hello`.
 
 ---
 
@@ -345,6 +360,9 @@ git commit -m "Add Dockerfile and Docker Hub link"
 git push
 ```
 
+Check on GitHub: https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767/tree/develop/question-2
+The branch dropdown must say `develop`. Expect: `Dockerfile`, `dockerHubLink.txt`, `hello.war`.
+
 Stop the container:
 
 ```bash
@@ -389,7 +407,8 @@ git ls-files | sort
 ```
 Expect: the 11 files listed at the top of this page, nothing else.
 
-Then open `https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767` and confirm `main` shows `question-1`, `question-2`, `README.md`.
+Then open https://github.com/NgocDungNguyen/Simple-Webapp-COSC2767
+The branch dropdown must say `main`. Expect: `question-1`, `question-2`, `README.md`.
 
 ---
 
